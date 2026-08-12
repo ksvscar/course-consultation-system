@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # 後端 API 服務
+  api:
+    image: node:18-alpine
+    container_name: course-consultation-api
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_PATH=/data/course-consultation.db
+      - PORT=3000
+      - GOOGLE_DRIVE_FOLDER_ID=${GOOGLE_DRIVE_FOLDER_ID}
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
+    command: >
+      sh -c "npm install &&
+             npm run init-db ||
+             true &&
+             npm start"
+    networks:
+      - course-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # SQLite 資料庫（可選，若要持久化）
+  db:
+    image: nouchka/sqlite3:latest
+    container_name: course-consultation-db
+    volumes:
+      - ./data/database:/root/db
+    networks:
+      - course-net
+    restart: unless-stopped
+
+  # Nginx 反向代理（可選，用於 Cloudflare Tunnel）
+  proxy:
+    image: nginx:alpine
+    container_name: course-consultation-proxy
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./data/certs:/etc/nginx/certs:ro
+    ports:
+      - "8080:80"
+      - "8443:443"
+    networks:
+      - course-net
+    depends_on:
+      - api
+    restart: unless-stopped
+
+networks:
+  course-net:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local

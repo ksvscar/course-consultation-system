@@ -1,0 +1,221 @@
+{
+  "metadata": {
+    "grade": "高二",
+    "semester": "下學期",
+    "schoolYear": "114",
+    "totalSteps": 5,
+    "description": "團體課程諮詢紀錄表（高二下學期）"
+  },
+  "steps": [
+    {
+      "stepNum": 1,
+      "title": "基本資料",
+      "description": "請選擇班級，並填寫座號與姓名",
+      "fields": [
+        {
+          "id": "class",
+          "type": "select",
+          "label": "班級",
+          "required": true,
+          "options": [
+            "汽車一甲",
+            "汽車一乙"
+          ],
+          "hint": ""
+        },
+        {
+          "id": "seat",
+          "type": "number",
+          "label": "座號",
+          "required": true,
+          "placeholder": "例如 05",
+          "maxLength": 2
+        },
+        {
+          "id": "name",
+          "type": "text",
+          "label": "姓名",
+          "required": true,
+          "placeholder": "請輸入全名"
+        }
+      ],
+      "note": "送出後系統會自動比對班級名冊，資料如有出入會提醒您確認"
+    },
+    {
+      "stepNum": 2,
+      "title": "基本評估",
+      "description": "了解你在國中時的學習狀況",
+      "questions": [
+        {
+          "id": "q_learning_ability",
+          "type": "single_select",
+          "category": "STEP 02",
+          "title": "在國中時，你覺得自己的學習能力如何？",
+          "options": [
+            "很好，學習很快",
+            "還可以，跟得上",
+            "有點困難，需要多練習",
+            "很困難，常常落後"
+          ]
+        },
+        {
+          "id": "q_achieve_subject",
+          "type": "multi_select",
+          "category": "STEP 02",
+          "title": "在國中時哪些科目比較讓你有成就感？",
+          "subtitle": "（可複選）",
+          "options": [
+            "國文",
+            "英文",
+            "數學",
+            "自然",
+            "社會",
+            "生活科技"
+          ]
+        }
+      ]
+    },
+    {
+      "stepNum": 3,
+      "title": "選課需求評估",
+      "description": "了解你對課程的理解和需求",
+      "questions": [
+        {
+          "id": "q_understand_process",
+          "type": "single_select",
+          "category": "STEP 03",
+          "title": "參加完選課說明會後，有關高一課程，你是否都了解？",
+          "options": [
+            "是，我都了解",
+            "否，我需要協助"
+          ]
+        },
+        {
+          "id": "q_course_map",
+          "type": "card_with_link",
+          "category": "STEP 03",
+          "title": "我瞭解本科課程地圖",
+          "linkText": "點此觀看《114課程地圖【汽車科】》說明影片（Edcafe AI）",
+          "linkUrl": "https://app.edcafe.ai/share/reading/高雄高工汽車科課程地圖-6a7c19f3ca64f4eb0348f92f",
+          "options": [
+            "瞭解",
+            "不瞭解"
+          ]
+        },
+        {
+          "id": "q_course_satisfaction",
+          "type": "single_select",
+          "category": "STEP 03",
+          "title": "對於高一上的課程安排，你的滿意度如何？",
+          "options": [
+            "很滿意",
+            "滿意",
+            "普通",
+            "不滿意",
+            "很不滿意"
+          ]
+        },
+        {
+          "id": "q_difficult_subject",
+          "type": "multi_select",
+          "category": "STEP 03",
+          "title": "哪些高一上學期的科目比較讓你有困擾？",
+          "subtitle": "（可複選，若都沒困擾可都不勾）",
+          "options": [
+            "專題製作",
+            "機械力學",
+            "汽車電子學",
+            "美術",
+            "英文文法",
+            "噴射引擎實習",
+            "柴油引擎",
+            "柴油引擎實習",
+            "汽車電子實習",
+            "車輛空調檢修實習"
+          ]
+        }
+      ]
+    },
+    {
+      "stepNum": 4,
+      "title": "個人反思",
+      "description": "針對高一上學期的學習反思",
+      "questions": [
+        {
+          "id": "q_next_direction",
+          "type": "text_area",
+          "category": "STEP 04",
+          "title": "高一上學期結束後，你對未來的學習方向有什麼想法嗎？",
+          "placeholder": "請填寫你的想法（如希望加強哪些科目、感興趣的領域等）",
+          "rows": 4
+        },
+        {
+          "id": "q_teacher_note",
+          "type": "text_area",
+          "category": "STEP 04",
+          "title": "對於老師或學校的建議（選填）",
+          "placeholder": "如有任何想法，歡迎提出",
+          "rows": 3,
+          "required": false
+        }
+      ]
+    },
+    {
+      "stepNum": 5,
+      "title": "確認並簽名",
+      "description": "本人簽名確認",
+      "signature": {
+        "id": "signature",
+        "type": "canvas_signature",
+        "label": "本人簽名",
+        "instruction": "請用正楷沿著淡字描出您的簽名",
+        "canvasHeight": 220
+      },
+      "note": "送出後請先不要關閉此頁面，待老師檢核完成後畫面會自動顯示「完成」按鈕。"
+    }
+  ],
+  "validationRules": {
+    "class": {
+      "required": true,
+      "errorMsg": "請選擇班級"
+    },
+    "seat": {
+      "required": true,
+      "pattern": "^\\d{1,2}$",
+      "errorMsg": "請填寫有效的座號（1-2位數字）"
+    },
+    "name": {
+      "required": true,
+      "minLength": 2,
+      "errorMsg": "請填寫完整姓名"
+    },
+    "signature": {
+      "required": true,
+      "errorMsg": "請完成簽名"
+    }
+  },
+  "autoJudgeRules": {
+    "needsIndividualConsultation": [
+      {
+        "name": "選課流程未瞭解",
+        "condition": "q_understand_process === '否，我需要協助'",
+        "priority": "high"
+      },
+      {
+        "name": "課程地圖不瞭解",
+        "condition": "q_course_map === '不瞭解'",
+        "priority": "high"
+      },
+      {
+        "name": "多科困擾",
+        "condition": "q_difficult_subject.length >= 2",
+        "priority": "medium"
+      },
+      {
+        "name": "課程滿意度低",
+        "condition": "q_course_satisfaction in ['不滿意', '很不滿意']",
+        "priority": "medium"
+      }
+    ]
+  }
+}

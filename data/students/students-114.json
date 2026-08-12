@@ -1,0 +1,1296 @@
+{
+  "schoolYear": "114",
+  "lastUpdated": "2026-08-12",
+  "classes": [
+    {
+      "name": "汽車一乙",
+      "students": [
+        {
+          "class": "汽車一乙",
+          "studentId": "43030201",
+          "name": "鄭晨庭",
+          "seat": "1"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030202",
+          "name": "王廷祐",
+          "seat": "2"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030203",
+          "name": "王保閔",
+          "seat": "3"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030204",
+          "name": "王堃丞",
+          "seat": "4"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030205",
+          "name": "白靖騰",
+          "seat": "5"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030206",
+          "name": "朱柏霖",
+          "seat": "6"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030207",
+          "name": "何政謙",
+          "seat": "7"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030208",
+          "name": "吳柏煜",
+          "seat": "8"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030209",
+          "name": "李文碩",
+          "seat": "9"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030210",
+          "name": "卓承翰",
+          "seat": "10"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030211",
+          "name": "林泓佑",
+          "seat": "11"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030212",
+          "name": "邱崧玶",
+          "seat": "12"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030213",
+          "name": "施茗皓",
+          "seat": "13"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030214",
+          "name": "洪千勝",
+          "seat": "14"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030215",
+          "name": "洪子桓",
+          "seat": "15"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030216",
+          "name": "徐冠霖",
+          "seat": "16"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030217",
+          "name": "莊博竣",
+          "seat": "17"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030218",
+          "name": "郭志煌",
+          "seat": "18"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030219",
+          "name": "郭俊佑",
+          "seat": "19"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030220",
+          "name": "陳弘益",
+          "seat": "20"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030221",
+          "name": "陳昀廷",
+          "seat": "21"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030222",
+          "name": "程毅愷",
+          "seat": "22"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030223",
+          "name": "黃丞翰",
+          "seat": "23"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030224",
+          "name": "黃建豐",
+          "seat": "24"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030225",
+          "name": "黃鼎鈞",
+          "seat": "25"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030226",
+          "name": "楊杰勳",
+          "seat": "26"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030227",
+          "name": "楊翊莛",
+          "seat": "27"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030228",
+          "name": "葉育勝",
+          "seat": "28"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030229",
+          "name": "雷凱程",
+          "seat": "29"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030230",
+          "name": "鄭又禔",
+          "seat": "30"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030231",
+          "name": "鄭彥愷",
+          "seat": "31"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030232",
+          "name": "賴家璿",
+          "seat": "32"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030233",
+          "name": "謝致逸",
+          "seat": "33"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030234",
+          "name": "羅聿軒",
+          "seat": "34"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030235",
+          "name": "蘇冠炘",
+          "seat": "35"
+        },
+        {
+          "class": "汽車一乙",
+          "studentId": "43030236",
+          "name": "蘇秝進",
+          "seat": "36"
+        }
+      ]
+    },
+    {
+      "name": "汽車一甲",
+      "students": [
+        {
+          "class": "汽車一甲",
+          "studentId": "43030101",
+          "name": "王晨穎",
+          "seat": "1"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030102",
+          "name": "余俊廷",
+          "seat": "2"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030103",
+          "name": "吳宇倫",
+          "seat": "3"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030104",
+          "name": "吳聖弘",
+          "seat": "4"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030105",
+          "name": "吳豐佑",
+          "seat": "5"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030106",
+          "name": "李育陞",
+          "seat": "6"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030107",
+          "name": "李孟哲",
+          "seat": "7"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030108",
+          "name": "李柏幟",
+          "seat": "8"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030109",
+          "name": "林冠佑",
+          "seat": "9"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030110",
+          "name": "林稚宸",
+          "seat": "10"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030111",
+          "name": "林聖昌",
+          "seat": "11"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030112",
+          "name": "洪承遠",
+          "seat": "12"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030113",
+          "name": "孫暐程",
+          "seat": "13"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030114",
+          "name": "莊寶凱",
+          "seat": "14"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030115",
+          "name": "郭子綸",
+          "seat": "15"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030116",
+          "name": "陳可憲",
+          "seat": "16"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030117",
+          "name": "陳佳禾",
+          "seat": "17"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030118",
+          "name": "陳秉聰",
+          "seat": "18"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030119",
+          "name": "陳韋翔",
+          "seat": "19"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030120",
+          "name": "陳家葦",
+          "seat": "20"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030121",
+          "name": "陳霈軒",
+          "seat": "21"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030122",
+          "name": "黃有志",
+          "seat": "22"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030123",
+          "name": "黃泓叡",
+          "seat": "23"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030124",
+          "name": "黃冠勛",
+          "seat": "24"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030125",
+          "name": "黃浚傑",
+          "seat": "25"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030126",
+          "name": "葉淮承",
+          "seat": "26"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030127",
+          "name": "廖彥丞",
+          "seat": "27"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030128",
+          "name": "潘瑋崧",
+          "seat": "28"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030129",
+          "name": "蔡政佑",
+          "seat": "29"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030130",
+          "name": "戴琮岳",
+          "seat": "30"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030131",
+          "name": "薛可強",
+          "seat": "31"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030132",
+          "name": "顏翊軒",
+          "seat": "32"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030133",
+          "name": "魏伯翰",
+          "seat": "33"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030134",
+          "name": "蘇子洋",
+          "seat": "34"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030135",
+          "name": "蘇子捷",
+          "seat": "35"
+        },
+        {
+          "class": "汽車一甲",
+          "studentId": "43030136",
+          "name": "顧洺睿",
+          "seat": "36"
+        }
+      ]
+    },
+    {
+      "name": "汽車三乙",
+      "students": [
+        {
+          "class": "汽車三乙",
+          "studentId": "23030201",
+          "name": "王秉鈞",
+          "seat": "1"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030202",
+          "name": "王湘緯",
+          "seat": "2"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030203",
+          "name": "朱宇豪",
+          "seat": "3"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030204",
+          "name": "朱哲宇",
+          "seat": "4"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030205",
+          "name": "江廷恩",
+          "seat": "5"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030206",
+          "name": "吳冠霆",
+          "seat": "6"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030208",
+          "name": "呂明倫",
+          "seat": "7"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030209",
+          "name": "李宥寬",
+          "seat": "8"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030210",
+          "name": "李詠祥",
+          "seat": "9"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030211",
+          "name": "林志鑫",
+          "seat": "10"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030212",
+          "name": "林奕士",
+          "seat": "11"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030213",
+          "name": "柯佶君",
+          "seat": "12"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030214",
+          "name": "洪庠錥",
+          "seat": "13"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030215",
+          "name": "洪聖翔",
+          "seat": "14"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030216",
+          "name": "夏承睿",
+          "seat": "15"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030217",
+          "name": "孫聖皓",
+          "seat": "16"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030218",
+          "name": "翁定豪",
+          "seat": "17"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030220",
+          "name": "張郡祐",
+          "seat": "18"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030221",
+          "name": "張翊菘",
+          "seat": "19"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030222",
+          "name": "盛詠駿",
+          "seat": "20"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030223",
+          "name": "郭韋廷",
+          "seat": "21"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030225",
+          "name": "陳佑丞",
+          "seat": "22"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030226",
+          "name": "陳宏佑",
+          "seat": "23"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030227",
+          "name": "陳哲培",
+          "seat": "24"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030228",
+          "name": "陳家佑",
+          "seat": "25"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030229",
+          "name": "陳稟益",
+          "seat": "26"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030231",
+          "name": "黃庠鈞",
+          "seat": "27"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030232",
+          "name": "楊宗澄",
+          "seat": "28"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030233",
+          "name": "葉家瑋",
+          "seat": "29"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030234",
+          "name": "劉奕成",
+          "seat": "30"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030235",
+          "name": "蔡佳佑",
+          "seat": "31"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030236",
+          "name": "戴佑宸",
+          "seat": "32"
+        },
+        {
+          "class": "汽車三乙",
+          "studentId": "23030237",
+          "name": "龔郁竤",
+          "seat": "33"
+        }
+      ]
+    },
+    {
+      "name": "汽車三甲",
+      "students": [
+        {
+          "class": "汽車三甲",
+          "studentId": "23030103",
+          "name": "吳浤瑜",
+          "seat": "1"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030104",
+          "name": "呂昱賢",
+          "seat": "2"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030105",
+          "name": "李竑廷",
+          "seat": "3"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030106",
+          "name": "林彥均",
+          "seat": "4"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030107",
+          "name": "林祐銜",
+          "seat": "5"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030108",
+          "name": "邱詮恩",
+          "seat": "6"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030109",
+          "name": "洪聖評",
+          "seat": "7"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030110",
+          "name": "洪鉉厤",
+          "seat": "8"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030111",
+          "name": "洪語哲",
+          "seat": "9"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030112",
+          "name": "馬愷晨",
+          "seat": "10"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030113",
+          "name": "張值碩",
+          "seat": "11"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030114",
+          "name": "張家鈞",
+          "seat": "12"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030115",
+          "name": "許永達",
+          "seat": "13"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030116",
+          "name": "許廷安",
+          "seat": "14"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030117",
+          "name": "許宸奕",
+          "seat": "15"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030118",
+          "name": "許宸維",
+          "seat": "16"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030119",
+          "name": "郭丞恩",
+          "seat": "17"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030120",
+          "name": "郭秉宸",
+          "seat": "18"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030121",
+          "name": "陳世展",
+          "seat": "19"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030122",
+          "name": "陳韋誌",
+          "seat": "20"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030123",
+          "name": "陳睿甫",
+          "seat": "21"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030125",
+          "name": "黃宇慶",
+          "seat": "22"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030126",
+          "name": "黃則維",
+          "seat": "23"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030127",
+          "name": "黃品豪",
+          "seat": "24"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030128",
+          "name": "黃宥嘉",
+          "seat": "25"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030129",
+          "name": "黃泰源",
+          "seat": "26"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030130",
+          "name": "楊凱翔",
+          "seat": "27"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030131",
+          "name": "劉士墉",
+          "seat": "28"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030132",
+          "name": "劉宗儒",
+          "seat": "29"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030133",
+          "name": "潘梓睿",
+          "seat": "30"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030134",
+          "name": "龍亮頤",
+          "seat": "31"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030136",
+          "name": "戴冠珉",
+          "seat": "32"
+        },
+        {
+          "class": "汽車三甲",
+          "studentId": "23030137",
+          "name": "蘇嘉平",
+          "seat": "33"
+        }
+      ]
+    },
+    {
+      "name": "汽車二乙",
+      "students": [
+        {
+          "class": "汽車二乙",
+          "studentId": "33030202",
+          "name": "謝靜宜",
+          "seat": "1"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030203",
+          "name": "王浚溢",
+          "seat": "2"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030204",
+          "name": "朱俊至",
+          "seat": "3"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030205",
+          "name": "朱翊豪",
+          "seat": "4"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030206",
+          "name": "余政霖",
+          "seat": "5"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030207",
+          "name": "吳恩豪",
+          "seat": "6"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030208",
+          "name": "李尚融",
+          "seat": "7"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030209",
+          "name": "李奕竑",
+          "seat": "8"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030211",
+          "name": "杜冬越",
+          "seat": "9"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030212",
+          "name": "周忠翰",
+          "seat": "10"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030213",
+          "name": "周品均",
+          "seat": "11"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030214",
+          "name": "周奕羽",
+          "seat": "12"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030215",
+          "name": "林廷澤",
+          "seat": "13"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030216",
+          "name": "林宥廷",
+          "seat": "14"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030217",
+          "name": "林彥庭",
+          "seat": "15"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030218",
+          "name": "林家毅",
+          "seat": "16"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030219",
+          "name": "胡又升",
+          "seat": "17"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030220",
+          "name": "徐啟豪",
+          "seat": "18"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030221",
+          "name": "祖肇和",
+          "seat": "19"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030222",
+          "name": "高子翔",
+          "seat": "20"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030223",
+          "name": "高仁傑",
+          "seat": "21"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030224",
+          "name": "莊鈞甫",
+          "seat": "22"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030225",
+          "name": "郭承澔",
+          "seat": "23"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030226",
+          "name": "陳柏銨",
+          "seat": "24"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030227",
+          "name": "陳柏融",
+          "seat": "25"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030228",
+          "name": "陳鎵鴻",
+          "seat": "26"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030229",
+          "name": "黃昱凱",
+          "seat": "27"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030230",
+          "name": "黃韋翔",
+          "seat": "28"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030231",
+          "name": "楊紹廷",
+          "seat": "29"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030232",
+          "name": "趙得富",
+          "seat": "30"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030233",
+          "name": "劉歆源",
+          "seat": "31"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030234",
+          "name": "蔡家承",
+          "seat": "32"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030235",
+          "name": "盧弘秝",
+          "seat": "33"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030236",
+          "name": "薛亦程",
+          "seat": "34"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030237",
+          "name": "顏銘宥",
+          "seat": "35"
+        },
+        {
+          "class": "汽車二乙",
+          "studentId": "33030238",
+          "name": "鐘彥程",
+          "seat": "36"
+        }
+      ]
+    },
+    {
+      "name": "汽車二甲",
+      "students": [
+        {
+          "class": "汽車二甲",
+          "studentId": "33030101",
+          "name": "王柏翰",
+          "seat": "1"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030102",
+          "name": "吳尚恩",
+          "seat": "2"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030103",
+          "name": "吳奕諾",
+          "seat": "3"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030104",
+          "name": "吳配安",
+          "seat": "4"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030105",
+          "name": "吳偉曜",
+          "seat": "5"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030106",
+          "name": "李育樹",
+          "seat": "6"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030107",
+          "name": "李秉霖",
+          "seat": "7"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030108",
+          "name": "李彥霖",
+          "seat": "8"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030109",
+          "name": "林正勛",
+          "seat": "9"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030110",
+          "name": "林柏宏",
+          "seat": "10"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030111",
+          "name": "邱立宇",
+          "seat": "11"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030112",
+          "name": "邱琮珉",
+          "seat": "12"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030113",
+          "name": "柯旭謙",
+          "seat": "13"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030114",
+          "name": "洪誠崴",
+          "seat": "14"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030115",
+          "name": "秦祖浚",
+          "seat": "15"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030116",
+          "name": "張栩銘",
+          "seat": "16"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030117",
+          "name": "莊存硯",
+          "seat": "17"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030118",
+          "name": "莊孟翰",
+          "seat": "18"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030119",
+          "name": "莊策宇",
+          "seat": "19"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030120",
+          "name": "許冠鉎",
+          "seat": "20"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030121",
+          "name": "陳少川",
+          "seat": "21"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030122",
+          "name": "陳勁佑",
+          "seat": "22"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030123",
+          "name": "陳羿存",
+          "seat": "23"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030124",
+          "name": "陳羿汎",
+          "seat": "24"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030125",
+          "name": "彭元德",
+          "seat": "25"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030126",
+          "name": "曾宇辰",
+          "seat": "26"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030127",
+          "name": "黃芑扉",
+          "seat": "27"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030128",
+          "name": "黃揚仁",
+          "seat": "28"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030129",
+          "name": "黃楷恩",
+          "seat": "29"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030130",
+          "name": "楊詠喆",
+          "seat": "30"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030131",
+          "name": "葉品揚",
+          "seat": "31"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030132",
+          "name": "劉承諺",
+          "seat": "32"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030133",
+          "name": "劉銘哲",
+          "seat": "33"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030134",
+          "name": "蔣柏翊",
+          "seat": "34"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030135",
+          "name": "顏敬家",
+          "seat": "35"
+        },
+        {
+          "class": "汽車二甲",
+          "studentId": "33030136",
+          "name": "蘇浚廷",
+          "seat": "36"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>團體課程諮詢紀錄表 - 動態表單系統</title>
+<style>
+  :root{
+    --ink:#152238;
+    --steel:#1E3A5F;
+    --steel-deep:#0F2540;
+    --steel-pale:#E8EEF5;
+    --line:#D7E0EA;
+    --signal:#FF5A1F;
+    --signal-dim:#FFE7DB;
+    --paper:#FBFAF7;
+    --ok:#1E7A4C;
+    --font-cjk: "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--steel-deep);font-family:var(--font-cjk);color:var(--ink);}
+  body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 20% -10%, #2A4C74 0%, transparent 45%),
+      var(--steel-deep);
+  }
+  .device{
+    width:100%;
+    max-width:460px;
+    min-height:100vh;
+    background:var(--paper);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 0 60px rgba(0,0,0,.4);
+  }
+
+  header{
+    background:linear-gradient(135deg, var(--steel-deep), var(--steel) 70%);
+    color:#fff;
+    padding:20px 20px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute; right:-30px; top:-30px;
+    width:160px; height:160px; border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.08);
+  }
+  .eyebrow{
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:#9FC1E0; font-weight:600; margin:0 0 4px;
+  }
+  h1{
+    font-size:19px; margin:0 0 14px; font-weight:700; line-height:1.4;
+    position:relative;
+  }
+  .gauge-track{
+    display:flex; gap:5px; position:relative;
+  }
+  .gauge-track i{
+    flex:1; height:4px; border-radius:2px;
+    background:rgba(255,255,255,.18);
+    overflow:hidden;
+  }
+  .gauge-track i span{
+    display:block; height:100%; width:0%;
+    background:var(--signal);
+    transition:width .4s ease;
+  }
+  .gauge-track i.done span{width:100%;}
+  .gauge-track i.active span{width:55%;}
+  .step-label{
+    margin-top:8px; font-size:12px; color:#C9DCEE; letter-spacing:.02em;
+  }
+  .step-label b{color:#fff;}
+
+  main{flex:1; padding:22px 20px 110px; overflow-y:auto;}
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:20px 18px; margin-bottom:16px;
+  }
+  .q-eyebrow{
+    font-size:11.5px; color:var(--signal); font-weight:700; letter-spacing:.06em;
+    margin:0 0 6px; text-transform:uppercase;
+  }
+  .q-title{
+    font-size:16px; font-weight:700; margin:0 0 6px; line-height:1.55;
+    color:var(--steel-deep);
+  }
+  .q-subtitle{
+    font-size:13px; color:#7C8BA0; margin:0 0 14px; font-weight:500;
+  }
+  .hint{font-size:12.5px; color:#7C8BA0; margin:-8px 0 14px;}
+
+  .field-row{display:flex; gap:10px; margin-bottom:12px;}
+  .field{flex:1;}
+  .field label{
+    display:block; font-size:12px; color:#5C6C81; margin-bottom:6px; font-weight:600;
+  }
+  .field input, .field select, .field textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:9px;
+    padding:11px 12px; font-size:15px; font-family:var(--font-cjk);
+    background:var(--steel-pale); color:var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:none; border-color:var(--steel); background:#fff;
+  }
+  .field textarea{resize:vertical; min-height:80px;}
+
+  .chip-grid{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    padding:9px 14px; border-radius:999px; border:1.5px solid var(--line);
+    font-size:13.5px; cursor:pointer; user-select:none; background:#fff;
+    color:#3A4B60; transition:.15s;
+  }
+  .chip.sel{
+    background:var(--steel); border-color:var(--steel); color:#fff;
+    box-shadow:0 3px 8px rgba(30,58,95,.25);
+  }
+
+  .radio-list{display:flex; flex-direction:column; gap:8px;}
+  .radio-opt{
+    display:flex; align-items:center; gap:10px;
+    border:1.5px solid var(--line); border-radius:10px; padding:11px 13px;
+    cursor:pointer; font-size:14.5px; color:#3A4B60;
+  }
+  .radio-opt.sel{border-color:var(--signal); background:var(--signal-dim); color:var(--steel-deep); font-weight:600;}
+  .dot{width:16px; height:16px; border-radius:50%; border:2px solid #C4CEDB; flex-shrink:0; position:relative;}
+  .radio-opt.sel .dot{border-color:var(--signal);}
+  .radio-opt.sel .dot::after{
+    content:""; position:absolute; inset:3px; border-radius:50%; background:var(--signal);
+  }
+
+  .link-card{
+    display:flex; align-items:center; gap:10px;
+    background:var(--steel-pale); border:1px dashed #9FB6CE; border-radius:10px;
+    padding:12px 13px; font-size:13px; color:var(--steel); margin-bottom:14px;
+  }
+  .link-card .ic{
+    width:30px; height:30px; border-radius:8px; background:var(--steel);
+    color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px;
+  }
+
+  .cta-bar{
+    position:absolute; left:0; right:0; bottom:0;
+    background:linear-gradient(0deg, var(--paper) 60%, rgba(251,250,247,0));
+    padding:22px 20px 20px; display:flex; gap:10px;
+  }
+  .btn{
+    flex:1; padding:14px; border-radius:11px; border:none;
+    font-size:15px; font-weight:700; font-family:var(--font-cjk); cursor:pointer;
+  }
+  .btn-prev{background:#fff; border:1.5px solid var(--line); color:#5C6C81; flex:0 0 92px;}
+  .btn-next{
+    background:var(--signal); color:#fff;
+    box-shadow:0 8px 18px rgba(255,90,31,.35);
+  }
+  .btn-next:active{transform:translateY(1px);}
+
+  .sig-wrap{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px;}
+  canvas{
+    width:100%; height:220px; border:1.5px solid var(--line); border-radius:10px;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 21px, #EEF2F6 22px);
+    touch-action:none; display:block;
+  }
+  .sig-actions{display:flex; gap:10px; margin-top:12px;}
+  .btn-ghost{
+    flex:1; padding:12px; border-radius:10px; border:1.5px solid var(--line);
+    background:#fff; color:#5C6C81; font-weight:700; font-size:14px; cursor:pointer;
+  }
+
+  .loading{text-align:center; padding:40px 20px; color:#7C8BA0;}
+  .error{text-align:center; padding:20px; color:var(--signal); font-weight:700;}
+
+  ::selection{background:var(--signal-dim);}
+</style>
+</head>
+<body>
+<div class="device" id="app">
+  <div class="loading">載入表單中...</div>
+</div>
+
+<script>
+// ====================== 動態表單渲染引擎 ======================
+
+// JSON設定內嵌（通常應從外部載入，這裡簡化用於示範）
+const FORM_CONFIG = {
+  "metadata": {"grade":"高一","semester":"上學期","schoolYear":"114","totalSteps":5,"description":"團體課程諮詢紀錄表（高一上學期）"},
+  "steps": [
+    {"stepNum":1,"title":"基本資料","description":"請選擇班級，並填寫座號與姓名","fields":[{"id":"class","type":"select","label":"班級","required":true,"options":["汽車一甲","汽車一乙"],"hint":""},{"id":"seat","type":"number","label":"座號","required":true,"placeholder":"例如 05","maxLength":2},{"id":"name","type":"text","label":"姓名","required":true,"placeholder":"請輸入全名"}],"note":"送出後系統會自動比對班級名冊，資料如有出入會提醒您確認"},
+    {"stepNum":2,"title":"基本評估","description":"了解你在國中時的學習狀況","questions":[{"id":"q_learning_ability","type":"single_select","category":"STEP 02","title":"在國中時，你覺得自己的學習能力如何？","options":["很好，學習很快","還可以，跟得上","有點困難，需要多練習","很困難，常常落後"]},{"id":"q_achieve_subject","type":"multi_select","category":"STEP 02","title":"在國中時哪些科目比較讓你有成就感？","subtitle":"（可複選）","options":["國文","英文","數學","自然","社會","生活科技"]}]},
+    {"stepNum":3,"title":"選課需求評估","description":"了解你對課程的理解和需求","questions":[{"id":"q_understand_process","type":"single_select","category":"STEP 03","title":"參加完選課說明會後，有關高一課程，你是否都了解？","options":["是，我都了解","否，我需要協助"]},{"id":"q_course_map","type":"card_with_link","category":"STEP 03","title":"我瞭解本科課程地圖","linkText":"點此觀看《114課程地圖【汽車科】》說明影片","linkUrl":"#","options":["瞭解","不瞭解"]},{"id":"q_course_satisfaction","type":"single_select","category":"STEP 03","title":"對於高一上的課程安排，你的滿意度如何？","options":["很滿意","滿意","普通","不滿意","很不滿意"]}]},
+    {"stepNum":4,"title":"個人反思","description":"針對高一上學期的學習反思","questions":[{"id":"q_next_direction","type":"text_area","category":"STEP 04","title":"高一上學期結束後，你對未來的學習方向有什麼想法嗎？","placeholder":"請填寫你的想法","rows":4},{"id":"q_teacher_note","type":"text_area","category":"STEP 04","title":"對於老師或學校的建議（選填）","placeholder":"如有任何想法，歡迎提出","rows":3,"required":false}]},
+    {"stepNum":5,"title":"確認並簽名","description":"本人簽名確認","signature":{"id":"signature","type":"canvas_signature","label":"本人簽名","instruction":"請用正楷沿著淡字描出您的簽名","canvasHeight":220},"note":"送出後請先不要關閉此頁面"}
+  ]
+};
+
+class FormRenderer {
+  constructor(config) {
+    this.config = config;
+    this.currentStep = 1;
+    this.responses = {};
+  }
+
+  init() {
+    this.render();
+  }
+
+  render() {
+    if (this.currentStep === 1) {
+      this.renderStep1();
+    } else if (this.currentStep <= this.config.steps.length) {
+      this.renderStep(this.currentStep);
+    } else if (this.currentStep === this.config.steps.length + 1) {
+      this.renderSignature();
+    }
+  }
+
+  renderStep1() {
+    const step1 = this.config.steps[0];
+    const html = `
+      <header>
+        <p class="eyebrow">${this.config.metadata.schoolYear}學年度 · ${this.config.metadata.grade}${this.config.metadata.semester}</p>
+        <h1>${this.config.metadata.description}</h1>
+        <div class="gauge-track">${this.renderGauge(1)}</div>
+        <p class="step-label">第 <b>1</b> / ${this.config.metadata.totalSteps} 步 · ${step1.title}</p>
+      </header>
+      <main>${this.renderFields(step1.fields)}</main>
+      <div class="cta-bar">
+        <button class="btn btn-next" onclick="renderer.goToStep(2)">下一步</button>
+      </div>
+    `;
+    document.getElementById('app').innerHTML = html;
+  }
+
+  renderStep(stepNum) {
+    const step = this.config.steps[stepNum - 1];
+    const html = `
+      <header>
+        <p class="eyebrow">${this.config.metadata.schoolYear}學年度 · ${this.config.metadata.grade}${this.config.metadata.semester}</p>
+        <h1>${this.config.metadata.description}</h1>
+        <div class="gauge-track">${this.renderGauge(stepNum)}</div>
+        <p class="step-label">第 <b>${stepNum}</b> / ${this.config.metadata.totalSteps} 步 · ${step.title}</p>
+      </header>
+      <main>
+        <div class="card" style="opacity:.55;margin-bottom:14px;">
+          <p class="q-title" style="margin:0;font-size:14px;" id="summary-text">填寫中...</p>
+        </div>
+        ${this.renderQuestions(step.questions || [])}
+      </main>
+      <div class="cta-bar">
+        <button class="btn btn-prev" onclick="renderer.goToStep(${stepNum-1})">上一步</button>
+        <button class="btn btn-next" onclick="renderer.goToStep(${stepNum+1})">下一步</button>
+      </div>
+    `;
+    document.getElementById('app').innerHTML = html;
+    this.attachQuestionHandlers();
+    this.updateSummary();
+  }
+
+  renderSignature() {
+    const html = `
+      <header>
+        <p class="eyebrow">${this.config.metadata.schoolYear}學年度 · ${this.config.metadata.grade}${this.config.metadata.semester}</p>
+        <h1>確認並簽名</h1>
+        <div class="gauge-track">${this.renderGauge(this.config.metadata.totalSteps)}</div>
+        <p class="step-label">第 <b>${this.config.metadata.totalSteps}</b> / ${this.config.metadata.totalSteps} 步 · 本人簽名確認</p>
+      </header>
+      <main style="padding-top:22px;">
+        <div class="sig-wrap">
+          <p style="font-size:13px;color:#5C6C81;margin:0 0 10px;">簽名人　<b>${this.responses.name || '（未填寫）'}</b></p>
+          <p style="text-align:center;font-size:12.5px;color:var(--signal);font-weight:700;margin:2px 0 10px;">請用正楷沿著淡字描出您的簽名</p>
+          <canvas id="pad" width="800" height="440"></canvas>
+          <div class="sig-actions">
+            <button class="btn-ghost" onclick="renderer.clearPad()">清空重簽</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <p style="font-size:13px;color:#5C6C81;line-height:1.7;margin:0;">
+            送出後請<b style="color:var(--steel-deep)">先不要關閉此頁面</b>，待老師檢核完成後畫面會自動顯示「完成」按鈕。
+          </p>
+        </div>
+      </main>
+      <div class="cta-bar">
+        <button class="btn btn-prev" onclick="renderer.goToStep(${this.config.metadata.totalSteps})">上一步</button>
+        <button class="btn btn-next">送出紀錄表</button>
+      </div>
+    `;
+    document.getElementById('app').innerHTML = html;
+    setTimeout(() => this.initSignaturePad(), 100);
+  }
+
+  renderGauge(currentStep) {
+    let html = '';
+    for (let i = 1; i <= this.config.metadata.totalSteps; i++) {
+      const cls = i < currentStep ? 'done' : i === currentStep ? 'active' : '';
+      html += `<i class="${cls}"><span></span></i>`;
+    }
+    return html;
+  }
+
+  renderFields(fields) {
+    let html = '<div class="card">';
+    fields.forEach(f => {
+      if (f.type === 'select') {
+        html += `
+          <div class="field">
+            <label>${f.label}</label>
+            <select id="${f.id}">
+              <option value="">請選擇班級</option>
+              ${f.options.map(o => `<option value="${o}">${o}</option>`).join('')}
+            </select>
+          </div>
+        `;
+      } else if (f.type === 'number') {
+        html += `
+          <div class="field">
+            <label>${f.label}</label>
+            <input type="tel" inputmode="numeric" id="${f.id}" placeholder="${f.placeholder}" maxlength="${f.maxLength}">
+          </div>
+        `;
+      } else if (f.type === 'text') {
+        html += `
+          <div class="field">
+            <label>${f.label}</label>
+            <input type="text" id="${f.id}" placeholder="${f.placeholder}">
+          </div>
+        `;
+      }
+    });
+    if (fields.some(f => f.id === 'seat' || f.id === 'name')) {
+      html += `<div class="hint" style="margin-top:2px;">送出後系統會自動比對班級名冊，資料如有出入會提醒您確認</div>`;
+    }
+    html += '</div>';
+    return html;
+  }
+
+  renderQuestions(questions) {
+    let html = '';
+    questions.forEach(q => {
+      const eyebrow = q.category ? `<p class="q-eyebrow">${q.category}</p>` : '';
+      const subtitle = q.subtitle ? `<p class="q-subtitle">${q.subtitle}</p>` : '';
+
+      if (q.type === 'single_select') {
+        html += `
+          <div class="card">
+            ${eyebrow}
+            <p class="q-title">${q.title}</p>
+            ${subtitle}
+            <div class="radio-list" data-qid="${q.id}">
+              ${q.options.map((o, i) => `<div class="radio-opt" data-val="${o}"><span class="dot"></span>${o}</div>`).join('')}
+            </div>
+          </div>
+        `;
+      } else if (q.type === 'multi_select') {
+        html += `
+          <div class="card">
+            ${eyebrow}
+            <p class="q-title">${q.title}</p>
+            ${subtitle}
+            <div class="chip-grid" data-qid="${q.id}">
+              ${q.options.map(o => `<div class="chip" data-val="${o}">${o}</div>`).join('')}
+            </div>
+            ${q.note ? `<div class="hint" style="margin-top:8px;">${q.note}</div>` : ''}
+          </div>
+        `;
+      } else if (q.type === 'card_with_link') {
+        html += `
+          <div class="card">
+            ${eyebrow}
+            <p class="q-title">${q.title}</p>
+            <div class="link-card">
+              <div class="ic">▶</div>
+              <div>${q.linkText}</div>
+            </div>
+            <div class="radio-list" data-qid="${q.id}">
+              ${q.options.map(o => `<div class="radio-opt" data-val="${o}"><span class="dot"></span>${o}</div>`).join('')}
+            </div>
+          </div>
+        `;
+      } else if (q.type === 'text_area') {
+        const required = q.required !== false ? 'required' : '';
+        html += `
+          <div class="card">
+            ${eyebrow}
+            <p class="q-title">${q.title}</p>
+            <textarea id="${q.id}" placeholder="${q.placeholder}" rows="${q.rows || 3}" ${required}></textarea>
+          </div>
+        `;
+      }
+    });
+    return html;
+  }
+
+  attachQuestionHandlers() {
+    // single_select
+    document.querySelectorAll('.radio-list').forEach(list => {
+      const qid = list.dataset.qid;
+      list.querySelectorAll('.radio-opt').forEach(opt => {
+        opt.onclick = () => {
+          list.querySelectorAll('.radio-opt').forEach(o => o.classList.remove('sel'));
+          opt.classList.add('sel');
+          this.responses[qid] = opt.dataset.val;
+        };
+      });
+    });
+
+    // multi_select
+    document.querySelectorAll('.chip-grid').forEach(grid => {
+      const qid = grid.dataset.qid;
+      this.responses[qid] = [];
+      grid.querySelectorAll('.chip').forEach(chip => {
+        chip.onclick = () => {
+          chip.classList.toggle('sel');
+          this.responses[qid] = Array.from(grid.querySelectorAll('.chip.sel')).map(c => c.dataset.val);
+        };
+      });
+    });
+
+    // textarea
+    document.querySelectorAll('textarea').forEach(ta => {
+      ta.onchange = () => this.responses[ta.id] = ta.value;
+    });
+  }
+
+  updateSummary() {
+    const summary = `${this.responses.class || '（未選擇）'} · 座號 ${this.responses.seat || '--'} · ${this.responses.name || '（未填寫）'}`;
+    const el = document.getElementById('summary-text');
+    if (el) el.textContent = summary;
+  }
+
+  goToStep(step) {
+    // Save step1 inputs
+    if (this.currentStep === 1) {
+      this.responses.class = document.getElementById('class')?.value || '';
+      this.responses.seat = document.getElementById('seat')?.value || '';
+      this.responses.name = document.getElementById('name')?.value || '';
+    }
+    this.currentStep = step;
+    this.render();
+  }
+
+  initSignaturePad() {
+    const canvas = document.getElementById('pad');
+    const ctx = canvas.getContext('2d');
+    let drawing = false, last = null;
+
+    // Draw ghost text
+    ctx.fillStyle = '#C9DCEE';
+    ctx.font = '700 140px "Noto Sans TC", sans-serif';
+    ctx.textBaseline = 'middle';
+    const name = this.responses.name || '簽名';
+    const totalW = ctx.measureText(name).width;
+    let x = (canvas.width - totalW) / 2;
+    for (const ch of name) {
+      ctx.fillText(ch, x, canvas.height / 2);
+      x += ctx.measureText(ch).width;
+    }
+
+    canvas.onpointerdown = e => { drawing = true; last = this.canvasPos(canvas, e); };
+    canvas.onpointermove = e => {
+      if (!drawing) return;
+      const p = this.canvasPos(canvas, e);
+      ctx.strokeStyle = '#152238';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      last = p;
+    };
+    canvas.onpointerup = () => drawing = false;
+  }
+
+  canvasPos(canvas, e) {
+    const r = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / r.width, scaleY = canvas.height / r.height;
+    return {x: (e.clientX - r.left) * scaleX, y: (e.clientY - r.top) * scaleY};
+  }
+
+  clearPad() {
+    const canvas = document.getElementById('pad');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    this.initSignaturePad();
+  }
+}
+
+// 初始化
+const renderer = new FormRenderer(FORM_CONFIG);
+renderer.init();
+</script>
+</body>
+</html>
