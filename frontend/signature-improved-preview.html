@@ -163,16 +163,16 @@
   .cta-bar{
     position:sticky; left:0; right:0; bottom:0;
     background:linear-gradient(0deg, var(--paper) 60%, rgba(251,250,247,0));
-    padding:22px 20px 20px; display:flex; gap:10px;
+    padding:16px 20px 16px; display:flex; gap:8px;
   }
   .btn{
-    flex:1; padding:14px; border-radius:11px; border:none;
-    font-size:15px; font-weight:700; font-family:var(--font-cjk); cursor:pointer;
+    flex:1; padding:11px; border-radius:10px; border:none;
+    font-size:14px; font-weight:700; font-family:var(--font-cjk); cursor:pointer;
   }
-  .btn-prev{background:#fff; border:1.5px solid var(--line); color:#5C6C81; flex:0 0 92px;}
+  .btn-prev{background:#fff; border:1.5px solid var(--line); color:#5C6C81; flex:0 0 78px;}
   .btn-next{
     background:var(--signal); color:#fff;
-    box-shadow:0 8px 18px rgba(255,90,31,.35);
+    box-shadow:0 6px 14px rgba(255,90,31,.3);
   }
   .btn-next:active{transform:translateY(1px);}
 
@@ -186,9 +186,8 @@
     flex-direction:column;
     align-items:center;
     justify-content:flex-start;
-    padding:0;
+    padding:10px;
     overflow:hidden;
-    margin:0;
   }
   .fullscreen-modal.active{display:flex;}
 
@@ -196,25 +195,17 @@
     border:none; border-radius:0;
     background:#0A0A0A;
     cursor:crosshair; touch-action:none;
-    width:100vw;
-    height:100vh;
-    display:block;
+    max-width:100vw;
+    max-height:calc(100vh - 64px);
   }
 
   .fs-button-group{
-    position:fixed; bottom:10px; left:50%; transform:translateX(-50%);
+    position:fixed; bottom:8px; left:50%; transform:translateX(-50%);
     display:flex; gap:10px; z-index:10001;
   }
   .btn-clear-fs, .btn-confirm-fs{
-    padding:8px 14px; font-size:13px; border:none; border-radius:8px;
+    padding:7px 12px; font-size:12px; border:none; border-radius:8px;
     cursor:pointer; font-weight:700; font-family:var(--font-cjk); transition:.15s;
-  }
-  
-  /* 橫置時縮小按鈕（寬高比 > 1.2） */
-  @media (orientation: landscape) {
-    .btn-clear-fs, .btn-confirm-fs{
-      padding:6px 10px; font-size:11px;
-    }
   }
   .btn-clear-fs{background:#fff; color:var(--steel-deep);}
   .btn-clear-fs:hover{background:#eee;}
@@ -328,9 +319,20 @@
     const height = canvas.height / (window.devicePixelRatio || 1);
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#B9C7D8';
-    ctx.font = 'bold 30px "Noto Sans TC","Microsoft JhengHei",sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+
+    // 動態計算字級，讓姓名文字寬度佔滿畫布約 85%（而非固定字級，避免在較寬畫布時顯得過小）
+    const targetWidth = width * 0.85;
+    let fontSize = Math.min(height * 0.7, 100); // 先給一個以高度為上限的起始值
+    ctx.font = `bold ${fontSize}px "Noto Sans TC","Microsoft JhengHei",sans-serif`;
+    let measured = ctx.measureText(STUDENT_NAME).width;
+    if (measured > 0) {
+      fontSize = fontSize * (targetWidth / measured);
+      fontSize = Math.min(fontSize, height * 0.75); // 避免字級超出畫布高度
+      ctx.font = `bold ${fontSize}px "Noto Sans TC","Microsoft JhengHei",sans-serif`;
+    }
+
     ctx.fillText(STUDENT_NAME, width / 2, height / 2);
   }
 
@@ -357,14 +359,16 @@
     canvas.onpointermove = e => {
       if (!drawing) return;
       const p = canvasPos(canvas, e);
-      const dpr = window.devicePixelRatio || 1;
+      // 注意：ctx 已在 resizeCanvasToDisplaySize() 套用 scale(dpr,dpr)，
+      // 此處座標與線寬都必須用「CSS 像素」單位，不可再乘 dpr（否則會造成雙重縮放，
+      // 導致筆跡與觸摸點位置偏移、且視覺上被放大）
       ctx.strokeStyle = '#152238';
-      ctx.lineWidth = PEN_VISUAL_WIDTH_PX * dpr;
+      ctx.lineWidth = PEN_VISUAL_WIDTH_PX;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
-      ctx.moveTo(last.x * dpr, last.y * dpr);
-      ctx.lineTo(p.x * dpr, p.y * dpr);
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(p.x, p.y);
       ctx.stroke();
       last = p;
     };
@@ -403,122 +407,19 @@
   let fsHasSignature = false;
   let fsLast = { x: 0, y: 0 };
   let fsResizeHandlerBound = false;
-  let fsLastCssWidth = 0;
-  let fsLastCssHeight = 0;
-  let fsResizeDebounceTimer = null;
-
-  // 主要墨跡快照：只在使用者實際畫線後更新，永遠保持「未經多次重繪」的最高品質版本
-  // 轉向時一律從這份快照重繪，而不是從上一次已經被縮放過的畫面複製，避免世代性失真累積
-  let fsMasterCanvas = null;
-  let fsMasterBBox = null;   // 主快照中的墨跡邊界框（device px，相對於 fsMasterCanvas）
-  let fsMasterDpr = 1;       // 擷取主快照當下的 devicePixelRatio
 
   function sizeFullscreenCanvas() {
     const dpr = window.devicePixelRatio || 1;
+    const buttonHeight = 64;
     fsPad.width = window.innerWidth * dpr;
-    fsPad.height = window.innerHeight * dpr;
+    fsPad.height = (window.innerHeight - buttonHeight) * dpr;
     fsCtx.scale(dpr, dpr);
   }
 
-  function adjustButtonsForOrientation() {
-    const isLandscape = window.innerWidth > window.innerHeight;
-    const buttonGroup = document.querySelector('.fs-button-group');
-    
-    if (isLandscape) {
-      // 橫置：按鈕縮小
-      buttonGroup.style.bottom = '8px';
-      document.querySelectorAll('.btn-clear-fs, .btn-confirm-fs').forEach(btn => {
-        btn.style.padding = '5px 10px';
-        btn.style.fontSize = '11px';
-      });
-    } else {
-      // 豎置：按鈕恢復原大小
-      buttonGroup.style.bottom = '10px';
-      document.querySelectorAll('.btn-clear-fs, .btn-confirm-fs').forEach(btn => {
-        btn.style.padding = '8px 14px';
-        btn.style.fontSize = '13px';
-      });
-    }
-  }
-
-  // 掃描畫布找出實際墨跡的邊界框（緊貼筆跡範圍，非整張畫布）
-  function getInkBoundingBox(canvasEl) {
-    const w = canvasEl.width, h = canvasEl.height;
-    if (w === 0 || h === 0) return null;
-    let imageData;
-    try {
-      imageData = canvasEl.getContext('2d').getImageData(0, 0, w, h);
-    } catch (e) {
-      return null;
-    }
-    const data = imageData.data;
-    let minX = w, maxX = 0, minY = h, maxY = 0, found = false;
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i + 3] > 20) { // 有可見墨跡（含反鋸齒邊緣）
-        found = true;
-        const idx = i / 4;
-        const x = idx % w, y = Math.floor(idx / w);
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-      }
-    }
-    return found ? { minX, maxX, minY, maxY } : null;
-  }
-
-  // 使用者剛畫完一筆時呼叫：把目前畫布（手繪原始品質，未經任何縮放重繪）存為主快照
-  function updateMasterSnapshot() {
-    const bbox = getInkBoundingBox(fsPad);
-    if (!bbox) return;
-    const master = document.createElement('canvas');
-    master.width = fsPad.width;
-    master.height = fsPad.height;
-    master.getContext('2d').drawImage(fsPad, 0, 0);
-    fsMasterCanvas = master;
-    fsMasterBBox = bbox;
-    fsMasterDpr = window.devicePixelRatio || 1;
-  }
-
-  // 轉向/尺寸變化時呼叫：一律從主快照（原始無損版本）重新定位繪製，避免重複重繪造成的品質流失
   function initFullscreenSignature() {
-    const dpr = window.devicePixelRatio || 1;
-    const newCssWidth = window.innerWidth;
-    const newCssHeight = window.innerHeight;
-
-    // 若尺寸沒有實質變化，跳過（避免軟鍵盤/瀏覽器工具列微幅變動誤觸發）
-    if (Math.abs(newCssWidth - fsLastCssWidth) < 2 && Math.abs(newCssHeight - fsLastCssHeight) < 2 && fsPad.width > 0) {
-      return;
-    }
-
-    // 重新設定畫布尺寸（此動作會自動清空畫布）
     sizeFullscreenCanvas();
-
-    if (fsHasSignature && fsMasterCanvas && fsMasterBBox) {
-      const bboxWCss = Math.round((fsMasterBBox.maxX - fsMasterBBox.minX) / fsMasterDpr);
-      const bboxHCss = Math.round((fsMasterBBox.maxY - fsMasterBBox.minY) / fsMasterDpr);
-      // 只有當墨跡尺寸大於新畫面可用空間時才縮小，否則保持原始大小（=1，整數像素、無損複製）
-      let scale = Math.min(1, newCssWidth / bboxWCss, newCssHeight / bboxHCss);
-      if (scale > 0.98) scale = 1;
-
-      const drawWCss = Math.round(bboxWCss * scale);
-      const drawHCss = Math.round(bboxHCss * scale);
-      const offsetXCss = Math.round((newCssWidth - drawWCss) / 2);
-      const offsetYCss = Math.round((newCssHeight - drawHCss) / 2);
-
-      // scale=1 時關閉平滑，做到真正的整數像素無損複製；需要縮小時才開平滑以求畫質
-      fsCtx.imageSmoothingEnabled = (scale !== 1);
-
-      fsCtx.drawImage(
-        fsMasterCanvas,
-        fsMasterBBox.minX, fsMasterBBox.minY,
-        fsMasterBBox.maxX - fsMasterBBox.minX, fsMasterBBox.maxY - fsMasterBBox.minY,
-        offsetXCss, offsetYCss, drawWCss, drawHCss
-      );
-    }
-
-    fsLastCssWidth = newCssWidth;
-    fsLastCssHeight = newCssHeight;
+    fsCtx.clearRect(0, 0, fsPad.width / (window.devicePixelRatio || 1), fsPad.height / (window.devicePixelRatio || 1));
+    fsHasSignature = false;
 
     fsPad.onpointerdown = e => {
       fsDrawing = true;
@@ -532,73 +433,46 @@
       if (!fsDrawing) return;
       const rect = fsPad.getBoundingClientRect();
       const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-      const dpr2 = window.devicePixelRatio || 1;
-      fsCtx.imageSmoothingEnabled = true;
+      // 同上：fsCtx 已套用 scale(dpr,dpr)，這裡一律用 CSS 像素座標，不可再乘 dpr
       fsCtx.strokeStyle = '#FFFFFF';
-      fsCtx.lineWidth = PEN_VISUAL_WIDTH_PX * dpr2;
+      fsCtx.lineWidth = PEN_VISUAL_WIDTH_PX;
       fsCtx.lineCap = 'round';
       fsCtx.lineJoin = 'round';
       fsCtx.beginPath();
-      fsCtx.moveTo(fsLast.x * dpr2, fsLast.y * dpr2);
-      fsCtx.lineTo(p.x * dpr2, p.y * dpr2);
+      fsCtx.moveTo(fsLast.x, fsLast.y);
+      fsCtx.lineTo(p.x, p.y);
       fsCtx.stroke();
       fsLast = p;
     };
 
-    const stopFsDrawing = () => {
-      if (!fsDrawing) return;
-      fsDrawing = false;
-      updateMasterSnapshot(); // 畫完這一筆，立即更新主快照（原始最高品質）
-    };
+    const stopFsDrawing = () => { if (!fsDrawing) return; fsDrawing = false; };
     fsPad.onpointerup = stopFsDrawing;
     fsPad.onpointercancel = stopFsDrawing;
     fsPad.onpointerleave = stopFsDrawing;
   }
 
-  // 統一的 debounce 處理函數，避免 orientationchange + resize 重複觸發造成多次 init
-  function handleFsResize() {
-    if (!fsModal.classList.contains('active')) return;
-    clearTimeout(fsResizeDebounceTimer);
-    fsResizeDebounceTimer = setTimeout(() => {
-      initFullscreenSignature();
-      adjustButtonsForOrientation();
-    }, 300);
-  }
-
   function enterFullscreenSignature() {
-    console.log('📱 enterFullscreenSignature() 被調用');
     fsModal.classList.add('active');
 
-    // 立即呼叫 Fullscreen API，隱藏瀏覽器網址列和控制項
     const requestFS = fsModal.requestFullscreen ||
                      fsModal.webkitRequestFullscreen ||
                      fsModal.mozRequestFullScreen ||
                      fsModal.msRequestFullscreen;
-    
     if (requestFS) {
-      console.log('✅ Fullscreen API 可用，嘗試調用...');
-      requestFS.call(fsModal)
-        .then(() => {
-          console.log('✅ Fullscreen 成功進入');
-        })
-        .catch(err => {
-          console.log('❌ Fullscreen API 呼叫失敗：', err.message);
-          console.log('   可能原因：iOS Safari 限制、用戶未授權、或瀏覽器政策');
-        });
-    } else {
-      console.log('❌ Fullscreen API 不可用（瀏覽器不支援）');
+      requestFS.call(fsModal).catch(() => {
+        console.log('Fullscreen API 不可用或被拒絕，改用 CSS 模擬');
+      });
     }
 
     if (!fsResizeHandlerBound) {
-      window.addEventListener('orientationchange', handleFsResize);
-      window.addEventListener('resize', handleFsResize);
+      window.addEventListener('orientationchange', () => setTimeout(initFullscreenSignature, 350));
+      window.addEventListener('resize', () => {
+        if (fsModal.classList.contains('active')) setTimeout(initFullscreenSignature, 150);
+      });
       fsResizeHandlerBound = true;
     }
 
-    setTimeout(() => {
-      initFullscreenSignature();
-      adjustButtonsForOrientation();
-    }, 50);
+    setTimeout(initFullscreenSignature, 50);
   }
 
   function exitFullscreenSignature() {
@@ -615,8 +489,6 @@
     fsCtx.clearRect(0, 0, fsPad.width / dpr, fsPad.height / dpr);
     fsHasSignature = false;
     fsDrawing = false;
-    fsMasterCanvas = null;
-    fsMasterBBox = null;
   }
 
   function captureFinalSignature(source) {
