@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>雄工汽車科 | 首頁 UI 設計稿</title>
+  <style>
+    :root {
+      --primary: #b91c1c;      /* 工業紅 */
+      --primary-dark: #7f1d1d;
+      --accent: #f59e0b;       /* 能源黃 */
+      --dark: #0f172a;         /* 深藍灰 */
+      --text: #334155;
+      --bg: #f8fafc;
+      --white: #ffffff;
+      --radius: 12px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.7;
+    }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    img { max-width: 100%; display: block; }
+
+    /* 頂部資訊列 */
+    .topbar {
+      background: var(--dark);
+      color: #cbd5e1;
+      font-size: .9rem;
+      padding: .4rem 1rem;
+    }
+    .topbar .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; }
+
+    /* 導覽列 */
+    header {
+      background: var(--white);
+      box-shadow: 0 2px 0 rgba(0,0,0,.05);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-wrap { display: flex; justify-content: space-between; align-items: center; padding: .75rem 1rem; }
+    .logo {
+      font-size: 1.45rem; font-weight: 800; color: var(--primary);
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .logo svg { width: 32px; height: 32px; }
+    .nav-links { display: flex; flex-wrap: wrap; gap: .2rem; }
+    .nav-links a {
+      padding: .45rem .9rem; border-radius: 999px; font-size: .92rem; font-weight: 600;
+      transition: .2s;
+    }
+    .nav-links a:hover { background: #fee2e2; color: var(--primary); }
+    .nav-links .active { background: var(--primary); color: var(--white); }
+    .mobile-toggle { display: none; background: none; border: none; cursor: pointer; }
+
+    /* 英雄區 */
+    .hero {
+      position: relative; overflow: hidden;
+      background: linear-gradient(120deg, #0f172a 0%, #1e293b 60%, #334155 100%);
+      color: var(--white); padding: 5rem 1rem 6rem;
+    }
+    .hero::after {
+      content: ""; position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: .5;
+    }
+    .hero .container { position: relative; z-index: 1; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin: 0 0 1rem; line-height: 1.25; }
+    .hero p.lead { font-size: 1.15rem; max-width: 640px; color: #cbd5e1; margin-bottom: 2rem; }
+    .hero-btns { display: flex; flex-wrap: wrap; gap: .8rem; margin-bottom: 2.5rem; }
+    .btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .75rem 1.6rem; border-radius: var(--radius); font-weight: 700;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .btn-primary { background: var(--primary); color: var(--white); }
+    .btn-outline { border: 2px solid var(--white); color: var(--white); }
+    .btn-ghost { background: #f1f5f9; color: var(--dark); }
+    .highlights { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; max-width: 640px; }
+    .hl { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius); padding: 1rem; text-align: center; }
+    .hl strong { display: block; color: var(--accent); font-size: 1.4rem; }
+
+    /* 容器 */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+    section { padding: 4rem 0; }
+    section:nth-child(even) { background: var(--white); }
+    .section-title {
+      font-size: 1.9rem; color: var(--dark); margin: 0 0 .4rem;
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .section-sub { color: #64748b; margin-bottom: 2rem; }
+    .section-title .bar {
+      display: inline-block; width: 6px; height: 1.4em; background: var(--primary); border-radius: 3px;
+    }
+
+    /* 最新消息 */
+    .news-list { display: grid; gap: .85rem; }
+    .news-item {
+      background: var(--white); border-left: 4px solid var(--primary);
+      box-shadow: var(--shadow); border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem;
+    }
+    .news-date { white-space: nowrap; color: var(--primary); font-weight: 800; min-width: 100px; }
+    .news-tag { font-size: .75rem; background: #fee2e2; color: var(--primary-dark); padding: .15rem .5rem; border-radius: 999px; margin-left: auto; }
+
+    /* 快速連結 */
+    .quick-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+    .ql { background: var(--white); border-radius: var(--radius); padding: 1.5rem; text-align: center; box-shadow: var(--shadow); transition: .2s; }
+    .ql:hover { transform: translateY(-4px); border-bottom: 4px solid var(--primary); }
+    .ql svg { width: 42px; height: 42px; margin: 0 auto .8rem; color: var(--primary); }
+    .ql h3 { margin: 0; font-size: 1.1rem; color: var(--dark); }
+
+    /* 格狀區塊 */
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+    .card {
+      background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .card .pic { height: 160px; background: #e2e8f0; display: grid; place-items: center; color: #94a3b8; font-size: .9rem; }
+    .card .body { padding: 1.25rem; }
+    .card h3 { margin: 0 0 .5rem; color: var(--dark); }
+    .card p { margin: 0; font-size: .95rem; }
+    .badge { display: inline-block; font-size: .78rem; font-weight: 700; background: #f1f5f9; color: #475569; padding: .2rem .6rem; border-radius: 999px; margin: .4rem .4rem 0 0; }
+
+    /* 學生園地 */
+    .award-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem; }
+    .award-card h4 { margin: 0 0 .3rem; color: var(--primary); font-size: 1.05rem; }
+    .award-card .date { color: #94a3b8; font-size: .85rem; }
+
+    /* 聯絡 */
+    .contact { background: var(--dark); color: #cbd5e1; }
+    .contact .section-title { color: var(--white); }
+    .contact .section-sub { color: #94a3b8; }
+    .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+    .contact-item { display: flex; align-items: flex-start; gap: .8rem; }
+    .contact-item svg { color: var(--accent); flex-shrink: 0; }
+    .contact-item h4 { color: var(--white); margin: 0 0 .2rem; }
+
+    footer {
+      background: #020617; color: #94a3b8; text-align: center; padding: 1.5rem 1rem; font-size: .9rem;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; flex-direction: column; width: 100%; padding-top: .5rem; }
+      .nav-links.open { display: flex; }
+      .mobile-toggle { display: block; }
+      .nav-wrap { flex-wrap: wrap; }
+      .news-item { flex-direction: column; align-items: flex-start; gap: .4rem; }
+      .news-tag { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="container">
+      <span>📞 07-3815366 轉 2245</span>
+      <span>雄工汽車科官方網站</span>
+    </div>
+  </div>
+
+  <header>
+    <div class="container">
+      <div class="nav-wrap">
+        <a class="logo" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v-2.6a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4V16"/><path d="M8 13h8v7H8z"/><circle cx="8.5" cy="19.5" r="1.5"/><circle cx="15.5" cy="19.5" r="1.5"/><path d="M6 13h12"/></svg>
+          雄工汽車科
+        </a>
+        <button class="mobile-toggle" aria-label="開啟選單" onclick="document.getElementById('nav').classList.toggle('open')">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <nav id="nav" class="nav-links">
+          <a class="active" href="#home">首頁</a>
+          <a href="#intro">本科簡介</a>
+          <a href="#course">課程資訊</a>
+          <a href="#equip">教學設備</a>
+          <a href="#cert">證照專區</a>
+          <a href="#student">學生園地</a>
+          <a href="#career">升學就業</a>
+          <a href="#contact">聯絡我們</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <section id="home" class="hero">
+    <div class="container">
+      <h1>歡迎蒞臨 雄工汽車科</h1>
+      <p class="lead">培育具備電動車技術、智慧車輛診斷與丙乙級證照的汽車修護專業人才。理論與實務並重，產學鏈結接軌未來。</p>
+      <div class="hero-btns">
+        <a class="btn btn-primary" href="#intro">認識本科</a>
+        <a class="btn btn-outline" href="#course">瀏覽課程</a>
+        <a class="btn btn-ghost" href="#contact">聯絡科辦</a>
+      </div>
+      <div class="highlights">
+        <div class="hl"><strong>57+</strong>年設科沿革</div>
+        <div class="hl"><strong>98%</strong>升學率目標</div>
+        <div class="hl"><strong>丙/乙級</strong>證照輔導</div>
+        <div class="hl"><strong>產學</strong>建教合作</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2 class="section-title"><span class="bar"></span>最新消息</h2>
+      <p class="section-sub">汽車科大紀事與重要公告</p>
+      <div class="news-list">
+        <div class="news-item"><span class="news-date">2026.06.24</span><span>本校電動車推廣中心辦理電動車高壓電系統檢修教師研習</span><span class="news-tag">研習</span></div>
+        <div class="news-item"><span class="news-date">2026.05.28</span><span>感謝屏東科技大學車輛工程系王主任蒞臨指導高三學生模擬面試</span><span class="news-tag">升學</span></div>
+        <div class="news-item"><span class="news-date">2025.12.12</span><span>恭賀本科學生榮獲全國高級中等學校技藝競賽汽車修護職類優勝第18名</span><span class="news-tag">競賽</span></div>
+        <div class="news-item"><span class="news-date">2025.07.30</span><span>本校電動車推廣中心辦理電動車系統原理與實務教師研習</span><span class="news-tag">研習</span></div>
+        <div class="news-item"><span class="news-date">2024.07.09</span><span>感謝裕昌汽車捐贈 NISSAN VC-TURBO 可變壓縮比引擎供教學使用</span><span class="news-tag">設備</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#fff;">
+    <div class="container">
+      <h2 class="section-title"><span class="bar"></span>快速連結</h2>
+      <p class="section-sub">學生、家長、訪客最常查詢的入口</p>
+      <div class="quick-links">
+        <a class="ql" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <h3>招生資訊</h3>
+        </a>
+        <a class="ql" href="#cert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15l-3-3 3-3"/><path d="M4 6V4h16v2"/><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 15v4"/><path d="M9 19h6"/></svg>
+          <h3>證照專區</h3>
+        </a>
+        <a class="ql" href="#course">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <h3>課程資訊</h3>
+        </a>
+        <a class="ql" href="#equip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.9-3.9a1 1 0 0 0 0-1.4l-1.6-1.6a1 1 0 0 0-1.4 0z"/><path d="M4 20a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M4 13h6"/></svg>
+          <h3>實習工場</h3>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="intro">
+    <div class="container">
+      <h2 class="section-title"><span class="bar"></span>本科簡介</h2>
+      <p class="section-sub">沿革、願景與教育目標</p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="body">
+            <h3>沿革與願景</h3>
+            <p>本科設立逾半世紀，致力於培養汽車修護專業技術人才，近年更積極導入電動車與智慧車輛診斷技術，接軌產業趨勢。</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="body">
+            <h3>教育目標</h3>
+            <p>對應 108 課綱，培養學生具備汽車引擎、底盤、電系、綜合實習等核心能力，並輔導考取國家證照與順利升學。</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="body">
+            <h3>科系特色</h3>
+            <p>電動車技術、智慧車輛診斷、產學合作、建教合作，結合理論與實作，打造產業即戰力。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="course" style="background:#fff;">
+    <div class="container">
+      <h2 class="section-title"><span class="bar"></span>課程資訊</h2>
+      <p class="section-sub">三年課程地圖與實習科目</p>
+      <div class="grid-3">
+        <div class="card"><div class="pic">課程地圖示意</div><div class="body"><h3>課程地圖</h3><p>三年一貫規劃，涵蓋部定必修、校訂必修與選修。</p><span class="badge">108課綱</span></div></div>
+        <div class="card"><div class="pic">實習科目示意</div><div class="body"><h3>實習科目</h3><p>引擎、底盤、電系、綜合實習，分階段強化實作能力。</p><span class="badge">丙乙級導向</span></div></div>
+        <div class="card"><div class="pic">教學評量示意</div><div class="body"><h3>教學評量</h3><p>平時表現、術科測驗與證照模擬，落實多元評量。</p><span class="badge">多元評量</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="equip">
+    <div class="container">
+      <h2 class="section-title"><span class="bar"></span>教學設備</h2>
+      <p class="section-sub">實習工場介紹與設備清單</p>
+      <div class="grid-3">
+        <div class="card"><div class="pic">引擎實習台</div><div class="body"><h3>引擎實習台</h3><p>配備可運轉引擎，供學生進行拆裝與檢修實作。</p></div></div>
+        <div class="card"><div class="pic">診斷電腦</div><div class="body"><h3>診斷電腦</h3><p>各廠牌專用與通用型診斷儀器，培養智慧診斷能力。</p></div></div>
+        <div class="card"><div class="pic">頂車機與設備</div><div class="body"><h3>頂車機設備</h3><p>安全舉升、定位與拆裝底盤系統，符合職場需求。</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cert" style="background:#fff;">
+    <div class="container">
+      <h2 class="section-title"><span class="bar"></span>證照專區</h2>
+      <p class="section-sub">汽車修護丙級／乙級與相關檢定</p>
+      <div class="grid-2">
+        <div class="award-card">
+          <h4>汽車修護丙級／乙級</h4>
+          <p>本科重點輔導證照，透過術科反覆練習與學科題庫，提升通過率。</p>
+          <span class="badge">丙級</span><span class="badge">乙級</span>
+        </div>
+        <div class="award-card">
+          <h4>機器腳踏車修護、氣壓等相關檢定</h4>
+          <p>擴充多元技能，取得機車與氣壓相關專業證照。</p>
+          <span class="badge">機車修護</span><span class="badge">氣壓</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="student">
+    <div class="container">
+      <h2 class="section-title"><span class="bar"></span>學生園地</h2>
+      <p class="section-sub">競賽成果、專題作品與優秀校友</p>
+      <div class="grid-2">
+        <div class="award-card">
+          <h4>全國高級中等學校學生技藝競賽</h4>
+          <p class="date">2025.12.12</p>
+          <p>本科學生榮獲 114 學年度工業類技藝競賽汽車修護職類優勝第 18 名。</p>
+        </div>
+        <div class="award-card">
+          <h4>全國技能競賽南區初賽</h4>
+          <p class="date">2022.12.06</p>
+          <p>學生獲得第 52 屆全國技能競賽南區初賽汽車修護類優勝。</p>
+        </div>
+        <div class="award-card">
+          <h4>自動停車塔專題競賽</h4>
+          <p class="date">2024.05.07</p>
+          <p>參加教育部專題實作及創意競賽，榮獲專題組動力機械群佳作。</p>
+        </div>
+        <div class="award-card">
+          <h4>全國學生自製船模大賽</h4>
+          <p class="date">2022</p>
+          <p>學生自製船模競賽中獲得第一名、第三名及創意設計評審獎。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="career" style="background:#fff;">
+    <div class="container">
+      <h2 class="section-title"><span class="bar"></span>升學與就業</h2>
+      <p class="section-sub">四技二專榜單、就業出路與產學合作</p>
+      <div class="grid-2">
+        <div class="card"><div class="body"><h3>升學榜單</h3><p>歷年考取國立科技大學與四技二專榜單，持續更新中。</p><a class="btn btn-primary" style="margin-top:1rem" href="#">查看榜單</a></div></div>
+        <div class="card"><div class="body"><h3>產學合作廠商</h3><p>高都汽車、匯豐汽車、裕昌汽車、上正汽車等多家企業合作，提供實習與就業機會。</p><span class="badge">職場學習</span><span class="badge">建教合作</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="container">
+      <h2 class="section-title"><span class="bar" style="background:var(--accent)"></span>聯絡我們</h2>
+      <p class="section-sub">歡迎家長、學生、校友或訪客與我們聯繫</p>
+      <div class="contact-grid">
+        <div class="contact-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.56 12.56 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.56 12.56 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <div><h4>科辦電話</h4><p>07-3815366 轉 2245</p></div>
+        </div>
+        <div class="contact-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <div><h4>電子信箱</h4><p>ksvs____@ksvs.kh.edu.tw</p></div>
+        </div>
+        <div class="contact-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div><h4>學校地址</h4><p>高雄市三民區建工路 218 號（暫列）</p></div>
+        </div>
+        <div class="contact-item">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          <div><h4>社群連結</h4><p>Facebook / YouTube / LINE 官方帳號</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 雄工汽車科 科網設計稿 | 僅供視覺確認，後續再進行後端開發</p>
+  </footer>
+
+</body>
+</html>

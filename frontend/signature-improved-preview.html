@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>課程諮詢紀錄表 - 簽名測試</title>
+<style>
+  :root{
+    --ink:#152238;
+    --steel:#1E3A5F;
+    --steel-deep:#0F2540;
+    --steel-pale:#E8EEF5;
+    --line:#D7E0EA;
+    --signal:#FF5A1F;
+    --signal-dim:#FFE7DB;
+    --paper:#FBFAF7;
+    --ok:#1E7A4C;
+    --font-cjk: "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--steel-deep);font-family:var(--font-cjk);color:var(--ink);}
+  body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 20% -10%, #2A4C74 0%, transparent 45%),
+      var(--steel-deep);
+  }
+  .device{
+    width:100%;
+    max-width:460px;
+    min-height:100vh;
+    background:var(--paper);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 0 60px rgba(0,0,0,.4);
+  }
+
+  header{
+    background:linear-gradient(135deg, var(--steel-deep), var(--steel) 70%);
+    color:#fff;
+    padding:20px 20px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute; right:-30px; top:-30px;
+    width:160px; height:160px; border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.08);
+  }
+  .eyebrow{
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:#9FC1E0; font-weight:600; margin:0 0 4px;
+  }
+  h1{
+    font-size:19px; margin:0 0 14px; font-weight:700; line-height:1.4;
+    position:relative;
+  }
+  .gauge-track{
+    display:flex; gap:5px; position:relative;
+  }
+  .gauge-track i{
+    flex:1; height:4px; border-radius:2px;
+    background:rgba(255,255,255,.18);
+    overflow:hidden;
+  }
+  .gauge-track i span{
+    display:block; height:100%; width:0%;
+    background:var(--signal);
+    transition:width .4s ease;
+  }
+  .gauge-track i.done span{width:100%;}
+  .gauge-track i.active span{width:55%;}
+  .step-label{
+    margin-top:8px; font-size:12px; color:#C9DCEE; letter-spacing:.02em;
+  }
+  .step-label b{color:#fff;}
+
+  main{flex:1; padding:22px 20px 110px; overflow-y:auto;}
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:20px 18px; margin-bottom:16px;
+  }
+  .sig-wrap{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px;}
+  
+  .sig-label{
+    font-size:13px;color:#5C6C81;margin:0 0 10px;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .sig-label b{color:var(--steel-deep);}
+
+  .sig-canvas-container{
+    width:100%;
+    height:280px;
+    position:relative;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:var(--paper);
+    overflow:hidden;
+    margin-bottom:12px;
+  }
+
+  /* 點擊放大簽名 - 小型文字按鈕（右上角） */
+  .fullscreen-hint-btn{
+    background:#fff;
+    border:1.5px solid var(--signal);
+    color:var(--signal);
+    padding:6px 12px;
+    border-radius:16px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:all 0.2s;
+    font-family:var(--font-cjk);
+  }
+  .fullscreen-hint-btn:hover{
+    background:var(--signal-dim);
+  }
+  .fullscreen-hint-btn:active{
+    transform:scale(0.96);
+  }
+  .fullscreen-hint-btn.hidden{
+    visibility:hidden;
+  }
+
+  #pad{
+    width:100%; height:100%; display:block;
+    touch-action:none;
+    cursor:crosshair;
+  }
+
+  /* 全螢幕簽名模式 - 任何方向皆可簽名，橫向僅為建議 */
+  .fullscreen-modal{
+    display:none;
+    position:fixed;
+    top:0; left:0; right:0; bottom:0;
+    background:#000;
+    z-index:9999;
+    flex-direction:column;
+  }
+  .fullscreen-modal.active{
+    display:flex;
+  }
+
+  .fullscreen-modal header{
+    padding:12px 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--steel-deep);
+    position:relative;
+    z-index:10001;
+  }
+  .fullscreen-modal header h2{
+    margin:0;
+    font-size:16px;
+    color:#fff;
+  }
+  .fullscreen-modal .close-btn{
+    background:#fff;
+    border:none;
+    border-radius:50%;
+    width:40px;
+    height:40px;
+    font-size:24px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    z-index:10002;
+    padding:0;
+    flex-shrink:0;
+  }
+  .fullscreen-modal .close-btn:hover{
+    background:#e0e0e0;
+  }
+
+  .fullscreen-modal canvas{
+    flex:1;
+    display:block;
+    background:#000;
+    touch-action:none;      /* 關鍵修正：防止手機瀏覽器把觸控當成滑動手勢，導致簽名中斷 */
+    -webkit-user-select:none;
+    user-select:none;
+  }
+
+  .fullscreen-modal{
+    touch-action:none;      /* 整個全螢幕容器也鎖定，避免橡皮筋滾動干擾 */
+  }
+
+  .fullscreen-modal .actions{
+    background:var(--steel-deep);
+    padding:12px;
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    position:relative;
+    z-index:10001;
+  }
+  .fullscreen-modal .actions button{
+    padding:10px 20px;
+    border-radius:8px;
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+    font-size:13px;
+  }
+  .btn-clear-fs{
+    background:#fff;
+    color:var(--steel-deep);
+  }
+  .btn-confirm-fs{
+    background:var(--signal);
+    color:#fff;
+  }
+
+  .sig-actions{display:flex; gap:10px; margin-bottom:12px;}
+
+  .cta-bar{
+    position:absolute; left:0; right:0; bottom:0;
+    background:linear-gradient(0deg, var(--paper) 60%, rgba(251,250,247,0));
+    padding:22px 20px 20px; display:flex; gap:10px;
+  }
+  .btn{
+    flex:1; padding:14px; border-radius:11px; border:none;
+    font-size:15px; font-weight:700; font-family:var(--font-cjk); cursor:pointer;
+  }
+  .btn-prev{background:#fff; border:1.5px solid var(--line); color:#5C6C81;}
+  .btn-next{
+    background:var(--signal); color:#fff;
+    box-shadow:0 8px 18px rgba(255,90,31,.35);
+  }
+  .btn-next:active{transform:translateY(1px);}
+
+  .hint{font-size:12.5px; color:#7C8BA0; margin:10px 0 0;}
+
+  /* 高亮度警示框：提醒學生送出後先不要關閉頁面，避免被忽略 */
+  .alert-notice{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    background:#FFF3E0;
+    border:2px solid var(--signal);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:16px;
+    box-shadow:0 2px 10px rgba(255,90,31,0.15);
+  }
+  .alert-notice-icon{
+    font-size:20px;
+    line-height:1;
+    flex-shrink:0;
+  }
+  .alert-notice p{
+    font-size:14px;
+    color:#B94A1F;
+    line-height:1.7;
+    margin:0;
+    font-weight:600;
+  }
+  .alert-notice p b{
+    color:#D9420C;
+    font-weight:800;
+    text-decoration:underline;
+  }
+
+  .q-title{
+    font-size:16px; font-weight:700; margin:0 0 6px; line-height:1.55;
+    color:var(--steel-deep);
+  }
+
+  .link-card{
+    display:flex; align-items:center; gap:10px;
+    background:var(--steel-pale); border:1px dashed #9FB6CE; border-radius:10px;
+    padding:12px 13px; font-size:13px; color:var(--steel); margin-bottom:14px;
+  }
+  .link-card .ic{
+    width:30px; height:30px; border-radius:8px; background:var(--steel);
+    color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px;
+  }
+  .link-card.disabled{
+    opacity:0.6;
+    background:#E8E8E8;
+    border-color:#CCCCCC;
+  }
+  .link-status{
+    font-size:11px;
+    color:#888;
+    margin-top:4px;
+  }
+
+  /* ===================================================================
+     響應式設計：平板 / 大螢幕自動放大版面
+     手機（預設）維持原本尺寸；當 JS 判斷（見 getDisplayTier()）目前螢幕
+     屬於「平板等級」時，會在 <body> 加上 tier-1 / tier-2 class，容器變寬，
+     文字、按鈕、簽名框等元件同步等比放大，避免在 iPad 等大螢幕上只顯示
+     「置中的手機寬度長條」，周圍留大片空白。
+
+     改用 JS 動態判斷（長寬比 + 較短邊長度）而非純 CSS 寬高像素門檻，
+     是為了正確應付以下情境（純寬度或純寬高像素門檻都無法可靠分辨）：
+     - 手機橫向：不管螢幕多大台，橫放時長寬比通常仍 > 1.6（細長形），
+       即使寬度本身很大（例如大尺寸 Android 手機），也應視為手機版面
+     - 摺疊手機的「封面螢幕」：例如 Samsung Galaxy Z Fold 系列，封面
+       螢幕是窄長條，長寬比明顯 > 1.6，不管直放橫放都應視為手機版面
+     - 摺疊手機「展開後的主螢幕」：例如 Z Fold8 展開後約 970×730
+       邏輯像素、長寬比約 1.3（接近 4:3），較短邊也充分寬裕，
+       此時才真正該視為平板版面
+     詳細判斷邏輯見 JavaScript 中的 getDisplayTier() 函式。
+     =================================================================== */
+  body.tier-1 .device,
+  body.tier-2 .device{ max-width:700px; }
+
+  body.tier-1 .eyebrow,
+  body.tier-2 .eyebrow{ font-size:13px; }
+  body.tier-1 h1,
+  body.tier-2 h1{ font-size:25px; }
+  body.tier-1 .step-label,
+  body.tier-2 .step-label{ font-size:14px; }
+
+  body.tier-1 main,
+  body.tier-2 main{ padding:30px 34px 130px; }
+  body.tier-1 .card,
+  body.tier-2 .card{ padding:26px 24px; border-radius:16px; margin-bottom:20px; }
+  body.tier-1 .q-title,
+  body.tier-2 .q-title{ font-size:19px; }
+  body.tier-1 .link-card,
+  body.tier-2 .link-card{ font-size:15px; padding:16px 17px; }
+  body.tier-1 .link-card .ic,
+  body.tier-2 .link-card .ic{ width:36px; height:36px; font-size:16px; }
+  body.tier-1 .alert-notice,
+  body.tier-2 .alert-notice{ padding:20px 22px; border-radius:16px; }
+  body.tier-1 .alert-notice-icon,
+  body.tier-2 .alert-notice-icon{ font-size:24px; }
+  body.tier-1 .alert-notice p,
+  body.tier-2 .alert-notice p{ font-size:16px; }
+  body.tier-1 .hint,
+  body.tier-2 .hint{ font-size:14.5px; }
+
+  body.tier-1 .sig-wrap,
+  body.tier-2 .sig-wrap{ padding:24px; border-radius:16px; }
+  body.tier-1 .sig-label,
+  body.tier-2 .sig-label{ font-size:15px; }
+  body.tier-1 .sig-canvas-container,
+  body.tier-2 .sig-canvas-container{ height:400px; }
+  body.tier-1 .fullscreen-hint-btn,
+  body.tier-2 .fullscreen-hint-btn{ font-size:14.5px; padding:9px 18px; }
+
+  body.tier-1 .sig-actions,
+  body.tier-2 .sig-actions{ margin-bottom:14px; }
+  body.tier-1 .btn-ghost,
+  body.tier-2 .btn-ghost{ font-size:16px; padding:14px; border-radius:12px; }
+
+  body.tier-1 .cta-bar,
+  body.tier-2 .cta-bar{ padding:28px 34px 26px; gap:14px; }
+  body.tier-1 .btn,
+  body.tier-2 .btn{ font-size:17px; padding:17px; border-radius:13px; }
+
+  body.tier-1 .fullscreen-modal header,
+  body.tier-2 .fullscreen-modal header{ padding:18px 26px; }
+  body.tier-1 .fullscreen-modal header h2,
+  body.tier-2 .fullscreen-modal header h2{ font-size:19px; }
+  body.tier-1 .close-btn,
+  body.tier-2 .close-btn{ width:46px; height:46px; font-size:26px; }
+  body.tier-1 .fullscreen-modal .actions,
+  body.tier-2 .fullscreen-modal .actions{ padding:18px; gap:14px; }
+  body.tier-1 .fullscreen-modal .actions button,
+  body.tier-2 .fullscreen-modal .actions button{ font-size:15px; padding:13px 26px; }
+
+  body.tier-2 .device{ max-width:820px; }
+  body.tier-2 h1{ font-size:28px; }
+  body.tier-2 .sig-canvas-container{ height:460px; }
+
+  ::selection{background:var(--signal-dim);}
+</style>
+</head>
+<body>
+<div class="device" id="app">
+  <header>
+    <p class="eyebrow">114 學年度 · 高一上學期</p>
+    <h1>團體課程諮詢紀錄表</h1>
+    <div class="gauge-track">
+      <i class="done"><span></span></i>
+      <i class="done"><span></span></i>
+      <i class="done"><span></span></i>
+      <i class="done"><span></span></i>
+      <i class="active"><span></span></i>
+    </div>
+    <p class="step-label">第 <b>5</b> / 5 步 · 確認並簽名</p>
+  </header>
+
+  <main>
+    <div class="card">
+      <p style="font-size:13px;color:#5C6C81;margin:0 0 10px;"><b>簽名人：陳怡安</b></p>
+    </div>
+
+    <div class="card">
+      <p class="q-title">課程地圖說明</p>
+      <div class="link-card disabled">
+        <div class="ic">⚠️</div>
+        <div>
+          <div>點此觀看《114課程地圖【汽車科】》說明影片（Edcafe AI）</div>
+          <div class="link-status">敬請期待 - 教務處正在準備連結中</div>
+        </div>
+      </div>
+      <p class="hint">📌 課程地圖影片連結將於近期補充</p>
+    </div>
+
+    <div class="sig-wrap">
+      <div class="sig-label">
+        <span><b>本人簽名</b></span>
+        <button class="fullscreen-hint-btn" id="expandHintBtn" type="button">🔍 點擊放大簽名</button>
+      </div>
+      
+      <div class="sig-canvas-container" id="canvasContainer">
+        <canvas id="pad" width="800" height="440"></canvas>
+      </div>
+
+      <div class="sig-actions">
+        <button class="btn-ghost" onclick="clearPad()">清空重簽</button>
+      </div>
+    </div>
+
+    <div class="alert-notice">
+      <span class="alert-notice-icon">⚠️</span>
+      <p>
+        送出後請<b>先不要關閉此頁面</b>，待老師檢核完成後畫面會自動顯示「完成」按鈕。
+      </p>
+    </div>
+  </main>
+
+  <!-- 全螢幕簽名模式 -->
+  <div class="fullscreen-modal" id="fullscreenModal">
+    <header>
+      <h2>全螢幕簽名</h2>
+      <button class="close-btn" id="closeBtn" type="button">✕</button>
+    </header>
+    <canvas id="fullscreenPad" width="1920" height="1080"></canvas>
+    <div class="actions">
+      <button class="btn-clear-fs" id="clearFsBtn" type="button">清空重簽</button>
+      <button class="btn-confirm-fs" id="confirmFsBtn" type="button">✓ 確認簽名</button>
+    </div>
+  </div>
+
+  <div class="cta-bar">
+    <button class="btn btn-prev">上一步</button>
+    <button class="btn btn-next">送出紀錄表</button>
+  </div>
+</div>
+
+<script>
+// 共用常數：兩個畫布（原始小畫布 / 全螢幕放大版）統一使用同一個「視覺粗細」數值（CSS px），
+// 實際繪製時再各自乘上當下的裝置像素密度（devicePixelRatio），確保無論用哪個畫布簽名，
+// 筆跡在畫面上看起來一樣粗，最終合成到 PDF 時粗細也會一致。
+const PEN_VISUAL_WIDTH_PX = 4;
+
+// 正常簽名畫布
+const canvas = document.getElementById('pad');
+const ctx = canvas.getContext('2d');
+let drawing = false, last = null;
+let hasSignature = false;  // 追蹤是否有簽名
+
+function drawGhostText() {
+  const name = '陳怡安';
+  const maxWidth = canvas.width * 0.85;   // 最多佔寬度 85%
+  const maxHeight = canvas.height * 0.8;  // 最多佔高度 80%
+
+  // 從高度上限開始，同時檢查寬度是否超出，兩者都滿足才停止縮小
+  let fontSize = maxHeight;
+  ctx.font = `700 ${fontSize}px "Noto Sans TC", sans-serif`;
+  let totalW = ctx.measureText(name).width;
+
+  while (totalW > maxWidth && fontSize > 10) {
+    fontSize -= 3;
+    ctx.font = `700 ${fontSize}px "Noto Sans TC", sans-serif`;
+    totalW = ctx.measureText(name).width;
+  }
+
+  ctx.fillStyle = '#C9DCEE';
+  ctx.textBaseline = 'middle';
+  let x = (canvas.width - totalW) / 2;
+  for (const ch of name) {
+    ctx.fillText(ch, x, canvas.height / 2);
+    x += ctx.measureText(ch).width;
+  }
+}
+
+function resizeCanvasToDisplaySize(canvasEl) {
+  const rect = canvasEl.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const targetW = Math.round(rect.width * dpr);
+  const targetH = Math.round(rect.height * dpr);
+  if (canvasEl.width !== targetW || canvasEl.height !== targetH) {
+    canvasEl.width = targetW;
+    canvasEl.height = targetH;
+  }
+}
+
+// 共用函式：從「學生實際簽名所用的畫布」擷取正式版簽名資料
+// - isInk(r,g,b,a) 用來判斷該像素是否為筆跡（原始小畫布是黑筆、放大版是白筆，兩者判斷方式不同）
+// - source 用來記錄這份正式版資料是來自哪個畫布（'normal' 原始版 / 'fullscreen' 放大版），方便日後除錯或後端記錄
+// 規則：一律以「學生最後一次實際簽名的那個畫布」為準，而不是預設放大版優先
+function captureFinalSignature(sourceCanvasEl, sourceCtxEl, isInk, source) {
+  const w = sourceCanvasEl.width;
+  const h = sourceCanvasEl.height;
+  if (w === 0 || h === 0) return false;
+
+  const imgData = sourceCtxEl.getImageData(0, 0, w, h);
+  let minX = w, minY = h, maxX = 0, maxY = 0, found = false;
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = (y * w + x) * 4;
+      if (isInk(imgData.data[idx], imgData.data[idx+1], imgData.data[idx+2], imgData.data[idx+3])) {
+        found = true;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (!found) return false;
+
+  const padPx = Math.round(Math.max(w, h) * 0.02);
+  minX = Math.max(0, minX - padPx);
+  minY = Math.max(0, minY - padPx);
+  maxX = Math.min(w - 1, maxX + padPx);
+  maxY = Math.min(h - 1, maxY + padPx);
+  const cropW = maxX - minX + 1;
+  const cropH = maxY - minY + 1;
+
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = cropW;
+  finalCanvas.height = cropH;
+  const finalCtx = finalCanvas.getContext('2d');
+  // 注意：這裡刻意「不」填滿白色背景，讓畫布保持透明。
+  // 原因：若填白色背景，之後把這張圖貼回小畫布（背景是米色）預覽時，
+  // 白色矩形的邊界會露出一圈接縫（使用者回報的「上下有個框」正是這個）。
+  // 改為透明背景後，貼回哪種底色的畫布都能自然融合，無接縫；
+  // 未來嵌入 PDF 時也更彈性（可疊加在任何背景色的表格欄位上）。
+  finalCtx.fillStyle = '#152238';
+  for (let y = minY; y <= maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
+      const idx = (y * w + x) * 4;
+      if (isInk(imgData.data[idx], imgData.data[idx+1], imgData.data[idx+2], imgData.data[idx+3])) {
+        finalCtx.fillRect(x - minX, y - minY, 1, 1);
+      }
+    }
+  }
+
+  window.__finalSignatureDataURL = finalCanvas.toDataURL('image/png');
+  window.__finalSignatureAspectRatio = cropW / cropH;
+  window.__finalSignatureSource = source;  // 'normal' 或 'fullscreen'
+  return true;
+}
+
+const isBlackInk = (r, g, b, a) => (r < 80 && g < 80 && b < 100 && a > 100);   // 原始小畫布：深色筆跡
+const isWhiteInk = (r, g, b, a) => (r > 200 && g > 200 && b > 200 && a > 200); // 放大版：白色筆跡
+
+function initSignaturePad() {
+  resizeCanvasToDisplaySize(canvas);  // 讓內部解析度符合實際顯示尺寸，避免變形
+  drawGhostText();
+  hasSignature = false;
+
+  canvas.onpointerdown = e => {
+    drawing = true;
+    last = canvasPos(canvas, e);
+    // 鎖定指標，確保即使移出畫布外放開滑鼠/手指，仍能正確收到 pointerup
+    try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+    
+    // 第一次開始簽名時隱藏提示按鈕
+    if (!hasSignature) {
+      const hint = document.getElementById('expandHintBtn');
+      if (hint) hint.classList.add('hidden');
+      hasSignature = true;
+    }
+  };
+  
+  canvas.onpointermove = e => {
+    if (!drawing) return;
+    const p = canvasPos(canvas, e);
+    const dpr = window.devicePixelRatio || 1;
+    ctx.strokeStyle = '#152238';  // 黑色筆跡
+    ctx.lineWidth = PEN_VISUAL_WIDTH_PX * dpr;  // 依裝置像素密度換算，確保視覺粗細與放大版一致
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    last = p;
+  };
+  
+  const stopDrawing = () => {
+    if (drawing && hasSignature) {
+      // 使用者剛在「原始小畫布」上完成一筆，以此畫布內容為正式版簽名（除非之後又改用放大版簽名，會被放大版覆蓋）
+      captureFinalSignature(canvas, ctx, isBlackInk, 'normal');
+    }
+    drawing = false;
+  };
+  canvas.onpointerup = stopDrawing;
+  canvas.onpointercancel = stopDrawing;
+  canvas.onpointerleave = stopDrawing;  // 保險：滑鼠移出畫布也停止
+}
+
+// 全螢幕簽名畫布
+const fullscreenCanvas = document.getElementById('fullscreenPad');
+const fullscreenCtx = fullscreenCanvas.getContext('2d');
+let fsDrawing = false, fsLast = null;
+let fsHasSignature = false;   // 全螢幕畫布是否已有筆跡（用來決定resize時要不要保留內容）
+
+function drawGhostTextLandscape(canvasEl, ctxEl, name) {
+  const maxWidth = canvasEl.width * 0.88;
+  const maxHeight = canvasEl.height * 0.75;
+
+  let fontSize = maxHeight;
+  ctxEl.font = `700 ${fontSize}px "Noto Sans TC", sans-serif`;
+  let totalW = ctxEl.measureText(name).width;
+
+  while (totalW > maxWidth && fontSize > 10) {
+    fontSize -= 6;
+    ctxEl.font = `700 ${fontSize}px "Noto Sans TC", sans-serif`;
+    totalW = ctxEl.measureText(name).width;
+  }
+
+  ctxEl.fillStyle = '#333333';
+  ctxEl.textBaseline = 'middle';
+  let x = (canvasEl.width - totalW) / 2;
+  for (const ch of name) {
+    ctxEl.fillText(ch, x, canvasEl.height / 2);
+    x += ctxEl.measureText(ch).width;
+  }
+}
+
+// 依目前視窗大小，重新設定全螢幕 canvas 的內部解析度與顯示尺寸
+// preserveContent = true 時，會先把目前畫面存下來，resize 後等比例貼回（避免清空使用者已簽的字）
+function sizeFullscreenCanvas(preserveContent) {
+  const modalEl = document.getElementById('fullscreenModal');
+  const headerEl = modalEl.querySelector('header');
+  const actionsEl = modalEl.querySelector('.actions');
+  const headerH = headerEl ? headerEl.getBoundingClientRect().height : 0;
+  const actionsH = actionsEl ? actionsEl.getBoundingClientRect().height : 0;
+
+  const dpr = window.devicePixelRatio || 1;
+  const displayW = window.innerWidth;
+  const displayH = Math.max(window.innerHeight - headerH - actionsH, 120);
+
+  let savedImage = null;
+  if (preserveContent && fsHasSignature && fullscreenCanvas.width > 0 && fullscreenCanvas.height > 0) {
+    savedImage = document.createElement('canvas');
+    savedImage.width = fullscreenCanvas.width;
+    savedImage.height = fullscreenCanvas.height;
+    savedImage.getContext('2d').drawImage(fullscreenCanvas, 0, 0);
+  }
+
+  fullscreenCanvas.style.width = displayW + 'px';
+  fullscreenCanvas.style.height = displayH + 'px';
+  fullscreenCanvas.width = Math.round(displayW * dpr);
+  fullscreenCanvas.height = Math.round(displayH * dpr);
+
+  if (savedImage) {
+    // 把先前的筆跡「等比例縮放、置中」貼回新的畫布尺寸（維持原始比例，不拉伸變形）。
+    // 這一步非常關鍵：若在旋轉當下就把筆跡「非等比例拉伸貼滿」新尺寸，會把變形直接
+    // 烙進畫布像素裡，之後不管何時按下「確認簽名」，擷取到的都已經是被拉伸過的錯誤圖形。
+    const scale = Math.min(fullscreenCanvas.width / savedImage.width, fullscreenCanvas.height / savedImage.height);
+    const drawW = savedImage.width * scale;
+    const drawH = savedImage.height * scale;
+    const offsetX = (fullscreenCanvas.width - drawW) / 2;
+    const offsetY = (fullscreenCanvas.height - drawH) / 2;
+
+    // 縮放後空白處要補回原本的黑色背景（等比例縮放後四周會留白邊）
+    fullscreenCtx.fillStyle = '#000000';
+    fullscreenCtx.fillRect(0, 0, fullscreenCanvas.width, fullscreenCanvas.height);
+    fullscreenCtx.drawImage(savedImage, 0, 0, savedImage.width, savedImage.height,
+                                        offsetX, offsetY, drawW, drawH);
+  } else {
+    drawGhostTextLandscape(fullscreenCanvas, fullscreenCtx, '陳怡安');
+  }
+}
+
+// 依目前是否為直向，顯示/隱藏「建議轉橫向」的輕量提示（不阻擋簽名操作）
+function bindFullscreenCanvasEvents() {
+  fullscreenCanvas.onpointerdown = e => {
+    fsDrawing = true;
+    fsLast = canvasPos(fullscreenCanvas, e);
+    try { fullscreenCanvas.setPointerCapture(e.pointerId); } catch(err) {}
+  };
+  fullscreenCanvas.onpointermove = e => {
+    if (!fsDrawing) return;
+    const dpr = window.devicePixelRatio || 1;
+    const p = canvasPos(fullscreenCanvas, e);
+    fullscreenCtx.strokeStyle = '#FFFFFF';  // 白色筆跡，對比黑色背景
+    fullscreenCtx.lineWidth = PEN_VISUAL_WIDTH_PX * dpr;  // 與原始小畫布使用同一視覺粗細常數，確保兩版筆粗一致
+    fullscreenCtx.lineCap = 'round';
+    fullscreenCtx.lineJoin = 'round';
+    fullscreenCtx.beginPath();
+    fullscreenCtx.moveTo(fsLast.x, fsLast.y);
+    fullscreenCtx.lineTo(p.x, p.y);
+    fullscreenCtx.stroke();
+    fsLast = p;
+    fsHasSignature = true;
+  };
+  const stopFsDrawing = () => { fsDrawing = false; };
+  fullscreenCanvas.onpointerup = stopFsDrawing;
+  fullscreenCanvas.onpointercancel = stopFsDrawing;
+  fullscreenCanvas.onpointerleave = stopFsDrawing;
+}
+
+function canvasPos(canvasEl, e) {
+  const r = canvasEl.getBoundingClientRect();
+  const scaleX = canvasEl.width / r.width, scaleY = canvasEl.height / r.height;
+  return {x: (e.clientX - r.left) * scaleX, y: (e.clientY - r.top) * scaleY};
+}
+
+let fsResizeHandlerBound = false;
+
+function handleFsResize() {
+  const modal = document.getElementById('fullscreenModal');
+  if (!modal.classList.contains('active')) return;
+  if (fsDrawing) return;  // 簽名中先不處理，等放開筆再說
+  sizeFullscreenCanvas(true);  // 保留已簽內容
+}
+
+function isAndroidDevice() {
+  return /Android/i.test(navigator.userAgent);
+}
+
+// 判斷目前螢幕該用「手機精簡版面」還是「平板/大螢幕放大版面」。
+// 不單看寬度或高度的絕對像素值（不同機型差異太大，容易誤判），
+// 而是同時考慮：
+//   1) 長寬比：手機不管直放橫放，通常都是「細長形」（長邊/短邊 > 1.6）；
+//      平板、摺疊機展開後則接近方形（4:3、QXGA+等，通常 < 1.6）
+//   2) 較短邊的長度：確保是真的有足夠可用空間，而不是單純「其中一邊很長」
+// 兩個條件同時符合，才視為「大螢幕」。
+function getDisplayTier() {
+  const w = window.innerWidth, h = window.innerHeight;
+  const shortSide = Math.min(w, h);
+  const longSide = Math.max(w, h);
+  const ratio = longSide / shortSide;
+
+  // 門檻取 1.5 而非剛好 1.6：Samsung Fold 封面螢幕官方規格恰為 10:16（=1.6），
+  // 換算誤差可能讓實際比例落在 1.6 附近，門檻抓 1.5 才有足夠安全邊際，
+  // 確保封面螢幕穩定被判定為手機、不會因換算誤差而誤判成平板。
+  if (ratio > 1.5) return 0;        // 明顯細長 → 判定為手機（即使橫放時寬度很大也一樣）
+  if (shortSide >= 750) return 2;   // 較短邊也很寬裕 → 大平板 / 桌機
+  if (shortSide >= 620) return 1;   // 較短邊達到平板等級 → 一般平板 / 摺疊機展開
+  return 0;                         // 其餘視為手機
+}
+
+function applyDisplayTier() {
+  const tier = getDisplayTier();
+  document.body.classList.remove('tier-1', 'tier-2');
+  if (tier === 1) document.body.classList.add('tier-1');
+  if (tier === 2) document.body.classList.add('tier-2');
+}
+
+function enterFullscreenSignature() {
+  const modal = document.getElementById('fullscreenModal');
+  modal.classList.add('active');
+  fsHasSignature = false;
+
+  // 呼叫瀏覽器原生 Fullscreen API，讓網址列、工具列等瀏覽器介面一併隱藏
+  // （像 YouTube 全螢幕播放那樣，只留下網頁內容本身）。
+  // 說明：僅在「非 Android」裝置（iOS Safari、iPadOS、桌機瀏覽器等）才呼叫這個 API。
+  // 因為在部分 Android 瀏覽器上，這個 API 會觸發系統層級的「如何退出全螢幕」提示，
+  // 該提示是作業系統顯示的內容、無法被網頁關閉，因此 Android 裝置改用純 CSS
+  // 模擬全螢幕（鋪滿整個視窗），避免跳出無法消除的系統提示；iOS 沒有這個問題。
+  if (!isAndroidDevice()) {
+    const requestFS = modal.requestFullscreen || modal.webkitRequestFullscreen || modal.msRequestFullscreen;
+    if (requestFS) {
+      requestFS.call(modal).catch(() => {/* 使用者拒絕或裝置不支援，忽略即可，仍可用CSS模擬全螢幕簽名 */});
+    }
+  }
+
+  if (!fsResizeHandlerBound) {
+    window.addEventListener('orientationchange', () => setTimeout(handleFsResize, 350));
+    window.addEventListener('resize', () => setTimeout(handleFsResize, 150));
+    fsResizeHandlerBound = true;
+  }
+
+  // 立即可簽名：不論直向橫向，馬上設定畫布並綁定事件
+  sizeFullscreenCanvas(false);
+  bindFullscreenCanvasEvents();
+}
+
+function exitFullscreenSignature() {
+  document.getElementById('fullscreenModal').classList.remove('active');
+
+  // 若目前處於瀏覽器原生全螢幕狀態，離開時一併退出
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    const exitFS = document.exitFullscreen || document.webkitExitFullscreen;
+    if (exitFS) exitFS.call(document).catch(() => {});
+  }
+}
+
+function clearFullscreenPad() {
+  fsHasSignature = false;
+  fullscreenCtx.clearRect(0, 0, fullscreenCanvas.width, fullscreenCanvas.height);
+  drawGhostTextLandscape(fullscreenCanvas, fullscreenCtx, '陳怡安');
+}
+
+function confirmFullscreenSignature() {
+  // 以放大版畫布內容為準，擷取正式簽名資料（若學生確實在此畫布上簽了名）
+  const ok = captureFinalSignature(fullscreenCanvas, fullscreenCtx, isWhiteInk, 'fullscreen');
+
+  if (ok) {
+    // 把正式版「等比例縮放」置中貼回小畫布做預覽，不做拉伸
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#FBFAF7';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const cropW = img.width, cropH = img.height;
+      const scale = Math.min(canvas.width / cropW, canvas.height / cropH) * 0.92;
+      const drawW = cropW * scale;
+      const drawH = cropH * scale;
+      const offsetX = (canvas.width - drawW) / 2;
+      const offsetY = (canvas.height - drawH) / 2;
+      ctx.drawImage(img, 0, 0, cropW, cropH, offsetX, offsetY, drawW, drawH);
+    };
+    img.src = window.__finalSignatureDataURL;
+    hasSignature = true;
+  }
+  // 若放大版畫布是空的（學生點進去又沒畫就直接確認），不覆蓋任何既有簽名，維持原樣
+
+  exitFullscreenSignature();
+}
+
+function clearPad() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawGhostText();  // 重新畫預設文字
+  hasSignature = false;  // 重置狀態
+  window.__finalSignatureDataURL = null;  // 清除已保留的正式簽名資料
+  window.__finalSignatureAspectRatio = null;
+  
+  // 恢復文字提示可見性
+  const hint = document.getElementById('expandHintBtn');
+  if (hint) hint.classList.remove('hidden');
+}
+
+// 初始化按鈕事件監聽
+document.addEventListener('DOMContentLoaded', () => {
+  const expandBtn = document.getElementById('expandBtn');
+  const closeBtn = document.getElementById('closeBtn');
+  const clearFsBtn = document.getElementById('clearFsBtn');
+  const confirmFsBtn = document.getElementById('confirmFsBtn');
+
+  if (expandHintBtn) {
+    expandHintBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      enterFullscreenSignature();
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      exitFullscreenSignature();
+    });
+  }
+
+  if (clearFsBtn) {
+    clearFsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      clearFullscreenPad();
+    });
+  }
+
+  if (confirmFsBtn) {
+    confirmFsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      confirmFullscreenSignature();
+    });
+  }
+});
+
+// 初始化簽名畫布
+initSignaturePad();
+
+// 依目前螢幕長寬比與較短邊長度，判斷手機/平板版面並套用對應class
+applyDisplayTier();
+window.addEventListener('orientationchange', () => setTimeout(applyDisplayTier, 350));
+
+// 視窗尺寸改變時，若尚未簽名則重新調整canvas解析度（避免變形），並重新判斷版面等級
+window.addEventListener('resize', () => {
+  applyDisplayTier();
+  if (!hasSignature) {
+    resizeCanvasToDisplaySize(canvas);
+    drawGhostText();
+  }
+});
+</script>
+</body>
+</html>
