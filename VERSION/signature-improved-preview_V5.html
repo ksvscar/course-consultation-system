@@ -192,11 +192,12 @@
   .fullscreen-modal.active{display:flex;}
 
   /* ============================================
-     Bug #1 & #2 修正 - CSS 樣式
+     Bug #1 修正 - Part A：CSS 樣式
+     全屏簽名容器 + 浮水印文字
      ============================================ */
 
   .fullscreen-canvas-container{
-    border: 2px solid #FFFFFF;
+    border: 2px solid rgba(180, 180, 180, 0.5);
     background: #000;
     position: relative;
     width: 100%;
@@ -213,10 +214,10 @@
     transform: translate(-50%, -50%);
     font-size: 80px;
     font-weight: bold;
-    color: rgba(200, 200, 200, 0.3);
+    color: rgba(150, 150, 150, 0.2);
     pointer-events: none;
     z-index: 0;
-    font-family: Arial, "Noto Sans TC", sans-serif;
+    font-family: Arial, sans-serif;
     white-space: nowrap;
     user-select: none;
     -webkit-user-select: none;
@@ -317,10 +318,12 @@
   <div class="fullscreen-modal" id="fullscreenModal">
     <div class="fullscreen-canvas-container">
       <canvas id="fullscreenPad"></canvas>
+      <!-- Bug #1 修正 - Part C：浮水印 div -->
       <div class="signature-watermark" id="fullscreenWatermark">簽名</div>
     </div>
     <div class="fs-button-group">
       <button class="btn-clear-fs" id="clearFsBtn" type="button">清空重簽</button>
+      <!-- Bug #1 修正 - 按鈕文本改為「確認簽名(橫式)」 -->
       <button class="btn-confirm-fs" id="confirmFsBtn" type="button">✓ 確認簽名(橫式)</button>
     </div>
     <button class="close-btn" id="closeBtn" type="button" title="關閉（ESC）">✕</button>
@@ -358,13 +361,14 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
+    // 動態計算字級，讓姓名文字寬度佔滿畫布約 85%（而非固定字級，避免在較寬畫布時顯得過小）
     const targetWidth = width * 0.85;
-    let fontSize = Math.min(height * 0.7, 100);
+    let fontSize = Math.min(height * 0.7, 100); // 先給一個以高度為上限的起始值
     ctx.font = `bold ${fontSize}px "Noto Sans TC","Microsoft JhengHei",sans-serif`;
     let measured = ctx.measureText(STUDENT_NAME).width;
     if (measured > 0) {
       fontSize = fontSize * (targetWidth / measured);
-      fontSize = Math.min(fontSize, height * 0.75);
+      fontSize = Math.min(fontSize, height * 0.75); // 避免字級超出畫布高度
       ctx.font = `bold ${fontSize}px "Noto Sans TC","Microsoft JhengHei",sans-serif`;
     }
 
@@ -394,6 +398,9 @@
     canvas.onpointermove = e => {
       if (!drawing) return;
       const p = canvasPos(canvas, e);
+      // 注意：ctx 已在 resizeCanvasToDisplaySize() 套用 scale(dpr,dpr)，
+      // 此處座標與線寬都必須用「CSS 像素」單位，不可再乘 dpr（否則會造成雙重縮放，
+      // 導致筆跡與觸摸點位置偏移、且視覺上被放大）
       ctx.strokeStyle = '#152238';
       ctx.lineWidth = PEN_VISUAL_WIDTH_PX;
       ctx.lineCap = 'round';
@@ -439,7 +446,6 @@
   let fsHasSignature = false;
   let fsLast = { x: 0, y: 0 };
   let fsResizeHandlerBound = false;
-  let fsSignatureSnapshot = null; // 保存簽名快照
 
   function sizeFullscreenCanvas() {
     const dpr = window.devicePixelRatio || 1;
@@ -449,98 +455,125 @@
     fsCtx.scale(dpr, dpr);
   }
 
+  /* ============================================
+     Bug #1 修正 - Part B：JavaScript v3.0 動態計算代碼
+     ============================================ */
+
   /**
-   * 保存簽名快照（旋轉前調用）
+   * 檢測是否為 Samsung Fold 設備
    */
-  function saveSignatureSnapshot() {
-    const dpr = window.devicePixelRatio || 1;
-    try {
-      fsSignatureSnapshot = fsCtx.getImageData(0, 0, fsPad.width, fsPad.height);
-      console.log('💾 簽名快照已保存');
-    } catch (e) {
-      console.error('快照保存失敗:', e);
-    }
+  function isSamsungFoldDevice() {
+    const ua = navigator.userAgent;
+    return ua.includes('SM-F') || ua.includes('Galaxy Z Fold') || 
+           ua.includes('Galaxy Z Flip');
   }
 
   /**
-   * 恢復簽名快照（旋轉後調用）
+   * 獲取 Samsung Fold 的折疊狀態
    */
-  function restoreSignatureSnapshot() {
-    if (!fsSignatureSnapshot) return;
-    
-    try {
-      const dpr = window.devicePixelRatio || 1;
-      
-      // 如果畫布尺寸變化（旋轉），調整快照尺寸
-      if (fsSignatureSnapshot.width !== fsPad.width || fsSignatureSnapshot.height !== fsPad.height) {
-        // 創建臨時畫布存儲舊快照
-        const tmpCanvas = document.createElement('canvas');
-        tmpCanvas.width = fsSignatureSnapshot.width;
-        tmpCanvas.height = fsSignatureSnapshot.height;
-        const tmpCtx = tmpCanvas.getContext('2d');
-        tmpCtx.putImageData(fsSignatureSnapshot, 0, 0);
-        
-        // 清除舊的快照
-        fsSignatureSnapshot = null;
-      }
-      
-      // 將快照放回畫布
-      fsCtx.putImageData(fsSignatureSnapshot, 0, 0);
-      console.log('✅ 簽名已恢復');
-    } catch (e) {
-      console.error('快照恢復失敗:', e);
-    }
+  function getSamsungFoldState() {
+    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
+    return shorterSide < 1400 ? 'cover' : 'inner';
   }
 
-  function initFullscreenSignature() {
-    sizeFullscreenCanvas();
+  /**
+   * 檢測是否為蘋果折疊手機（預測）
+   */
+  function isAppleFoldDevice() {
+    const ua = navigator.userAgent;
+    const hasAppleID = ua.includes('iPhone') || ua.includes('iPad') || 
+                       ua.includes('Macintosh');
     
-    // 如果有快照，恢復簽名；否則清空
-    if (fsSignatureSnapshot && fsHasSignature) {
-      restoreSignatureSnapshot();
+    if (!hasAppleID) return false;
+    
+    const possibleIdentifiers = [
+      'iPhone Fold', 'iPhone Flex', 'iPhone Flex Pro', 'iPhone Flex Max',
+      'AppleFold', 'A18 Fold', 'A19 Fold',
+      'iPhone17,', 'iPhone18,', 'iPhone19'
+    ];
+    
+    return possibleIdentifiers.some(id => ua.includes(id));
+  }
+
+  /**
+   * 獲取 Apple Fold 的折疊狀態（預測）
+   */
+  function getAppleFoldState() {
+    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
+    
+    if (shorterSide < 1000) {
+      return 'folded';
+    } else if (shorterSide > 1500) {
+      return 'unfolded';
     } else {
-      fsCtx.clearRect(0, 0, fsPad.width / (window.devicePixelRatio || 1), fsPad.height / (window.devicePixelRatio || 1));
+      return 'transitioning';
     }
-
-    fsPad.onpointerdown = e => {
-      fsDrawing = true;
-      const rect = fsPad.getBoundingClientRect();
-      fsLast = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-      fsPad.setPointerCapture(e.pointerId);
-      if (!fsHasSignature) {
-        fsHasSignature = true;
-      }
-    };
-
-    fsPad.onpointermove = e => {
-      if (!fsDrawing) return;
-      const rect = fsPad.getBoundingClientRect();
-      const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-      fsCtx.strokeStyle = '#FFFFFF';
-      fsCtx.lineWidth = PEN_VISUAL_WIDTH_PX;
-      fsCtx.lineCap = 'round';
-      fsCtx.lineJoin = 'round';
-      fsCtx.beginPath();
-      fsCtx.moveTo(fsLast.x, fsLast.y);
-      fsCtx.lineTo(p.x, p.y);
-      fsCtx.stroke();
-      fsLast = p;
-      
-      // 即時保存快照
-      fsSignatureSnapshot = fsCtx.getImageData(0, 0, fsPad.width, fsPad.height);
-    };
-
-    const stopFsDrawing = () => { 
-      if (!fsDrawing) return; 
-      fsDrawing = false;
-      // 停止繪製時保存快照
-      saveSignatureSnapshot();
-    };
-    fsPad.onpointerup = stopFsDrawing;
-    fsPad.onpointercancel = stopFsDrawing;
-    fsPad.onpointerleave = stopFsDrawing;
   }
 
+  /**
+   * 通用的 Fold 狀態檢測
+   */
+  function getFoldState() {
+    if (isSamsungFoldDevice()) {
+      return getSamsungFoldState();
+    }
+    if (isAppleFoldDevice()) {
+      return getAppleFoldState();
+    }
+    return 'unknown';
+  }
+
+  /**
+   * 檢測是否為任何品牌的折疊設備
+   */
+  function isFoldableDevice() {
+    return isSamsungFoldDevice() || isAppleFoldDevice();
+  }
+
+  /**
+   * 獲取設備顯示層級分類（支持多品牌 Fold）
+   */
+  function getDisplayTier() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const shorterSide = Math.min(width, height);
+    const ua = navigator.userAgent;
+    
+    if (isSamsungFoldDevice()) {
+      const foldState = getSamsungFoldState();
+      return {
+        type: 'fold-phone',
+        brand: 'samsung',
+        mode: foldState,
+        shorterSide,
+        tier: foldState === 'cover' ? 'fold-cover' : 'fold-inner'
+      };
+    }
+    
+    if (isAppleFoldDevice()) {
+      const foldState = getAppleFoldState();
+      return {
+        type: 'fold-phone',
+        brand: 'apple',
+        mode: foldState,
+        shorterSide,
+        tier: foldState === 'folded' ? 'fold-cover' : 'fold-inner',
+        prediction: true
+      };
+    }
+    
+    if (shorterSide < 600) {
+      return { type: 'phone', brand: 'generic', tier: 'small', shorterSide };
+    } else if (shorterSide < 900) {
+      return { type: 'tablet', brand: 'generic', tier: 'medium', shorterSide };
+    } else {
+      return { type: 'tablet', brand: 'generic', tier: 'large', shorterSide };
+    }
+  }
+
+  /**
+   * 動態計算邊框寬度 v3.0
+   */
   function getDynamicBorderWidth() {
     const shorterSide = Math.min(window.innerWidth, window.innerHeight);
     const dpr = window.devicePixelRatio;
@@ -570,6 +603,9 @@
     return borderWidth;
   }
 
+  /**
+   * 動態計算浮水印字體大小 v3.0
+   */
   function getDynamicWatermarkFontSize() {
     const shorterSide = Math.min(window.innerWidth, window.innerHeight);
     
@@ -590,9 +626,13 @@
     return Math.max(40, Math.min(fontSize, 300));
   }
 
+  /**
+   * 應用動態樣式（邊框 + 浮水印）
+   */
   function applyDynamicStyles() {
     const borderWidth = getDynamicBorderWidth();
     const watermarkSize = getDynamicWatermarkFontSize();
+    const tier = getDisplayTier();
     
     const container = document.querySelector('.fullscreen-canvas-container');
     if (container) {
@@ -604,10 +644,65 @@
       watermark.style.fontSize = watermarkSize + 'px';
     }
     
-    console.log('📐 動態樣式已應用', {
+    console.log('📐 動態樣式已應用 v3.0', {
+      設備: tier.type,
+      品牌: tier.brand,
+      屏幕短邊: tier.shorterSide + 'px',
       邊框寬度: borderWidth + 'px',
       浮水印字體: watermarkSize + 'px'
     });
+  }
+
+  /**
+   * 屏幕旋轉監聽
+   */
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      console.log('🔄 屏幕旋轉檢測');
+      applyDynamicStyles();
+    }, 100);
+  });
+
+  /**
+   * 窗口大小改變監聽
+   */
+  window.addEventListener('resize', () => {
+    applyDynamicStyles();
+  });
+
+  function initFullscreenSignature() {
+    sizeFullscreenCanvas();
+    fsCtx.clearRect(0, 0, fsPad.width / (window.devicePixelRatio || 1), fsPad.height / (window.devicePixelRatio || 1));
+    fsHasSignature = false;
+
+    fsPad.onpointerdown = e => {
+      fsDrawing = true;
+      const rect = fsPad.getBoundingClientRect();
+      fsLast = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      fsPad.setPointerCapture(e.pointerId);
+      fsHasSignature = true;
+    };
+
+    fsPad.onpointermove = e => {
+      if (!fsDrawing) return;
+      const rect = fsPad.getBoundingClientRect();
+      const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      // 同上：fsCtx 已套用 scale(dpr,dpr)，這裡一律用 CSS 像素座標，不可再乘 dpr
+      fsCtx.strokeStyle = '#FFFFFF';
+      fsCtx.lineWidth = PEN_VISUAL_WIDTH_PX;
+      fsCtx.lineCap = 'round';
+      fsCtx.lineJoin = 'round';
+      fsCtx.beginPath();
+      fsCtx.moveTo(fsLast.x, fsLast.y);
+      fsCtx.lineTo(p.x, p.y);
+      fsCtx.stroke();
+      fsLast = p;
+    };
+
+    const stopFsDrawing = () => { if (!fsDrawing) return; fsDrawing = false; };
+    fsPad.onpointerup = stopFsDrawing;
+    fsPad.onpointercancel = stopFsDrawing;
+    fsPad.onpointerleave = stopFsDrawing;
   }
 
   function enterFullscreenSignature() {
@@ -624,25 +719,20 @@
     }
 
     if (!fsResizeHandlerBound) {
-      window.addEventListener('orientationchange', () => {
-        console.log('🔄 屏幕旋轉檢測');
-        saveSignatureSnapshot(); // 旋轉前保存
-        setTimeout(initFullscreenSignature, 350);
-      });
+      window.addEventListener('orientationchange', () => setTimeout(initFullscreenSignature, 350));
       window.addEventListener('resize', () => {
-        if (fsModal.classList.contains('active')) {
-          saveSignatureSnapshot(); // 大小改變前保存
-          setTimeout(initFullscreenSignature, 150);
-        }
+        if (fsModal.classList.contains('active')) setTimeout(initFullscreenSignature, 150);
       });
       fsResizeHandlerBound = true;
     }
 
+    // 應用動態樣式
     setTimeout(() => {
       applyDynamicStyles();
       initFullscreenSignature();
     }, 50);
 
+    // 設置浮水印文字
     const watermarkEl = document.getElementById('fullscreenWatermark');
     if (watermarkEl) {
       watermarkEl.textContent = STUDENT_NAME;
@@ -663,7 +753,6 @@
     fsCtx.clearRect(0, 0, fsPad.width / dpr, fsPad.height / dpr);
     fsHasSignature = false;
     fsDrawing = false;
-    fsSignatureSnapshot = null; // 清除快照
   }
 
   function captureFinalSignature(source) {
@@ -690,6 +779,9 @@
         const cropCtx = cropCanvas.getContext('2d');
         cropCtx.drawImage(fsPad, minX, minY, w * dpr, h * dpr, 0, 0, w * dpr, h * dpr);
 
+        // 全螢幕版是白色筆跡（黑底對比用），但正式存檔與小畫布預覽
+        // 都必須是深色墨水（跟小畫布本身的黑色筆跡一致），因此在此做顏色轉換：
+        // 保留筆跡的透明度/形狀，僅將顏色由白轉換為深色墨水 #152238
         const recolorCanvas = document.createElement('canvas');
         recolorCanvas.width = cropCanvas.width;
         recolorCanvas.height = cropCanvas.height;
@@ -750,10 +842,10 @@
   clearFsBtn.addEventListener('click', clearFullscreenPad);
   confirmFsBtn.addEventListener('click', () => {
     if (fsHasSignature) captureFinalSignature('fullscreen');
-    fsSignatureSnapshot = null; // 確認後清除快照
     exitFullscreenSignature();
   });
 
+  // 頁面加載完成後應用動態樣式
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       applyDynamicStyles();
