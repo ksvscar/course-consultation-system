@@ -1,63 +1,70 @@
 @echo off
-REM update-version.bat - 自動化版本更新與GitHub推送
-REM 用法：在 C:\course-consultation-system 目錄執行此批次檔
-
 setlocal enabledelayedexpansion
 
-REM 設定顏色輸出
-for /F %%A in ('echo prompt $H ^| cmd') do set "BS=%%A"
-
 echo.
 echo ============================================
-echo     課程諮詢記錄系統 - 版本更新工具
+echo   Course Consultation System - Update Tool
 echo ============================================
 echo.
 
-REM 檢查是否在正確目錄
-if not exist "signature-improved-preview.html" (
-    echo [ERROR] 未找到 signature-improved-preview.html
-    echo 請在 C:\course-consultation-system 目錄執行此檔案
+REM Detect where the html file actually lives:
+REM   - current directory, OR
+REM   - frontend subfolder
+set HTML_PATH=
+
+if exist "signature-improved-preview.html" (
+    set HTML_PATH=signature-improved-preview.html
+) else if exist "frontend\signature-improved-preview.html" (
+    set HTML_PATH=frontend\signature-improved-preview.html
+)
+
+if "%HTML_PATH%"=="" (
+    echo [ERROR] Cannot find signature-improved-preview.html
+    echo Checked: current folder and frontend\ subfolder
+    echo Please run this script from C:\course-consultation-system
     pause
     exit /b 1
 )
 
-REM 獲取當前日期和時間
+echo [INFO] Found file at: %HTML_PATH%
+echo.
+
 for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c%%a%%b)
 for /f "tokens=1-2 delims=/:" %%a in ('time /t') do (set mytime=%%a%%b)
 
 set VERSION_TAG=%mydate%_%mytime%
 set COMMIT_MSG=Update: v%VERSION_TAG%
 
-echo [1/4] 檢查 Git 狀態...
+echo [1/4] Checking git status...
 git status --short
 
 echo.
-echo [2/4] 添加變更...
+echo [2/4] Adding changes...
 git add -A
 
 echo.
-echo [3/4] 提交變更 (%COMMIT_MSG%)...
+echo [3/4] Committing changes (%COMMIT_MSG%)...
 git commit -m "%COMMIT_MSG%"
 
 if errorlevel 1 (
-    echo [WARN] 無變更要提交或 git 錯誤
+    echo [WARN] Nothing to commit, or git error occurred
 ) else (
-    echo [OK] 提交成功
+    echo [OK] Commit successful
 )
 
 echo.
-echo [4/4] 推送至 GitHub...
+echo [4/4] Pushing to GitHub...
 git push origin main
 
 if errorlevel 1 (
-    echo [ERROR] 推送失敗，請檢查網路連線或 Git 設定
+    echo [ERROR] Push failed. Check network connection or git config.
     pause
     exit /b 1
 ) else (
-    echo [OK] 推送成功！
+    echo [OK] Push successful!
     echo.
-    echo ✅ 版本更新完成！
-    echo 可訪問: https://ksvscar.github.io/course-consultation-system/
+    echo Update complete!
+    echo View at: https://ksvscar.github.io/course-consultation-system/
 )
 
 echo.

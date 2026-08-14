@@ -176,70 +176,68 @@
   }
   .btn-next:active{transform:translateY(1px);}
 
-  /* ============================================
-     全螢幕簽名 Modal（v7：純 CSS 模擬全螢幕，
-     不使用瀏覽器原生 Fullscreen API，
-     避免系統「如何退出全螢幕」提示遮擋按鈕，
-     以及 iPad 連續旋轉後按鈕消失的問題）
-     ============================================ */
+  /* ---- 全螢幕簽名 Modal ---- */
   .fullscreen-modal{
     display:none;
     position:fixed;
     top:0; left:0; right:0; bottom:0;
     background:#0A0A0A;
     z-index:10000;
-    padding:0;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding:10px;
     overflow:hidden;
   }
-  .fullscreen-modal.active{display:block;}
+  .fullscreen-modal.active{display:flex;}
 
-  /* 全屏簽名容器：明確寬高（不再依賴 flex 自動撐開），
-     border-box 讓邊框內縮，畫布 100% 貼合容器內緣 → 四邊都會看到邊框 */
+  /* ============================================
+     Bug #1 & #2 修正 - CSS 樣式
+     ============================================ */
+
   .fullscreen-canvas-container{
-    position:absolute;
-    top:0; left:0; right:0;
-    height:calc(100% - 64px);   /* 保留底部 64px 給按鈕列 */
-    box-sizing:border-box;
-    border:2px solid #FFFFFF;   /* 預設白色邊框，JS 會動態調整寬度 */
-    background:#000;
-    overflow:hidden;
-  }
-
-  #fullscreenPad{
-    position:absolute;
-    top:0; left:0;
-    width:100%;
-    height:100%;
-    display:block;
-    background:transparent;     /* 關鍵修正：透明背景，讓浮水印透出來 */
-    cursor:crosshair;
-    touch-action:none;
-    z-index:1;
+    border: 2px solid #FFFFFF;
+    background: #000;
+    position: relative;
+    width: 100%;
+    max-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .signature-watermark{
-    position:absolute;
-    top:50%; left:50%;
-    transform:translate(-50%, -50%);
-    font-size:80px;
-    font-weight:bold;
-    color:rgba(200,200,200,0.35);
-    pointer-events:none;
-    z-index:0;                  /* 在畫布之下，但畫布已透明所以能透出 */
-    font-family:Arial,"Noto Sans TC",sans-serif;
-    white-space:nowrap;
-    user-select:none;
-    -webkit-user-select:none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 80px;
+    font-weight: bold;
+    color: rgba(200, 200, 200, 0.3);
+    pointer-events: none;
+    z-index: 0;
+    font-family: Arial, "Noto Sans TC", sans-serif;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  #fullscreenPad{
+    border:none; border-radius:0;
+    background:#0A0A0A;
+    cursor:crosshair; touch-action:none;
+    max-width:100vw;
+    max-height:calc(100vh - 64px);
+    position: relative;
+    z-index: 1;
   }
 
   .fs-button-group{
-    position:absolute;
-    bottom:8px; left:50%;
-    transform:translateX(-50%);
+    position:fixed; bottom:8px; left:50%; transform:translateX(-50%);
     display:flex; gap:10px; z-index:10001;
   }
   .btn-clear-fs, .btn-confirm-fs{
-    padding:9px 16px; font-size:13px; border:none; border-radius:8px;
+    padding:7px 12px; font-size:12px; border:none; border-radius:8px;
     cursor:pointer; font-weight:700; font-family:var(--font-cjk); transition:.15s;
   }
   .btn-clear-fs{background:#fff; color:var(--steel-deep);}
@@ -248,8 +246,7 @@
   .btn-confirm-fs:hover{background:#e64f18;}
 
   .close-btn{
-    position:absolute;
-    top:8px; right:8px;
+    position:fixed; top:8px; right:8px;
     background:rgba(255,255,255,.15); color:#fff;
     border:2px solid rgba(255,255,255,.7); border-radius:50%;
     width:36px; height:36px; font-size:18px; cursor:pointer;
@@ -332,33 +329,7 @@
 </div>
 
 <script>
-  const PEN_VISUAL_WIDTH_PX = 2.5;
-  const STUDENT_NAME = '陳怡安';
-
-  /* ============================================
-     向量筆跡記錄工具（取代舊版的像素快照方案）
-     每一筆記錄的是「相對於畫布寬高的比例座標」(0~1)，
-     旋轉/縮放後只要用新的寬高重新換算，就能完整還原筆跡，
-     不會因為畫布尺寸改變（旋轉）而遺失或錯位。
-     ============================================ */
-  function redrawStrokes(strokes, ctxRef, cssWidth, cssHeight, color) {
-    if (!strokes || !strokes.length) return;
-    ctxRef.strokeStyle = color;
-    ctxRef.lineWidth = PEN_VISUAL_WIDTH_PX;
-    ctxRef.lineCap = 'round';
-    ctxRef.lineJoin = 'round';
-    strokes.forEach(stroke => {
-      if (!stroke || stroke.length < 2) return;
-      ctxRef.beginPath();
-      ctxRef.moveTo(stroke[0].xr * cssWidth, stroke[0].yr * cssHeight);
-      for (let i = 1; i < stroke.length; i++) {
-        ctxRef.lineTo(stroke[i].xr * cssWidth, stroke[i].yr * cssHeight);
-      }
-      ctxRef.stroke();
-    });
-  }
-
-  // ========== 正常（原始版）簽名畫布 ==========
+  // ========== 正常簽名畫布 ==========
   const canvas = document.getElementById('signatureCanvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   const expandBtn = document.getElementById('expandHintBtn');
@@ -367,8 +338,9 @@
   let drawing = false;
   let hasSignature = false;
   let last = { x: 0, y: 0 };
-  let normalStrokes = [];
-  let currentNormalStroke = null;
+
+  const PEN_VISUAL_WIDTH_PX = 2.5;
+  const STUDENT_NAME = '陳怡安';
 
   function resizeCanvasToDisplaySize(canvas) {
     const dpr = window.devicePixelRatio || 1;
@@ -404,25 +376,10 @@
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
-  /**
-   * preserve = true：旋轉/resize 時呼叫，重繪既有筆跡，不清空
-   * preserve = false：第一次載入或清空重簽時呼叫，畫水印文字
-   */
-  function initSignaturePad(preserve) {
+  function initSignaturePad() {
     resizeCanvasToDisplaySize(canvas);
-    const dpr = window.devicePixelRatio || 1;
-    const cssWidth = canvas.width / dpr;
-    const cssHeight = canvas.height / dpr;
-
-    if (preserve && normalStrokes.length) {
-      ctx.clearRect(0, 0, cssWidth, cssHeight);
-      redrawStrokes(normalStrokes, ctx, cssWidth, cssHeight, '#152238');
-      hasSignature = true;
-      expandBtn.classList.add('hidden');
-    } else {
-      drawGhostText();
-      hasSignature = false;
-    }
+    drawGhostText();
+    hasSignature = false;
 
     canvas.onpointerdown = e => {
       drawing = true;
@@ -432,9 +389,6 @@
         expandBtn.classList.add('hidden');
         hasSignature = true;
       }
-      const rect = canvas.getBoundingClientRect();
-      currentNormalStroke = [{ xr: last.x / rect.width, yr: last.y / rect.height }];
-      normalStrokes.push(currentNormalStroke);
     };
 
     canvas.onpointermove = e => {
@@ -449,8 +403,6 @@
       ctx.lineTo(p.x, p.y);
       ctx.stroke();
       last = p;
-      const rect = canvas.getBoundingClientRect();
-      currentNormalStroke.push({ xr: p.x / rect.width, yr: p.y / rect.height });
     };
 
     const stopDrawing = () => {
@@ -468,8 +420,6 @@
   clearBtn.addEventListener('click', () => {
     drawing = false;
     hasSignature = false;
-    normalStrokes = [];
-    currentNormalStroke = null;
     expandBtn.classList.remove('hidden');
     drawGhostText();
     window.__finalSignatureDataURL = null;
@@ -477,7 +427,7 @@
 
   expandBtn.addEventListener('click', enterFullscreenSignature);
 
-  // ========== 全螢幕簽名（放大版）==========
+  // ========== 全螢幕簽名 ==========
   const fsModal = document.getElementById('fullscreenModal');
   const fsPad = document.getElementById('fullscreenPad');
   const fsCtx = fsPad.getContext('2d', { willReadFrequently: true });
@@ -489,74 +439,67 @@
   let fsHasSignature = false;
   let fsLast = { x: 0, y: 0 };
   let fsResizeHandlerBound = false;
-  let fsStrokes = [];
-  let currentFsStroke = null;
+  let fsSignatureSnapshot = null; // 保存簽名快照
 
-  function getDynamicBorderWidth() {
-    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
-    const dpr = window.devicePixelRatio;
-    let borderWidth;
-    if (shorterSide < 600) borderWidth = 2.0;
-    else if (shorterSide < 900) borderWidth = 2.5;
-    else if (shorterSide < 1200) borderWidth = 2.8;
-    else if (shorterSide < 1500) borderWidth = 3.0;
-    else if (shorterSide < 2000) borderWidth = 3.2;
-    else borderWidth = 3.5;
-    if (dpr > 2) borderWidth = borderWidth * 0.9;
-    return Math.max(1.5, Math.min(borderWidth, 4.0));
-  }
-
-  function getDynamicWatermarkFontSize() {
-    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
-    let fontSizeRatio;
-    if (shorterSide < 600) fontSizeRatio = 0.15;
-    else if (shorterSide < 900) fontSizeRatio = 0.18;
-    else if (shorterSide < 1500) fontSizeRatio = 0.20;
-    else fontSizeRatio = 0.22;
-    const fontSize = Math.round(shorterSide * fontSizeRatio);
-    return Math.max(40, Math.min(fontSize, 300));
-  }
-
-  function applyDynamicStyles() {
-    const borderWidth = getDynamicBorderWidth();
-    const watermarkSize = getDynamicWatermarkFontSize();
-    const container = document.querySelector('.fullscreen-canvas-container');
-    if (container) container.style.borderWidth = borderWidth + 'px';
-    const watermark = document.querySelector('.signature-watermark');
-    if (watermark) watermark.style.fontSize = watermarkSize + 'px';
-  }
-
-  /**
-   * 用 fsPad 自身的 getBoundingClientRect() 來量測畫布實際顯示尺寸，
-   * 這個尺寸已經因為 CSS width:100%/height:100% 貼合容器「內緣」
-   * （容器邊框已用 border-box 內縮），所以量到的就是扣掉邊框後的正確尺寸。
-   * 必須先套用 applyDynamicStyles()（設定好邊框寬度）之後再量測。
-   */
   function sizeFullscreenCanvas() {
     const dpr = window.devicePixelRatio || 1;
-    const rect = fsPad.getBoundingClientRect();
-    fsPad.width = Math.max(1, Math.round(rect.width * dpr));
-    fsPad.height = Math.max(1, Math.round(rect.height * dpr));
+    const buttonHeight = 64;
+    fsPad.width = window.innerWidth * dpr;
+    fsPad.height = (window.innerHeight - buttonHeight) * dpr;
     fsCtx.scale(dpr, dpr);
   }
 
   /**
-   * preserve = true：旋轉 / resize 時呼叫，重繪既有筆跡
-   * preserve = false：第一次開啟全螢幕時呼叫，畫布清空
+   * 保存簽名快照（旋轉前調用）
    */
-  function initFullscreenSignature(preserve) {
-    sizeFullscreenCanvas();
+  function saveSignatureSnapshot() {
     const dpr = window.devicePixelRatio || 1;
-    const cssWidth = fsPad.width / dpr;
-    const cssHeight = fsPad.height / dpr;
+    try {
+      fsSignatureSnapshot = fsCtx.getImageData(0, 0, fsPad.width, fsPad.height);
+      console.log('💾 簽名快照已保存');
+    } catch (e) {
+      console.error('快照保存失敗:', e);
+    }
+  }
 
-    fsCtx.clearRect(0, 0, cssWidth, cssHeight);
+  /**
+   * 恢復簽名快照（旋轉後調用）
+   */
+  function restoreSignatureSnapshot() {
+    if (!fsSignatureSnapshot) return;
+    
+    try {
+      const dpr = window.devicePixelRatio || 1;
+      
+      // 如果畫布尺寸變化（旋轉），調整快照尺寸
+      if (fsSignatureSnapshot.width !== fsPad.width || fsSignatureSnapshot.height !== fsPad.height) {
+        // 創建臨時畫布存儲舊快照
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = fsSignatureSnapshot.width;
+        tmpCanvas.height = fsSignatureSnapshot.height;
+        const tmpCtx = tmpCanvas.getContext('2d');
+        tmpCtx.putImageData(fsSignatureSnapshot, 0, 0);
+        
+        // 清除舊的快照
+        fsSignatureSnapshot = null;
+      }
+      
+      // 將快照放回畫布
+      fsCtx.putImageData(fsSignatureSnapshot, 0, 0);
+      console.log('✅ 簽名已恢復');
+    } catch (e) {
+      console.error('快照恢復失敗:', e);
+    }
+  }
 
-    if (preserve && fsStrokes.length) {
-      redrawStrokes(fsStrokes, fsCtx, cssWidth, cssHeight, '#FFFFFF');
-      fsHasSignature = true;
+  function initFullscreenSignature() {
+    sizeFullscreenCanvas();
+    
+    // 如果有快照，恢復簽名；否則清空
+    if (fsSignatureSnapshot && fsHasSignature) {
+      restoreSignatureSnapshot();
     } else {
-      fsHasSignature = false;
+      fsCtx.clearRect(0, 0, fsPad.width / (window.devicePixelRatio || 1), fsPad.height / (window.devicePixelRatio || 1));
     }
 
     fsPad.onpointerdown = e => {
@@ -564,9 +507,9 @@
       const rect = fsPad.getBoundingClientRect();
       fsLast = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       fsPad.setPointerCapture(e.pointerId);
-      fsHasSignature = true;
-      currentFsStroke = [{ xr: fsLast.x / rect.width, yr: fsLast.y / rect.height }];
-      fsStrokes.push(currentFsStroke);
+      if (!fsHasSignature) {
+        fsHasSignature = true;
+      }
     };
 
     fsPad.onpointermove = e => {
@@ -582,63 +525,137 @@
       fsCtx.lineTo(p.x, p.y);
       fsCtx.stroke();
       fsLast = p;
-      currentFsStroke.push({ xr: p.x / rect.width, yr: p.y / rect.height });
+      
+      // 即時保存快照
+      fsSignatureSnapshot = fsCtx.getImageData(0, 0, fsPad.width, fsPad.height);
     };
 
-    const stopFsDrawing = () => { fsDrawing = false; };
+    const stopFsDrawing = () => { 
+      if (!fsDrawing) return; 
+      fsDrawing = false;
+      // 停止繪製時保存快照
+      saveSignatureSnapshot();
+    };
     fsPad.onpointerup = stopFsDrawing;
     fsPad.onpointercancel = stopFsDrawing;
     fsPad.onpointerleave = stopFsDrawing;
   }
 
-  /**
-   * v7 關鍵修正：不再呼叫瀏覽器原生 requestFullscreen()。
-   * 原因：
-   *   1) 原生全螢幕會觸發系統「如何退出全螢幕」提示框，
-   *      該提示框位置與顯示秒數由瀏覽器控制，網頁端無法調整，
-   *      且會遮住畫面下方的「確認簽名」按鈕。
-   *   2) iPad 上連續旋轉 2 次後，原生全螢幕的版面有時會抓不到
-   *      正確的視窗高度，導致按鈕列消失。
-   * 改用純 CSS position:fixed 模擬全螢幕，視覺效果相同，
-   * 但完全由網頁自己控制版面，不會有上述兩個問題。
-   */
+  function getDynamicBorderWidth() {
+    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
+    const dpr = window.devicePixelRatio;
+    
+    let borderWidth;
+    
+    if (shorterSide < 600) {
+      borderWidth = 2.0;
+    } else if (shorterSide < 900) {
+      borderWidth = 2.5;
+    } else if (shorterSide < 1200) {
+      borderWidth = 2.8;
+    } else if (shorterSide < 1500) {
+      borderWidth = 3.0;
+    } else if (shorterSide < 2000) {
+      borderWidth = 3.2;
+    } else {
+      borderWidth = 3.5;
+    }
+    
+    if (dpr > 2) {
+      borderWidth = borderWidth * 0.9;
+    }
+    
+    borderWidth = Math.max(1.5, Math.min(borderWidth, 4.0));
+    
+    return borderWidth;
+  }
+
+  function getDynamicWatermarkFontSize() {
+    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
+    
+    let fontSizeRatio;
+    
+    if (shorterSide < 600) {
+      fontSizeRatio = 0.15;
+    } else if (shorterSide < 900) {
+      fontSizeRatio = 0.18;
+    } else if (shorterSide < 1500) {
+      fontSizeRatio = 0.20;
+    } else {
+      fontSizeRatio = 0.22;
+    }
+    
+    const fontSize = Math.round(shorterSide * fontSizeRatio);
+    
+    return Math.max(40, Math.min(fontSize, 300));
+  }
+
+  function applyDynamicStyles() {
+    const borderWidth = getDynamicBorderWidth();
+    const watermarkSize = getDynamicWatermarkFontSize();
+    
+    const container = document.querySelector('.fullscreen-canvas-container');
+    if (container) {
+      container.style.borderWidth = borderWidth + 'px';
+    }
+    
+    const watermark = document.querySelector('.signature-watermark');
+    if (watermark) {
+      watermark.style.fontSize = watermarkSize + 'px';
+    }
+    
+    console.log('📐 動態樣式已應用', {
+      邊框寬度: borderWidth + 'px',
+      浮水印字體: watermarkSize + 'px'
+    });
+  }
+
   function enterFullscreenSignature() {
     fsModal.classList.add('active');
 
+    const requestFS = fsModal.requestFullscreen ||
+                     fsModal.webkitRequestFullscreen ||
+                     fsModal.mozRequestFullScreen ||
+                     fsModal.msRequestFullscreen;
+    if (requestFS) {
+      requestFS.call(fsModal).catch(() => {
+        console.log('Fullscreen API 不可用或被拒絕，改用 CSS 模擬');
+      });
+    }
+
     if (!fsResizeHandlerBound) {
       window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-          applyDynamicStyles();
-          initFullscreenSignature(true); // 保留筆跡
-        }, 350);
+        console.log('🔄 屏幕旋轉檢測');
+        saveSignatureSnapshot(); // 旋轉前保存
+        setTimeout(initFullscreenSignature, 350);
       });
       window.addEventListener('resize', () => {
         if (fsModal.classList.contains('active')) {
-          setTimeout(() => {
-            applyDynamicStyles();
-            initFullscreenSignature(true); // 保留筆跡
-          }, 150);
+          saveSignatureSnapshot(); // 大小改變前保存
+          setTimeout(initFullscreenSignature, 150);
         }
       });
       fsResizeHandlerBound = true;
     }
 
-    fsStrokes = [];
-    currentFsStroke = null;
-
     setTimeout(() => {
       applyDynamicStyles();
-      initFullscreenSignature(false);
+      initFullscreenSignature();
     }, 50);
 
     const watermarkEl = document.getElementById('fullscreenWatermark');
-    if (watermarkEl) watermarkEl.textContent = STUDENT_NAME;
+    if (watermarkEl) {
+      watermarkEl.textContent = STUDENT_NAME;
+    }
   }
 
   function exitFullscreenSignature() {
     fsModal.classList.remove('active');
-    fsStrokes = [];
-    currentFsStroke = null;
+    const exitFS = document.exitFullscreen ||
+                  document.webkitExitFullscreen ||
+                  document.mozCancelFullScreen ||
+                  document.msExitFullscreen;
+    if (exitFS) { exitFS.call(document).catch(() => {}); }
   }
 
   function clearFullscreenPad() {
@@ -646,8 +663,7 @@
     fsCtx.clearRect(0, 0, fsPad.width / dpr, fsPad.height / dpr);
     fsHasSignature = false;
     fsDrawing = false;
-    fsStrokes = [];
-    currentFsStroke = null;
+    fsSignatureSnapshot = null; // 清除快照
   }
 
   function captureFinalSignature(source) {
@@ -694,9 +710,6 @@
         ctx.drawImage(recolorCanvas, 0, 0, w * dpr, h * dpr,
                       (displayWidth - w * scale) / 2, (displayHeight - h * scale) / 2,
                       w * scale, h * scale);
-
-        // 放大版簽名已轉存至原始版畫布，清空向量記錄避免下次誤觸發還原
-        normalStrokes = [];
       }
     } else if (source === 'normal') {
       const dpr = window.devicePixelRatio || 1;
@@ -737,14 +750,23 @@
   clearFsBtn.addEventListener('click', clearFullscreenPad);
   confirmFsBtn.addEventListener('click', () => {
     if (fsHasSignature) captureFinalSignature('fullscreen');
-    fsStrokes = [];
-    currentFsStroke = null;
+    fsSignatureSnapshot = null; // 確認後清除快照
     exitFullscreenSignature();
   });
 
-  window.addEventListener('load', () => initSignaturePad(false));
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      applyDynamicStyles();
+    }, 100);
+  });
+
+  if (document.readyState === 'complete') {
+    applyDynamicStyles();
+  }
+
+  window.addEventListener('load', initSignaturePad);
   window.addEventListener('resize', () => {
-    if (!fsModal.classList.contains('active')) initSignaturePad(true);
+    if (!fsModal.classList.contains('active')) initSignaturePad();
   });
 </script>
 </body>
