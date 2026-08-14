@@ -27,16 +27,9 @@
       radial-gradient(circle at 20% -10%, #2A4C74 0%, transparent 45%),
       var(--steel-deep);
   }
-
-  /* ============================================
-     v8 修正 - Bug#3：iPad 兩側長條空白
-     改用 clamp() 讓表單寬度依裝置視窗寬度動態調整，
-     不再是固定 460px 死板上限，平板/大螢幕會依比例變寬，
-     減少兩側浪費的空白。
-     ============================================ */
   .device{
     width:100%;
-    max-width: clamp(360px, 92vw, 820px);
+    max-width:460px;
     min-height:100vh;
     background:var(--paper);
     position:relative;
@@ -105,6 +98,7 @@
     font-size:14px; font-weight:700; color:var(--steel-deep); margin:0;
   }
 
+  /* 課程地圖說明 警示卡 */
   .warn-card{
     display:flex; gap:10px;
     background:var(--signal-dim); border:1px solid #FFCBB0; border-radius:12px;
@@ -119,6 +113,7 @@
   .warn-card .txt b{color:var(--steel-deep); display:block; margin-bottom:2px; font-size:13.5px;}
   .warn-card a{color:var(--steel); font-weight:700; text-decoration:none;}
 
+  /* ---- 簽名區塊 ---- */
   .sig-wrap{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px;}
 
   .sig-label{
@@ -157,12 +152,14 @@
   }
   .btn-clear:hover{background:var(--steel-pale);}
 
+  /* 送出提醒卡 */
   .notice-card{
     background:var(--signal-dim); border:1px solid #FFCBB0; border-radius:12px;
     padding:13px 14px; margin-top:16px; font-size:12.5px; color:#7A3A1E; line-height:1.7;
   }
   .notice-card b{color:var(--steel-deep);}
 
+  /* ---- 底部按鈕列 ---- */
   .cta-bar{
     position:sticky; left:0; right:0; bottom:0;
     background:linear-gradient(0deg, var(--paper) 60%, rgba(251,250,247,0));
@@ -179,7 +176,12 @@
   }
   .btn-next:active{transform:translateY(1px);}
 
-  /* ---- 全螢幕簽名 Modal（純 CSS 模擬，無原生 Fullscreen API） ---- */
+  /* ============================================
+     全螢幕簽名 Modal（v7：純 CSS 模擬全螢幕，
+     不使用瀏覽器原生 Fullscreen API，
+     避免系統「如何退出全螢幕」提示遮擋按鈕，
+     以及 iPad 連續旋轉後按鈕消失的問題）
+     ============================================ */
   .fullscreen-modal{
     display:none;
     position:fixed;
@@ -191,12 +193,14 @@
   }
   .fullscreen-modal.active{display:block;}
 
+  /* 全屏簽名容器：明確寬高（不再依賴 flex 自動撐開），
+     border-box 讓邊框內縮，畫布 100% 貼合容器內緣 → 四邊都會看到邊框 */
   .fullscreen-canvas-container{
     position:absolute;
     top:0; left:0; right:0;
-    height:calc(100% - 64px);
+    height:calc(100% - 64px);   /* 保留底部 64px 給按鈕列 */
     box-sizing:border-box;
-    border:2px solid #FFFFFF;
+    border:2px solid #FFFFFF;   /* 預設白色邊框，JS 會動態調整寬度 */
     background:#000;
     overflow:hidden;
   }
@@ -207,7 +211,7 @@
     width:100%;
     height:100%;
     display:block;
-    background:transparent;
+    background:transparent;     /* 關鍵修正：透明背景，讓浮水印透出來 */
     cursor:crosshair;
     touch-action:none;
     z-index:1;
@@ -221,7 +225,7 @@
     font-weight:bold;
     color:rgba(200,200,200,0.35);
     pointer-events:none;
-    z-index:0;
+    z-index:0;                  /* 在畫布之下，但畫布已透明所以能透出 */
     font-family:Arial,"Noto Sans TC",sans-serif;
     white-space:nowrap;
     user-select:none;
@@ -312,6 +316,7 @@
     <button class="btn btn-next" type="button" id="submitBtn">送出紀錄表</button>
   </div>
 
+  <!-- 全螢幕簽名 Modal -->
   <div class="fullscreen-modal" id="fullscreenModal">
     <div class="fullscreen-canvas-container">
       <canvas id="fullscreenPad"></canvas>
@@ -331,40 +336,12 @@
   const STUDENT_NAME = '陳怡安';
 
   /* ============================================
-     v8：簽名者角色 + 生物特徵擷取基礎架構
-     ------------------------------------------------
-     簽名真偽比對的技術原理：
-       - 一般簽名只留下「最終圖案」，容易被單純描摹複製。
-       - 若額外記錄「筆畫順序 + 每個點的時間戳記」，就構成
-         業界所稱的「動態簽名生物特徵」(Dynamic/Online Signature
-         Biometrics)，比對時可分析下筆順序、速度、停頓等，
-         比單純比對圖形更難偽造。
-       - 這裡的 fsStrokes / normalStrokes 本身已經是「筆畫順序」
-         的向量資料，v8 額外加上每個點的時間戳記 t，
-         之後只要把 window.__signatureBiometricData 傳到後端
-         資料庫存起來，未來就能用動態時間校準（DTW）等演算法
-         比對新簽名與歷史簽名是否為同一人所寫。
-       - 目前後端（NAS/Docker）尚未建置，這裡先建立好「擷取」
-         這一端的資料格式，之後接上後端即可直接使用。
-       - 依需求：老師簽名不需要這層驗證，只有學生/家長需要。
+     向量筆跡記錄工具（取代舊版的像素快照方案）
+     每一筆記錄的是「相對於畫布寬高的比例座標」(0~1)，
+     旋轉/縮放後只要用新的寬高重新換算，就能完整還原筆跡，
+     不會因為畫布尺寸改變（旋轉）而遺失或錯位。
      ============================================ */
-  const SIGNER_ROLE = 'student'; // 'student' | 'parent' | 'teacher'（未來可由頁面/表單參數帶入）
-  const ENABLE_BIOMETRIC_CAPTURE = (SIGNER_ROLE === 'student' || SIGNER_ROLE === 'parent');
-
-  function nowTs() {
-    return (window.performance && performance.now) ? performance.now() : Date.now();
-  }
-
-  /* ============================================
-     向量筆跡工具（v8：改成「絕對座標 + 等比例縮放置中」）
-     ------------------------------------------------
-     v7 用的是「相對比例 (x/寬度, y/高度)」重繪，旋轉時寬高比
-     劇烈改變會讓筆跡被分別在 X、Y 軸用不同倍率拉伸，造成變形。
-     v8 改成：記錄「目前畫布尺寸下的絕對座標」，每次要重繪前，
-     用「等比例縮放 + 置中」(對應圖片的 contain 模式) 把舊座標
-     換算到新畫布尺寸，形狀比例永遠不會跑掉，只是整體變大或縮小。
-     ============================================ */
-  function redrawStrokesAbsolute(strokes, ctxRef, color) {
+  function redrawStrokes(strokes, ctxRef, cssWidth, cssHeight, color) {
     if (!strokes || !strokes.length) return;
     ctxRef.strokeStyle = color;
     ctxRef.lineWidth = PEN_VISUAL_WIDTH_PX;
@@ -373,24 +350,11 @@
     strokes.forEach(stroke => {
       if (!stroke || stroke.length < 2) return;
       ctxRef.beginPath();
-      ctxRef.moveTo(stroke[0].x, stroke[0].y);
+      ctxRef.moveTo(stroke[0].xr * cssWidth, stroke[0].yr * cssHeight);
       for (let i = 1; i < stroke.length; i++) {
-        ctxRef.lineTo(stroke[i].x, stroke[i].y);
+        ctxRef.lineTo(stroke[i].xr * cssWidth, stroke[i].yr * cssHeight);
       }
       ctxRef.stroke();
-    });
-  }
-
-  function remapStrokesOnResize(strokes, oldW, oldH, newW, newH) {
-    if (!oldW || !oldH || !strokes || !strokes.length) return;
-    const scale = Math.min(newW / oldW, newH / oldH); // 等比例縮放（不變形）
-    const offsetX = (newW - oldW * scale) / 2;
-    const offsetY = (newH - oldH * scale) / 2;
-    strokes.forEach(stroke => {
-      stroke.forEach(pt => {
-        pt.x = pt.x * scale + offsetX;
-        pt.y = pt.y * scale + offsetY;
-      });
     });
   }
 
@@ -405,12 +369,14 @@
   let last = { x: 0, y: 0 };
   let normalStrokes = [];
   let currentNormalStroke = null;
-  let normalRefW = 0, normalRefH = 0;
 
-  // v8：記住「最終確認簽名」的圖像來源，讓旋轉/捲動時能還原，不會被誤畫成提示字
-  let finalSignatureSourceCanvas = null;
-  let finalSignatureCssW = 0;
-  let finalSignatureCssH = 0;
+  function resizeCanvasToDisplaySize(canvas) {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+  }
 
   function drawGhostText() {
     const width = canvas.width / (window.devicePixelRatio || 1);
@@ -438,64 +404,25 @@
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }
 
-  function paintFinalSignatureOntoSmallCanvas() {
-    if (!finalSignatureSourceCanvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    const displayWidth = canvas.width / dpr;
-    const displayHeight = canvas.height / dpr;
-    const w = finalSignatureCssW, h = finalSignatureCssH;
-    if (!w || !h) return;
-    const scale = Math.min(displayWidth / w, displayHeight / h);
-    ctx.clearRect(0, 0, displayWidth, displayHeight);
-    ctx.drawImage(
-      finalSignatureSourceCanvas,
-      0, 0, finalSignatureSourceCanvas.width, finalSignatureSourceCanvas.height,
-      (displayWidth - w * scale) / 2, (displayHeight - h * scale) / 2,
-      w * scale, h * scale
-    );
-  }
-
   /**
-   * mode: 'ghost'  -> 清空畫水印提示字（清空重簽 / 首次載入）
-   *       'resize' -> 視窗大小改變（旋轉/捲動觸發），依優先序還原內容
+   * preserve = true：旋轉/resize 時呼叫，重繪既有筆跡，不清空
+   * preserve = false：第一次載入或清空重簽時呼叫，畫水印文字
    */
-  function initSignaturePad(mode) {
+  function initSignaturePad(preserve) {
+    resizeCanvasToDisplaySize(canvas);
     const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    const oldW = normalRefW, oldH = normalRefH;
+    const cssWidth = canvas.width / dpr;
+    const cssHeight = canvas.height / dpr;
 
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(dpr, dpr);
-
-    const cssWidth = rect.width;
-    const cssHeight = rect.height;
-
-    if (mode === 'resize') {
-      if (normalStrokes.length) {
-        // 情境 A：使用者正在原始版畫布上直接簽名，旋轉時優先還原向量筆跡
-        remapStrokesOnResize(normalStrokes, oldW, oldH, cssWidth, cssHeight);
-        ctx.clearRect(0, 0, cssWidth, cssHeight);
-        redrawStrokesAbsolute(normalStrokes, ctx, '#152238');
-        hasSignature = true;
-        expandBtn.classList.add('hidden');
-      } else if (finalSignatureSourceCanvas) {
-        // 情境 B：剛從放大版確認完簽名，旋轉/捲動時還原最終簽名圖（v8 修正重點）
-        paintFinalSignatureOntoSmallCanvas();
-        hasSignature = true;
-        expandBtn.classList.add('hidden');
-      } else {
-        drawGhostText();
-        hasSignature = false;
-      }
+    if (preserve && normalStrokes.length) {
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
+      redrawStrokes(normalStrokes, ctx, cssWidth, cssHeight, '#152238');
+      hasSignature = true;
+      expandBtn.classList.add('hidden');
     } else {
       drawGhostText();
       hasSignature = false;
     }
-
-    normalRefW = cssWidth;
-    normalRefH = cssHeight;
 
     canvas.onpointerdown = e => {
       drawing = true;
@@ -505,11 +432,8 @@
         expandBtn.classList.add('hidden');
         hasSignature = true;
       }
-      // 一旦使用者重新在原始版落筆，代表要蓋掉舊的「最終簽名圖」
-      finalSignatureSourceCanvas = null;
-      const pt = { x: last.x, y: last.y };
-      if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
-      currentNormalStroke = [pt];
+      const rect = canvas.getBoundingClientRect();
+      currentNormalStroke = [{ xr: last.x / rect.width, yr: last.y / rect.height }];
       normalStrokes.push(currentNormalStroke);
     };
 
@@ -525,9 +449,8 @@
       ctx.lineTo(p.x, p.y);
       ctx.stroke();
       last = p;
-      const pt = { x: p.x, y: p.y };
-      if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
-      currentNormalStroke.push(pt);
+      const rect = canvas.getBoundingClientRect();
+      currentNormalStroke.push({ xr: p.x / rect.width, yr: p.y / rect.height });
     };
 
     const stopDrawing = () => {
@@ -547,11 +470,9 @@
     hasSignature = false;
     normalStrokes = [];
     currentNormalStroke = null;
-    finalSignatureSourceCanvas = null;
     expandBtn.classList.remove('hidden');
     drawGhostText();
     window.__finalSignatureDataURL = null;
-    window.__signatureBiometricData = null;
   });
 
   expandBtn.addEventListener('click', enterFullscreenSignature);
@@ -570,7 +491,6 @@
   let fsResizeHandlerBound = false;
   let fsStrokes = [];
   let currentFsStroke = null;
-  let fsRefW = 0, fsRefH = 0;
 
   function getDynamicBorderWidth() {
     const shorterSide = Math.min(window.innerWidth, window.innerHeight);
@@ -586,72 +506,58 @@
     return Math.max(1.5, Math.min(borderWidth, 4.0));
   }
 
-  /**
-   * v8 修正：浮水印字太小的問題。
-   * 舊版只用「屏幕短邊 × 固定百分比」，沒考慮姓名實際文字寬度，
-   * 中文姓名字數少時看起來就偏小。
-   * 新版改成跟原始版 drawGhostText() 一樣的做法：
-   * 用 canvas.measureText() 實際量測文字寬度，
-   * 反推字級讓文字寬度佔容器寬度約 72%，並用容器高度做上限保護。
-   */
-  function computeWatermarkFontSize(containerW, containerH, text) {
-    const targetWidth = containerW * 0.72;
-    const measureCanvas = computeWatermarkFontSize._c || (computeWatermarkFontSize._c = document.createElement('canvas'));
-    const mctx = measureCanvas.getContext('2d');
-    let fontSize = Math.min(containerH * 0.55, 400);
-    mctx.font = `bold ${fontSize}px "Noto Sans TC","Microsoft JhengHei",sans-serif`;
-    let measured = mctx.measureText(text).width;
-    if (measured > 0) {
-      fontSize = fontSize * (targetWidth / measured);
-      fontSize = Math.min(fontSize, containerH * 0.6);
-    }
-    return Math.max(32, Math.round(fontSize));
+  function getDynamicWatermarkFontSize() {
+    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
+    let fontSizeRatio;
+    if (shorterSide < 600) fontSizeRatio = 0.15;
+    else if (shorterSide < 900) fontSizeRatio = 0.18;
+    else if (shorterSide < 1500) fontSizeRatio = 0.20;
+    else fontSizeRatio = 0.22;
+    const fontSize = Math.round(shorterSide * fontSizeRatio);
+    return Math.max(40, Math.min(fontSize, 300));
   }
 
   function applyDynamicStyles() {
     const borderWidth = getDynamicBorderWidth();
+    const watermarkSize = getDynamicWatermarkFontSize();
     const container = document.querySelector('.fullscreen-canvas-container');
     if (container) container.style.borderWidth = borderWidth + 'px';
-
     const watermark = document.querySelector('.signature-watermark');
-    if (container && watermark) {
-      const cW = container.clientWidth;
-      const cH = container.clientHeight;
-      const fontSize = computeWatermarkFontSize(cW, cH, STUDENT_NAME);
-      watermark.style.fontSize = fontSize + 'px';
-    }
+    if (watermark) watermark.style.fontSize = watermarkSize + 'px';
   }
 
+  /**
+   * 用 fsPad 自身的 getBoundingClientRect() 來量測畫布實際顯示尺寸，
+   * 這個尺寸已經因為 CSS width:100%/height:100% 貼合容器「內緣」
+   * （容器邊框已用 border-box 內縮），所以量到的就是扣掉邊框後的正確尺寸。
+   * 必須先套用 applyDynamicStyles()（設定好邊框寬度）之後再量測。
+   */
   function sizeFullscreenCanvas() {
     const dpr = window.devicePixelRatio || 1;
     const rect = fsPad.getBoundingClientRect();
     fsPad.width = Math.max(1, Math.round(rect.width * dpr));
     fsPad.height = Math.max(1, Math.round(rect.height * dpr));
-    fsCtx.setTransform(1, 0, 0, 1, 0, 0);
     fsCtx.scale(dpr, dpr);
-    return { cssWidth: rect.width, cssHeight: rect.height };
   }
 
   /**
-   * preserve = true：旋轉 / resize 時呼叫，保留並等比例重繪筆跡
+   * preserve = true：旋轉 / resize 時呼叫，重繪既有筆跡
    * preserve = false：第一次開啟全螢幕時呼叫，畫布清空
    */
   function initFullscreenSignature(preserve) {
-    const oldW = fsRefW, oldH = fsRefH;
-    const { cssWidth, cssHeight } = sizeFullscreenCanvas();
+    sizeFullscreenCanvas();
+    const dpr = window.devicePixelRatio || 1;
+    const cssWidth = fsPad.width / dpr;
+    const cssHeight = fsPad.height / dpr;
 
     fsCtx.clearRect(0, 0, cssWidth, cssHeight);
 
     if (preserve && fsStrokes.length) {
-      remapStrokesOnResize(fsStrokes, oldW, oldH, cssWidth, cssHeight);
-      redrawStrokesAbsolute(fsStrokes, fsCtx, '#FFFFFF');
+      redrawStrokes(fsStrokes, fsCtx, cssWidth, cssHeight, '#FFFFFF');
       fsHasSignature = true;
     } else {
       fsHasSignature = false;
     }
-
-    fsRefW = cssWidth;
-    fsRefH = cssHeight;
 
     fsPad.onpointerdown = e => {
       fsDrawing = true;
@@ -659,9 +565,7 @@
       fsLast = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       fsPad.setPointerCapture(e.pointerId);
       fsHasSignature = true;
-      const pt = { x: fsLast.x, y: fsLast.y };
-      if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
-      currentFsStroke = [pt];
+      currentFsStroke = [{ xr: fsLast.x / rect.width, yr: fsLast.y / rect.height }];
       fsStrokes.push(currentFsStroke);
     };
 
@@ -678,9 +582,7 @@
       fsCtx.lineTo(p.x, p.y);
       fsCtx.stroke();
       fsLast = p;
-      const pt = { x: p.x, y: p.y };
-      if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
-      currentFsStroke.push(pt);
+      currentFsStroke.push({ xr: p.x / rect.width, yr: p.y / rect.height });
     };
 
     const stopFsDrawing = () => { fsDrawing = false; };
@@ -689,30 +591,40 @@
     fsPad.onpointerleave = stopFsDrawing;
   }
 
+  /**
+   * v7 關鍵修正：不再呼叫瀏覽器原生 requestFullscreen()。
+   * 原因：
+   *   1) 原生全螢幕會觸發系統「如何退出全螢幕」提示框，
+   *      該提示框位置與顯示秒數由瀏覽器控制，網頁端無法調整，
+   *      且會遮住畫面下方的「確認簽名」按鈕。
+   *   2) iPad 上連續旋轉 2 次後，原生全螢幕的版面有時會抓不到
+   *      正確的視窗高度，導致按鈕列消失。
+   * 改用純 CSS position:fixed 模擬全螢幕，視覺效果相同，
+   * 但完全由網頁自己控制版面，不會有上述兩個問題。
+   */
   function enterFullscreenSignature() {
     fsModal.classList.add('active');
 
     if (!fsResizeHandlerBound) {
       window.addEventListener('orientationchange', () => {
-        if (!fsModal.classList.contains('active')) return;
         setTimeout(() => {
           applyDynamicStyles();
-          initFullscreenSignature(true);
+          initFullscreenSignature(true); // 保留筆跡
         }, 350);
       });
       window.addEventListener('resize', () => {
-        if (!fsModal.classList.contains('active')) return;
-        setTimeout(() => {
-          applyDynamicStyles();
-          initFullscreenSignature(true);
-        }, 150);
+        if (fsModal.classList.contains('active')) {
+          setTimeout(() => {
+            applyDynamicStyles();
+            initFullscreenSignature(true); // 保留筆跡
+          }, 150);
+        }
       });
       fsResizeHandlerBound = true;
     }
 
     fsStrokes = [];
     currentFsStroke = null;
-    fsRefW = 0; fsRefH = 0;
 
     setTimeout(() => {
       applyDynamicStyles();
@@ -783,21 +695,8 @@
                       (displayWidth - w * scale) / 2, (displayHeight - h * scale) / 2,
                       w * scale, h * scale);
 
-        // v8 關鍵修正：記住這張最終簽名圖，往後原始版旋轉/捲動時優先還原它
-        finalSignatureSourceCanvas = recolorCanvas;
-        finalSignatureCssW = w;
-        finalSignatureCssH = h;
+        // 放大版簽名已轉存至原始版畫布，清空向量記錄避免下次誤觸發還原
         normalStrokes = [];
-        currentNormalStroke = null;
-
-        if (ENABLE_BIOMETRIC_CAPTURE) {
-          window.__signatureBiometricData = {
-            role: SIGNER_ROLE,
-            source: 'fullscreen',
-            capturedAt: Date.now(),
-            strokes: fsStrokes  // 每筆含 x,y,t（相對於簽名當下的畫布座標與時間）
-          };
-        }
       }
     } else if (source === 'normal') {
       const dpr = window.devicePixelRatio || 1;
@@ -826,20 +725,6 @@
         window.__finalSignatureDataURL = cropCanvas.toDataURL();
         window.__finalSignatureAspectRatio = w / h;
         window.__finalSignatureSource = 'normal';
-
-        // 直接在原始版簽名時，也同步記錄最終圖（防止極端情況下向量資料遺失時仍有備援）
-        finalSignatureSourceCanvas = cropCanvas;
-        finalSignatureCssW = w;
-        finalSignatureCssH = h;
-
-        if (ENABLE_BIOMETRIC_CAPTURE) {
-          window.__signatureBiometricData = {
-            role: SIGNER_ROLE,
-            source: 'normal',
-            capturedAt: Date.now(),
-            strokes: normalStrokes
-          };
-        }
       }
     }
   }
@@ -857,9 +742,9 @@
     exitFullscreenSignature();
   });
 
-  window.addEventListener('load', () => initSignaturePad('ghost'));
+  window.addEventListener('load', () => initSignaturePad(false));
   window.addEventListener('resize', () => {
-    if (!fsModal.classList.contains('active')) initSignaturePad('resize');
+    if (!fsModal.classList.contains('active')) initSignaturePad(true);
   });
 </script>
 </body>
