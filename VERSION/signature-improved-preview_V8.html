@@ -27,6 +27,13 @@
       radial-gradient(circle at 20% -10%, #2A4C74 0%, transparent 45%),
       var(--steel-deep);
   }
+
+  /* ============================================
+     v8 修正 - Bug#3：iPad 兩側長條空白
+     改用 clamp() 讓表單寬度依裝置視窗寬度動態調整，
+     不再是固定 460px 死板上限，平板/大螢幕會依比例變寬，
+     減少兩側浪費的空白。
+     ============================================ */
   .device{
     width:100%;
     max-width: clamp(360px, 92vw, 820px);
@@ -38,6 +45,7 @@
     box-shadow:0 0 60px rgba(0,0,0,.4);
   }
 
+  /* ---- Header / progress ---- */
   header{
     background:linear-gradient(135deg, var(--steel-deep), var(--steel) 70%);
     color:#fff;
@@ -85,6 +93,7 @@
   }
   .step-label b{color:#fff;}
 
+  /* ---- Body ---- */
   main{flex:1; padding:22px 20px 110px; overflow-y:auto;}
 
   .card{
@@ -121,15 +130,10 @@
     background:#fff; border:1.5px solid var(--signal); color:var(--signal);
     border-radius:999px; padding:6px 12px; font-size:12.5px; font-weight:700;
     cursor:pointer; transition:.15s;
-    flex-shrink:0;
   }
-  .expand-btn:hover{background:var(--signal-dim);}
+  .expand-btn:hover:not(.hidden){background:var(--signal-dim);}
+  .expand-btn.hidden{display:none;}
 
-  /* ============================================
-     v9 修正 b：簽名框改成 16:9 比例（不再是固定 180px 高度），
-     依容器寬度自動算出對應高度，寬螢幕（clamp 後變寬的 iPad）
-     不會再變成又扁又寬的長條。
-     ============================================ */
   .sig-canvas-container{
     position:relative;
     border:1.5px solid var(--line);
@@ -137,12 +141,11 @@
     background:var(--steel-pale);
     overflow:hidden;
     margin-bottom:12px;
-    aspect-ratio: 16 / 9;
     display:flex; align-items:center; justify-content:center;
   }
 
   #signatureCanvas{
-    width:100%; height:100%; display:block;
+    width:100%; height:180px; display:block;
     touch-action:none; cursor:crosshair;
   }
 
@@ -176,6 +179,7 @@
   }
   .btn-next:active{transform:translateY(1px);}
 
+  /* ---- 全螢幕簽名 Modal（純 CSS 模擬，無原生 Fullscreen API） ---- */
   .fullscreen-modal{
     display:none;
     position:fixed;
@@ -326,7 +330,25 @@
   const PEN_VISUAL_WIDTH_PX = 2.5;
   const STUDENT_NAME = '陳怡安';
 
-  const SIGNER_ROLE = 'student'; // 'student' | 'parent' | 'teacher'
+  /* ============================================
+     v8：簽名者角色 + 生物特徵擷取基礎架構
+     ------------------------------------------------
+     簽名真偽比對的技術原理：
+       - 一般簽名只留下「最終圖案」，容易被單純描摹複製。
+       - 若額外記錄「筆畫順序 + 每個點的時間戳記」，就構成
+         業界所稱的「動態簽名生物特徵」(Dynamic/Online Signature
+         Biometrics)，比對時可分析下筆順序、速度、停頓等，
+         比單純比對圖形更難偽造。
+       - 這裡的 fsStrokes / normalStrokes 本身已經是「筆畫順序」
+         的向量資料，v8 額外加上每個點的時間戳記 t，
+         之後只要把 window.__signatureBiometricData 傳到後端
+         資料庫存起來，未來就能用動態時間校準（DTW）等演算法
+         比對新簽名與歷史簽名是否為同一人所寫。
+       - 目前後端（NAS/Docker）尚未建置，這裡先建立好「擷取」
+         這一端的資料格式，之後接上後端即可直接使用。
+       - 依需求：老師簽名不需要這層驗證，只有學生/家長需要。
+     ============================================ */
+  const SIGNER_ROLE = 'student'; // 'student' | 'parent' | 'teacher'（未來可由頁面/表單參數帶入）
   const ENABLE_BIOMETRIC_CAPTURE = (SIGNER_ROLE === 'student' || SIGNER_ROLE === 'parent');
 
   function nowTs() {
@@ -334,31 +356,16 @@
   }
 
   /* ============================================
-     v9：改用「固定基準座標系」(canonical coordinate space)
+     向量筆跡工具（v8：改成「絕對座標 + 等比例縮放置中」）
      ------------------------------------------------
-     v8 的問題：每次旋轉都拿「上一次重繪後的畫布尺寸」當基準去
-     換算下一次，多次旋轉會不斷「二次縮放」而累積誤差 → 越轉越小。
-
-     v9 的做法：簽名一開始下筆的那一刻，就把當時的畫布尺寸記錄
-     為「永久基準尺寸」(canonicalW / canonicalH)，此後不管旋轉
-     幾次，永遠是「用這個固定不變的基準」重新換算到目前畫面，
-     不會有累積誤差，轉幾次形狀和大小都保持一致。
+     v7 用的是「相對比例 (x/寬度, y/高度)」重繪，旋轉時寬高比
+     劇烈改變會讓筆跡被分別在 X、Y 軸用不同倍率拉伸，造成變形。
+     v8 改成：記錄「目前畫布尺寸下的絕對座標」，每次要重繪前，
+     用「等比例縮放 + 置中」(對應圖片的 contain 模式) 把舊座標
+     換算到新畫布尺寸，形狀比例永遠不會跑掉，只是整體變大或縮小。
      ============================================ */
-
-  // 即時畫筆座標 → 換算成「基準座標系」座標（供儲存）
-  function liveToCanonical(liveX, liveY, liveW, liveH, canonW, canonH) {
-    const scale = Math.min(liveW / canonW, liveH / canonH);
-    const offsetX = (liveW - canonW * scale) / 2;
-    const offsetY = (liveH - canonH * scale) / 2;
-    return { x: (liveX - offsetX) / scale, y: (liveY - offsetY) / scale };
-  }
-
-  // 用「基準座標系」的筆跡資料，重繪到「目前畫布尺寸」
-  function redrawStrokesCanonical(strokes, ctxRef, color, liveW, liveH, canonW, canonH) {
-    if (!strokes || !strokes.length || !canonW || !canonH) return;
-    const scale = Math.min(liveW / canonW, liveH / canonH);
-    const offsetX = (liveW - canonW * scale) / 2;
-    const offsetY = (liveH - canonH * scale) / 2;
+  function redrawStrokesAbsolute(strokes, ctxRef, color) {
+    if (!strokes || !strokes.length) return;
     ctxRef.strokeStyle = color;
     ctxRef.lineWidth = PEN_VISUAL_WIDTH_PX;
     ctxRef.lineCap = 'round';
@@ -366,11 +373,24 @@
     strokes.forEach(stroke => {
       if (!stroke || stroke.length < 2) return;
       ctxRef.beginPath();
-      ctxRef.moveTo(stroke[0].x * scale + offsetX, stroke[0].y * scale + offsetY);
+      ctxRef.moveTo(stroke[0].x, stroke[0].y);
       for (let i = 1; i < stroke.length; i++) {
-        ctxRef.lineTo(stroke[i].x * scale + offsetX, stroke[i].y * scale + offsetY);
+        ctxRef.lineTo(stroke[i].x, stroke[i].y);
       }
       ctxRef.stroke();
+    });
+  }
+
+  function remapStrokesOnResize(strokes, oldW, oldH, newW, newH) {
+    if (!oldW || !oldH || !strokes || !strokes.length) return;
+    const scale = Math.min(newW / oldW, newH / oldH); // 等比例縮放（不變形）
+    const offsetX = (newW - oldW * scale) / 2;
+    const offsetY = (newH - oldH * scale) / 2;
+    strokes.forEach(stroke => {
+      stroke.forEach(pt => {
+        pt.x = pt.x * scale + offsetX;
+        pt.y = pt.y * scale + offsetY;
+      });
     });
   }
 
@@ -385,8 +405,9 @@
   let last = { x: 0, y: 0 };
   let normalStrokes = [];
   let currentNormalStroke = null;
-  let normalCanonicalW = 0, normalCanonicalH = 0;
+  let normalRefW = 0, normalRefH = 0;
 
+  // v8：記住「最終確認簽名」的圖像來源，讓旋轉/捲動時能還原，不會被誤畫成提示字
   let finalSignatureSourceCanvas = null;
   let finalSignatureCssW = 0;
   let finalSignatureCssH = 0;
@@ -412,6 +433,11 @@
     ctx.fillText(STUDENT_NAME, width / 2, height / 2);
   }
 
+  function canvasPos(canvas, e) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
   function paintFinalSignatureOntoSmallCanvas() {
     if (!finalSignatureSourceCanvas) return;
     const dpr = window.devicePixelRatio || 1;
@@ -430,29 +456,35 @@
   }
 
   /**
-   * mode: 'ghost'  -> 清空畫水印提示字
-   *       'resize' -> 視窗大小改變時，依優先序還原內容
+   * mode: 'ghost'  -> 清空畫水印提示字（清空重簽 / 首次載入）
+   *       'resize' -> 視窗大小改變（旋轉/捲動觸發），依優先序還原內容
    */
   function initSignaturePad(mode) {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
+    const oldW = normalRefW, oldH = normalRefH;
 
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
 
-    const liveW = rect.width;
-    const liveH = rect.height;
+    const cssWidth = rect.width;
+    const cssHeight = rect.height;
 
     if (mode === 'resize') {
-      if (normalStrokes.length && normalCanonicalW && normalCanonicalH) {
-        ctx.clearRect(0, 0, liveW, liveH);
-        redrawStrokesCanonical(normalStrokes, ctx, '#152238', liveW, liveH, normalCanonicalW, normalCanonicalH);
+      if (normalStrokes.length) {
+        // 情境 A：使用者正在原始版畫布上直接簽名，旋轉時優先還原向量筆跡
+        remapStrokesOnResize(normalStrokes, oldW, oldH, cssWidth, cssHeight);
+        ctx.clearRect(0, 0, cssWidth, cssHeight);
+        redrawStrokesAbsolute(normalStrokes, ctx, '#152238');
         hasSignature = true;
+        expandBtn.classList.add('hidden');
       } else if (finalSignatureSourceCanvas) {
+        // 情境 B：剛從放大版確認完簽名，旋轉/捲動時還原最終簽名圖（v8 修正重點）
         paintFinalSignatureOntoSmallCanvas();
         hasSignature = true;
+        expandBtn.classList.add('hidden');
       } else {
         drawGhostText();
         hasSignature = false;
@@ -462,23 +494,20 @@
       hasSignature = false;
     }
 
+    normalRefW = cssWidth;
+    normalRefH = cssHeight;
+
     canvas.onpointerdown = e => {
       drawing = true;
-      const liveRect = canvas.getBoundingClientRect();
-      const liveX = e.clientX - liveRect.left;
-      const liveY = e.clientY - liveRect.top;
-      last = { x: liveX, y: liveY };
+      last = canvasPos(canvas, e);
       canvas.setPointerCapture(e.pointerId);
-      hasSignature = true;
-      finalSignatureSourceCanvas = null;
-
-      if (!normalStrokes.length) {
-        // 這一筆是全新簽名的第一筆 → 把目前尺寸設為永久基準
-        normalCanonicalW = liveRect.width;
-        normalCanonicalH = liveRect.height;
+      if (!hasSignature) {
+        expandBtn.classList.add('hidden');
+        hasSignature = true;
       }
-      const canon = liveToCanonical(liveX, liveY, liveRect.width, liveRect.height, normalCanonicalW, normalCanonicalH);
-      const pt = { x: canon.x, y: canon.y };
+      // 一旦使用者重新在原始版落筆，代表要蓋掉舊的「最終簽名圖」
+      finalSignatureSourceCanvas = null;
+      const pt = { x: last.x, y: last.y };
       if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
       currentNormalStroke = [pt];
       normalStrokes.push(currentNormalStroke);
@@ -486,20 +515,17 @@
 
     canvas.onpointermove = e => {
       if (!drawing) return;
-      const liveRect = canvas.getBoundingClientRect();
-      const liveX = e.clientX - liveRect.left;
-      const liveY = e.clientY - liveRect.top;
+      const p = canvasPos(canvas, e);
       ctx.strokeStyle = '#152238';
       ctx.lineWidth = PEN_VISUAL_WIDTH_PX;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
       ctx.moveTo(last.x, last.y);
-      ctx.lineTo(liveX, liveY);
+      ctx.lineTo(p.x, p.y);
       ctx.stroke();
-      last = { x: liveX, y: liveY };
-      const canon = liveToCanonical(liveX, liveY, liveRect.width, liveRect.height, normalCanonicalW, normalCanonicalH);
-      const pt = { x: canon.x, y: canon.y };
+      last = p;
+      const pt = { x: p.x, y: p.y };
       if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
       currentNormalStroke.push(pt);
     };
@@ -521,14 +547,13 @@
     hasSignature = false;
     normalStrokes = [];
     currentNormalStroke = null;
-    normalCanonicalW = 0; normalCanonicalH = 0;
     finalSignatureSourceCanvas = null;
+    expandBtn.classList.remove('hidden');
     drawGhostText();
     window.__finalSignatureDataURL = null;
     window.__signatureBiometricData = null;
   });
 
-  // v9 修正 a：「點擊放大簽名」按鈕永久顯示，不再因為已簽名而消失
   expandBtn.addEventListener('click', enterFullscreenSignature);
 
   // ========== 全螢幕簽名（放大版）==========
@@ -545,7 +570,7 @@
   let fsResizeHandlerBound = false;
   let fsStrokes = [];
   let currentFsStroke = null;
-  let fsCanonicalW = 0, fsCanonicalH = 0;
+  let fsRefW = 0, fsRefH = 0;
 
   function getDynamicBorderWidth() {
     const shorterSide = Math.min(window.innerWidth, window.innerHeight);
@@ -561,6 +586,14 @@
     return Math.max(1.5, Math.min(borderWidth, 4.0));
   }
 
+  /**
+   * v8 修正：浮水印字太小的問題。
+   * 舊版只用「屏幕短邊 × 固定百分比」，沒考慮姓名實際文字寬度，
+   * 中文姓名字數少時看起來就偏小。
+   * 新版改成跟原始版 drawGhostText() 一樣的做法：
+   * 用 canvas.measureText() 實際量測文字寬度，
+   * 反推字級讓文字寬度佔容器寬度約 72%，並用容器高度做上限保護。
+   */
   function computeWatermarkFontSize(containerW, containerH, text) {
     const targetWidth = containerW * 0.72;
     const measureCanvas = computeWatermarkFontSize._c || (computeWatermarkFontSize._c = document.createElement('canvas'));
@@ -600,20 +633,25 @@
   }
 
   /**
-   * preserve = true：旋轉 / resize 時呼叫，用固定基準座標系重繪筆跡
+   * preserve = true：旋轉 / resize 時呼叫，保留並等比例重繪筆跡
    * preserve = false：第一次開啟全螢幕時呼叫，畫布清空
    */
   function initFullscreenSignature(preserve) {
-    const { cssWidth: liveW, cssHeight: liveH } = sizeFullscreenCanvas();
+    const oldW = fsRefW, oldH = fsRefH;
+    const { cssWidth, cssHeight } = sizeFullscreenCanvas();
 
-    fsCtx.clearRect(0, 0, liveW, liveH);
+    fsCtx.clearRect(0, 0, cssWidth, cssHeight);
 
-    if (preserve && fsStrokes.length && fsCanonicalW && fsCanonicalH) {
-      redrawStrokesCanonical(fsStrokes, fsCtx, '#FFFFFF', liveW, liveH, fsCanonicalW, fsCanonicalH);
+    if (preserve && fsStrokes.length) {
+      remapStrokesOnResize(fsStrokes, oldW, oldH, cssWidth, cssHeight);
+      redrawStrokesAbsolute(fsStrokes, fsCtx, '#FFFFFF');
       fsHasSignature = true;
     } else {
       fsHasSignature = false;
     }
+
+    fsRefW = cssWidth;
+    fsRefH = cssHeight;
 
     fsPad.onpointerdown = e => {
       fsDrawing = true;
@@ -621,13 +659,7 @@
       fsLast = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       fsPad.setPointerCapture(e.pointerId);
       fsHasSignature = true;
-
-      if (!fsStrokes.length) {
-        fsCanonicalW = rect.width;
-        fsCanonicalH = rect.height;
-      }
-      const canon = liveToCanonical(fsLast.x, fsLast.y, rect.width, rect.height, fsCanonicalW, fsCanonicalH);
-      const pt = { x: canon.x, y: canon.y };
+      const pt = { x: fsLast.x, y: fsLast.y };
       if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
       currentFsStroke = [pt];
       fsStrokes.push(currentFsStroke);
@@ -646,8 +678,7 @@
       fsCtx.lineTo(p.x, p.y);
       fsCtx.stroke();
       fsLast = p;
-      const canon = liveToCanonical(p.x, p.y, rect.width, rect.height, fsCanonicalW, fsCanonicalH);
-      const pt = { x: canon.x, y: canon.y };
+      const pt = { x: p.x, y: p.y };
       if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
       currentFsStroke.push(pt);
     };
@@ -681,7 +712,7 @@
 
     fsStrokes = [];
     currentFsStroke = null;
-    fsCanonicalW = 0; fsCanonicalH = 0;
+    fsRefW = 0; fsRefH = 0;
 
     setTimeout(() => {
       applyDynamicStyles();
@@ -696,7 +727,6 @@
     fsModal.classList.remove('active');
     fsStrokes = [];
     currentFsStroke = null;
-    fsCanonicalW = 0; fsCanonicalH = 0;
   }
 
   function clearFullscreenPad() {
@@ -706,7 +736,6 @@
     fsDrawing = false;
     fsStrokes = [];
     currentFsStroke = null;
-    fsCanonicalW = 0; fsCanonicalH = 0;
   }
 
   function captureFinalSignature(source) {
@@ -754,19 +783,19 @@
                       (displayWidth - w * scale) / 2, (displayHeight - h * scale) / 2,
                       w * scale, h * scale);
 
+        // v8 關鍵修正：記住這張最終簽名圖，往後原始版旋轉/捲動時優先還原它
         finalSignatureSourceCanvas = recolorCanvas;
         finalSignatureCssW = w;
         finalSignatureCssH = h;
         normalStrokes = [];
         currentNormalStroke = null;
-        normalCanonicalW = 0; normalCanonicalH = 0;
 
         if (ENABLE_BIOMETRIC_CAPTURE) {
           window.__signatureBiometricData = {
             role: SIGNER_ROLE,
             source: 'fullscreen',
             capturedAt: Date.now(),
-            strokes: fsStrokes
+            strokes: fsStrokes  // 每筆含 x,y,t（相對於簽名當下的畫布座標與時間）
           };
         }
       }
@@ -798,6 +827,7 @@
         window.__finalSignatureAspectRatio = w / h;
         window.__finalSignatureSource = 'normal';
 
+        // 直接在原始版簽名時，也同步記錄最終圖（防止極端情況下向量資料遺失時仍有備援）
         finalSignatureSourceCanvas = cropCanvas;
         finalSignatureCssW = w;
         finalSignatureCssH = h;
@@ -824,7 +854,6 @@
     if (fsHasSignature) captureFinalSignature('fullscreen');
     fsStrokes = [];
     currentFsStroke = null;
-    fsCanonicalW = 0; fsCanonicalH = 0;
     exitFullscreenSignature();
   });
 
