@@ -191,46 +191,12 @@
   }
   .fullscreen-modal.active{display:flex;}
 
-  /* ============================================
-     Bug #1 修正 - Part A：CSS 樣式
-     全屏簽名容器 + 浮水印文字
-     ============================================ */
-
-  .fullscreen-canvas-container{
-    border: 2px solid rgba(180, 180, 180, 0.5);
-    background: #000;
-    position: relative;
-    width: 100%;
-    max-height: calc(100vh - 64px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .signature-watermark{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 80px;
-    font-weight: bold;
-    color: rgba(150, 150, 150, 0.2);
-    pointer-events: none;
-    z-index: 0;
-    font-family: Arial, sans-serif;
-    white-space: nowrap;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
   #fullscreenPad{
     border:none; border-radius:0;
     background:#0A0A0A;
     cursor:crosshair; touch-action:none;
     max-width:100vw;
     max-height:calc(100vh - 64px);
-    position: relative;
-    z-index: 1;
   }
 
   .fs-button-group{
@@ -316,15 +282,10 @@
 
   <!-- 全螢幕簽名 Modal -->
   <div class="fullscreen-modal" id="fullscreenModal">
-    <div class="fullscreen-canvas-container">
-      <canvas id="fullscreenPad"></canvas>
-      <!-- Bug #1 修正 - Part C：浮水印 div -->
-      <div class="signature-watermark" id="fullscreenWatermark">簽名</div>
-    </div>
+    <canvas id="fullscreenPad"></canvas>
     <div class="fs-button-group">
       <button class="btn-clear-fs" id="clearFsBtn" type="button">清空重簽</button>
-      <!-- Bug #1 修正 - 按鈕文本改為「確認簽名(橫式)」 -->
-      <button class="btn-confirm-fs" id="confirmFsBtn" type="button">✓ 確認簽名(橫式)</button>
+      <button class="btn-confirm-fs" id="confirmFsBtn" type="button">✓ 確認簽名</button>
     </div>
     <button class="close-btn" id="closeBtn" type="button" title="關閉（ESC）">✕</button>
   </div>
@@ -455,221 +416,6 @@
     fsCtx.scale(dpr, dpr);
   }
 
-  /* ============================================
-     Bug #1 修正 - Part B：JavaScript v3.0 動態計算代碼
-     ============================================ */
-
-  /**
-   * 檢測是否為 Samsung Fold 設備
-   */
-  function isSamsungFoldDevice() {
-    const ua = navigator.userAgent;
-    return ua.includes('SM-F') || ua.includes('Galaxy Z Fold') || 
-           ua.includes('Galaxy Z Flip');
-  }
-
-  /**
-   * 獲取 Samsung Fold 的折疊狀態
-   */
-  function getSamsungFoldState() {
-    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
-    return shorterSide < 1400 ? 'cover' : 'inner';
-  }
-
-  /**
-   * 檢測是否為蘋果折疊手機（預測）
-   */
-  function isAppleFoldDevice() {
-    const ua = navigator.userAgent;
-    const hasAppleID = ua.includes('iPhone') || ua.includes('iPad') || 
-                       ua.includes('Macintosh');
-    
-    if (!hasAppleID) return false;
-    
-    const possibleIdentifiers = [
-      'iPhone Fold', 'iPhone Flex', 'iPhone Flex Pro', 'iPhone Flex Max',
-      'AppleFold', 'A18 Fold', 'A19 Fold',
-      'iPhone17,', 'iPhone18,', 'iPhone19'
-    ];
-    
-    return possibleIdentifiers.some(id => ua.includes(id));
-  }
-
-  /**
-   * 獲取 Apple Fold 的折疊狀態（預測）
-   */
-  function getAppleFoldState() {
-    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
-    
-    if (shorterSide < 1000) {
-      return 'folded';
-    } else if (shorterSide > 1500) {
-      return 'unfolded';
-    } else {
-      return 'transitioning';
-    }
-  }
-
-  /**
-   * 通用的 Fold 狀態檢測
-   */
-  function getFoldState() {
-    if (isSamsungFoldDevice()) {
-      return getSamsungFoldState();
-    }
-    if (isAppleFoldDevice()) {
-      return getAppleFoldState();
-    }
-    return 'unknown';
-  }
-
-  /**
-   * 檢測是否為任何品牌的折疊設備
-   */
-  function isFoldableDevice() {
-    return isSamsungFoldDevice() || isAppleFoldDevice();
-  }
-
-  /**
-   * 獲取設備顯示層級分類（支持多品牌 Fold）
-   */
-  function getDisplayTier() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const shorterSide = Math.min(width, height);
-    const ua = navigator.userAgent;
-    
-    if (isSamsungFoldDevice()) {
-      const foldState = getSamsungFoldState();
-      return {
-        type: 'fold-phone',
-        brand: 'samsung',
-        mode: foldState,
-        shorterSide,
-        tier: foldState === 'cover' ? 'fold-cover' : 'fold-inner'
-      };
-    }
-    
-    if (isAppleFoldDevice()) {
-      const foldState = getAppleFoldState();
-      return {
-        type: 'fold-phone',
-        brand: 'apple',
-        mode: foldState,
-        shorterSide,
-        tier: foldState === 'folded' ? 'fold-cover' : 'fold-inner',
-        prediction: true
-      };
-    }
-    
-    if (shorterSide < 600) {
-      return { type: 'phone', brand: 'generic', tier: 'small', shorterSide };
-    } else if (shorterSide < 900) {
-      return { type: 'tablet', brand: 'generic', tier: 'medium', shorterSide };
-    } else {
-      return { type: 'tablet', brand: 'generic', tier: 'large', shorterSide };
-    }
-  }
-
-  /**
-   * 動態計算邊框寬度 v3.0
-   */
-  function getDynamicBorderWidth() {
-    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
-    const dpr = window.devicePixelRatio;
-    
-    let borderWidth;
-    
-    if (shorterSide < 600) {
-      borderWidth = 2.0;
-    } else if (shorterSide < 900) {
-      borderWidth = 2.5;
-    } else if (shorterSide < 1200) {
-      borderWidth = 2.8;
-    } else if (shorterSide < 1500) {
-      borderWidth = 3.0;
-    } else if (shorterSide < 2000) {
-      borderWidth = 3.2;
-    } else {
-      borderWidth = 3.5;
-    }
-    
-    if (dpr > 2) {
-      borderWidth = borderWidth * 0.9;
-    }
-    
-    borderWidth = Math.max(1.5, Math.min(borderWidth, 4.0));
-    
-    return borderWidth;
-  }
-
-  /**
-   * 動態計算浮水印字體大小 v3.0
-   */
-  function getDynamicWatermarkFontSize() {
-    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
-    
-    let fontSizeRatio;
-    
-    if (shorterSide < 600) {
-      fontSizeRatio = 0.15;
-    } else if (shorterSide < 900) {
-      fontSizeRatio = 0.18;
-    } else if (shorterSide < 1500) {
-      fontSizeRatio = 0.20;
-    } else {
-      fontSizeRatio = 0.22;
-    }
-    
-    const fontSize = Math.round(shorterSide * fontSizeRatio);
-    
-    return Math.max(40, Math.min(fontSize, 300));
-  }
-
-  /**
-   * 應用動態樣式（邊框 + 浮水印）
-   */
-  function applyDynamicStyles() {
-    const borderWidth = getDynamicBorderWidth();
-    const watermarkSize = getDynamicWatermarkFontSize();
-    const tier = getDisplayTier();
-    
-    const container = document.querySelector('.fullscreen-canvas-container');
-    if (container) {
-      container.style.borderWidth = borderWidth + 'px';
-    }
-    
-    const watermark = document.querySelector('.signature-watermark');
-    if (watermark) {
-      watermark.style.fontSize = watermarkSize + 'px';
-    }
-    
-    console.log('📐 動態樣式已應用 v3.0', {
-      設備: tier.type,
-      品牌: tier.brand,
-      屏幕短邊: tier.shorterSide + 'px',
-      邊框寬度: borderWidth + 'px',
-      浮水印字體: watermarkSize + 'px'
-    });
-  }
-
-  /**
-   * 屏幕旋轉監聽
-   */
-  window.addEventListener('orientationchange', () => {
-    setTimeout(() => {
-      console.log('🔄 屏幕旋轉檢測');
-      applyDynamicStyles();
-    }, 100);
-  });
-
-  /**
-   * 窗口大小改變監聽
-   */
-  window.addEventListener('resize', () => {
-    applyDynamicStyles();
-  });
-
   function initFullscreenSignature() {
     sizeFullscreenCanvas();
     fsCtx.clearRect(0, 0, fsPad.width / (window.devicePixelRatio || 1), fsPad.height / (window.devicePixelRatio || 1));
@@ -726,17 +472,7 @@
       fsResizeHandlerBound = true;
     }
 
-    // 應用動態樣式
-    setTimeout(() => {
-      applyDynamicStyles();
-      initFullscreenSignature();
-    }, 50);
-
-    // 設置浮水印文字
-    const watermarkEl = document.getElementById('fullscreenWatermark');
-    if (watermarkEl) {
-      watermarkEl.textContent = STUDENT_NAME;
-    }
+    setTimeout(initFullscreenSignature, 50);
   }
 
   function exitFullscreenSignature() {
@@ -844,17 +580,6 @@
     if (fsHasSignature) captureFinalSignature('fullscreen');
     exitFullscreenSignature();
   });
-
-  // 頁面加載完成後應用動態樣式
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-      applyDynamicStyles();
-    }, 100);
-  });
-
-  if (document.readyState === 'complete') {
-    applyDynamicStyles();
-  }
 
   window.addEventListener('load', initSignaturePad);
   window.addEventListener('resize', () => {
