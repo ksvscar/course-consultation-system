@@ -36,6 +36,21 @@
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--steel-deep);font-family:var(--font-cjk);color:var(--ink);}
+  /* ============================================
+     v18 修正 Bug3：停用長按觸發的瀏覽器選取文字選單
+     ------------------------------------------------
+     iOS/Android 瀏覽器長按畫面會跳出「拷貝/搜尋/翻譯」選單
+     （原生文字選取功能），簽名時手指在畫布上稍微停留或拖曳
+     容易誤觸發，跳出的黑色工具列還會暫時擋住簽名區。
+     這裡全站停用文字選取與長按選單（-webkit-touch-callout
+     專門對付 iOS Safari 的長按放大鏡/選單），簽名操作不再
+     受影響，且此為整份表單皆適用的操作型網頁，不需要文字選取。
+     ============================================ */
+  *{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
   body{
     min-height:100vh;
     display:flex;
@@ -110,7 +125,7 @@
   }
 
   .name-summary{
-    font-size:14px; font-weight:700; color:var(--steel-deep); margin:0;
+    font-size:var(--fs-body-strong); font-weight:700; color:var(--steel-deep); margin:0;
   }
 
   .warn-card{
@@ -130,7 +145,7 @@
   .sig-wrap{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px;}
 
   .sig-label{
-    font-size:14px; font-weight:700; color:var(--steel-deep);
+    font-size:var(--fs-body-strong); font-weight:700; color:var(--steel-deep);
     margin:0 0 4px; display:flex; justify-content:space-between; align-items:center;
   }
   .sig-hint{
@@ -140,7 +155,7 @@
   .expand-btn{
     display:flex; align-items:center; gap:5px;
     background:#fff; border:1.5px solid var(--signal); color:var(--signal);
-    border-radius:999px; padding:6px 12px; font-size:12.5px; font-weight:700;
+    border-radius:999px; padding:6px 12px; font-size:var(--fs-body); font-weight:700;
     cursor:pointer; transition:.15s;
     flex-shrink:0;
   }
@@ -172,13 +187,14 @@
   .btn-clear{
     width:100%;
     padding:11px; border-radius:10px; border:1.5px solid var(--line);
-    background:#fff; color:#5C6C81; font-size:14px; font-weight:700;
+    background:#fff; color:#5C6C81; font-size:var(--fs-body); font-weight:700;
     font-family:var(--font-cjk); cursor:pointer; transition:.15s;
   }
   .btn-clear:hover{background:var(--steel-pale);}
 
   /* ============================================
-     v13 修正 Bug3：通知文字改成高亮對比樣式
+     v13 修正 Bug3、v18 加強對比：通知文字高亮樣式
+     「先不要關閉視窗」改用高對比亮黃色凸顯，不再只靠底線
      ============================================ */
   .notice-card{
     background:var(--signal); border:none; border-radius:12px;
@@ -186,8 +202,17 @@
     line-height:1.7; font-weight:700;
     box-shadow:0 4px 12px rgba(255,90,31,.25);
   }
-  .notice-card b{color:#fff; text-decoration:underline; text-underline-offset:2px;}
+  .notice-card b{
+    color:#FFE600; /* 高對比亮黃色，比純白底線更凸出 */
+    text-decoration:underline; text-underline-offset:2px;
+  }
 
+  /* ============================================
+     v18 全域規則：底部主要操作列（上一步／下一步 /
+     送出紀錄表 等固定式導覽按鈕）字體固定不隨裝置放大，
+     跟表單內文（會用 --fs-body 響應式放大）區隔開來。
+     這是往後所有頁面的統一設定：導覽列固定、內容區動態。
+     ============================================ */
   .cta-bar{
     position:sticky; left:0; right:0; bottom:0;
     background:linear-gradient(0deg, var(--paper) 60%, rgba(251,250,247,0));
@@ -195,7 +220,7 @@
   }
   .btn{
     flex:1; padding:11px; border-radius:10px; border:none;
-    font-size:14px; font-weight:700; font-family:var(--font-cjk); cursor:pointer;
+    font-size:14px; font-weight:700; font-family:var(--font-cjk); cursor:pointer; /* 固定字體，不響應式 */
   }
   .btn-prev{background:#fff; border:1.5px solid var(--line); color:#5C6C81; flex:0 0 78px;}
   .btn-next{
