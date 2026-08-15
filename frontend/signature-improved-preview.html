@@ -26,8 +26,8 @@
        未來新頁面的內文文字應優先沿用這幾個變數，
        確保全站字體大小一致。
        ============================================ */
-    --fs-body: clamp(14px, 1.6vw + 8px, 19px);         /* 一般說明文字（警示卡、通知卡內文）*/
-    --fs-body-strong: clamp(15px, 1.8vw + 9px, 21px);  /* 同一區塊內的粗體/標題行，比內文大一階 */
+    --fs-body: clamp(16px, 2.8vw, 26px);         /* 一般說明文字（警示卡、通知卡內文）*/
+    --fs-body-strong: clamp(17px, 3vw, 28px);    /* 同一區塊內的粗體/標題行，比內文大一階 */
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--steel-deep);font-family:var(--font-cjk);color:var(--ink);}
@@ -230,26 +230,27 @@
   .complete-modal.active{display:flex;}
   .complete-box{
     background:#fff; border-radius:16px;
-    padding:clamp(24px,4vw,40px) clamp(20px,4vw,32px) clamp(20px,3vw,28px);
-    max-width:clamp(300px, 45vw, 480px); width:100%; text-align:center; position:relative;
+    padding:clamp(24px,5vw,44px) clamp(20px,5vw,36px) clamp(20px,4vw,32px);
+    max-width:clamp(300px, 55vw, 560px); width:100%; text-align:center; position:relative;
     box-shadow:0 20px 50px rgba(0,0,0,.3);
   }
   .complete-close-btn{
     position:absolute; top:10px; right:10px;
-    width:clamp(30px,3.2vw,40px); height:clamp(30px,3.2vw,40px); border-radius:50%;
+    width:clamp(30px,4vw,44px); height:clamp(30px,4vw,44px); border-radius:50%;
     border:none; background:var(--steel-pale); color:var(--steel-deep);
-    font-size:clamp(14px,1.8vw,20px); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:clamp(14px,2.2vw,22px); cursor:pointer; display:flex; align-items:center; justify-content:center;
   }
   .complete-close-btn:hover{background:var(--line);}
   .complete-icon{
-    width:clamp(56px,7vw,84px); height:clamp(56px,7vw,84px); border-radius:50%;
-    background:var(--ok); color:#fff;
+    width:clamp(56px,9vw,96px); height:clamp(56px,9vw,96px); border-radius:50%;
+    background:#2563EB; /* v16：可關閉頁面（成功）圖示改藍底，原本綠底 */
+    color:#fff;
     display:flex; align-items:center; justify-content:center;
-    font-size:clamp(26px,3.5vw,38px); margin:0 auto clamp(12px,1.5vw,18px);
+    font-size:clamp(26px,4.5vw,44px); margin:0 auto clamp(12px,2vw,20px);
   }
-  .complete-icon.is-reject{ background:var(--signal); }
-  .complete-text{ font-size:clamp(16px,2.4vw,24px); font-weight:700; color:var(--steel-deep); margin:0; }
-  .complete-sub{ font-size:clamp(12px,1.6vw,16px); color:#8C9AAE; margin:clamp(6px,1vw,10px) 0 0; }
+  .complete-icon.is-reject{ background:#DC2626; } /* v16：簽名不清楚（退件）圖示改紅底，原本橙底 */
+  .complete-text{ font-size:clamp(16px,3vw,28px); font-weight:700; color:var(--steel-deep); margin:0; }
+  .complete-sub{ font-size:clamp(12px,2vw,18px); color:#8C9AAE; margin:clamp(6px,1.2vw,12px) 0 0; }
 
 
   .fullscreen-modal{
@@ -411,7 +412,7 @@
 </div>
 
 <script>
-  const PEN_VISUAL_WIDTH_PX = 2.5;
+  const PEN_VISUAL_WIDTH_PX = 3.2; /* v16：筆跡寬度加粗一級（原 2.5），如太粗可再調回 2.5-2.8 之間 */
   const STUDENT_NAME = '陳怡安';
 
   const SIGNER_ROLE = 'student'; // 'student' | 'parent' | 'teacher'
