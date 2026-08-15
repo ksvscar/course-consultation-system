@@ -18,16 +18,21 @@
     --font-cjk: "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
 
     /* ============================================
-       v15 新增：全域響應式字體標準
+       v15 新增、v17 調整：全域響應式字體標準
        ------------------------------------------------
        手機和平板共用同一套 clamp() 公式，隨裝置視窗寬度
        自動放大字體，不需要為每個裝置額外寫 media query。
        這是「之後頁面表單設計都要用響應式設計」的基礎規格，
        未來新頁面的內文文字應優先沿用這幾個變數，
        確保全站字體大小一致。
+
+       v17：手機基準固定在 21px（Ethen 確認這個大小最好讀），
+       純 vw 係數公式讓中大型平板（例如 iPad Air 13 吋，CSS
+       邏輯寬度約 1024px 直式 / 1366px 橫式）能繼續平滑放大，
+       不會卡在手機大小不動，也不會需要等轉橫式才有感覺。
        ============================================ */
-    --fs-body: clamp(16px, 2.8vw, 26px);         /* 一般說明文字（警示卡、通知卡內文）*/
-    --fs-body-strong: clamp(17px, 3vw, 28px);    /* 同一區塊內的粗體/標題行，比內文大一階 */
+    --fs-body: clamp(21px, 2.8vw, 32px);         /* 一般說明文字（警示卡、通知卡內文）*/
+    --fs-body-strong: clamp(22px, 3vw, 34px);    /* 同一區塊內的粗體/標題行，比內文大一階 */
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--steel-deep);font-family:var(--font-cjk);color:var(--ink);}
