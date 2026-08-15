@@ -203,7 +203,7 @@
     box-shadow:0 4px 12px rgba(255,90,31,.25);
   }
   .notice-card b{
-    color:#FFE600; /* 高對比亮黃色，比純白底線更凸出 */
+    color:#29B6F6; /* v19：改藍色，橘底配藍字（互補色）對比明顯強於黃色 */
     text-decoration:underline; text-underline-offset:2px;
   }
 
@@ -220,7 +220,7 @@
   }
   .btn{
     flex:1; padding:11px; border-radius:10px; border:none;
-    font-size:14px; font-weight:700; font-family:var(--font-cjk); cursor:pointer; /* 固定字體，不響應式 */
+    font-size:18px; font-weight:700; font-family:var(--font-cjk); cursor:pointer; /* 固定字體，不響應式，v19放大二級(14px->18px) */
   }
   .btn-prev{background:#fff; border:1.5px solid var(--line); color:#5C6C81; flex:0 0 78px;}
   .btn-next{
@@ -238,7 +238,7 @@
   @media (orientation: landscape) and (max-height: 500px) {
     main{ padding-bottom: 60px; }
     .cta-bar{ padding:6px 16px 6px; gap:6px; }
-    .btn{ padding:6px; font-size:12px; }
+    .btn{ padding:6px; font-size:15px; }
     .btn-prev{ flex:0 0 56px; }
   }
 
@@ -384,9 +384,7 @@
       <div class="ic">!</div>
       <div class="txt">
         <b>課程地圖說明</b>
-        點此觀看《114課程地圖【汽車科】》說明影片
-        (Edcafe AI)
-        <br>課程地圖影片連結尚未提供，敬請期待
+        點此觀看《114課程地圖【汽車科】》說明影片 (Edcafe AI)，課程地圖影片連結尚未提供，敬請期待
       </div>
     </div>
 
