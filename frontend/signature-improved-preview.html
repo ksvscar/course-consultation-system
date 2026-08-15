@@ -16,6 +16,18 @@
     --paper:#FBFAF7;
     --ok:#1E7A4C;
     --font-cjk: "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+
+    /* ============================================
+       v15 新增：全域響應式字體標準
+       ------------------------------------------------
+       手機和平板共用同一套 clamp() 公式，隨裝置視窗寬度
+       自動放大字體，不需要為每個裝置額外寫 media query。
+       這是「之後頁面表單設計都要用響應式設計」的基礎規格，
+       未來新頁面的內文文字應優先沿用這幾個變數，
+       確保全站字體大小一致。
+       ============================================ */
+    --fs-body: clamp(14px, 1.6vw + 8px, 19px);         /* 一般說明文字（警示卡、通知卡內文）*/
+    --fs-body-strong: clamp(15px, 1.8vw + 9px, 21px);  /* 同一區塊內的粗體/標題行，比內文大一階 */
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--steel-deep);font-family:var(--font-cjk);color:var(--ink);}
@@ -106,8 +118,8 @@
     color:#fff; flex-shrink:0; display:flex; align-items:center; justify-content:center;
     font-size:14px; font-weight:700;
   }
-  .warn-card .txt{font-size:12.5px; color:#7A3A1E; line-height:1.6;}
-  .warn-card .txt b{color:var(--steel-deep); display:block; margin-bottom:2px; font-size:13.5px;}
+  .warn-card .txt{font-size:var(--fs-body); color:#7A3A1E; line-height:1.6;}
+  .warn-card .txt b{color:var(--steel-deep); display:block; margin-bottom:2px; font-size:var(--fs-body-strong);}
   .warn-card a{color:var(--steel); font-weight:700; text-decoration:none;}
 
   .sig-wrap{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px;}
@@ -117,7 +129,7 @@
     margin:0 0 4px; display:flex; justify-content:space-between; align-items:center;
   }
   .sig-hint{
-    font-size:11px; color:var(--signal); margin:0 0 12px; font-weight:700;
+    font-size:var(--fs-body); color:var(--signal); margin:0 0 12px; font-weight:700;
     display:none; /* 只在鎖定時顯示，由 JS 控制 */
   }
   .expand-btn{
@@ -165,7 +177,7 @@
      ============================================ */
   .notice-card{
     background:var(--signal); border:none; border-radius:12px;
-    padding:13px 14px; margin-top:16px; font-size:13px; color:#fff;
+    padding:14px 16px; margin-top:16px; font-size:var(--fs-body); color:#fff;
     line-height:1.7; font-weight:700;
     box-shadow:0 4px 12px rgba(255,90,31,.25);
   }
@@ -201,7 +213,11 @@
   }
 
   /* ============================================
-     v13 新增 Bug4/6：送出後完成通知彈窗（前端流程示範）
+     v13 新增、v15 改為響應式 Bug2：送出結果通知彈窗
+     ------------------------------------------------
+     版幅、圖示、文字都改用 clamp()，隨裝置視窗寬度自動放大，
+     手機維持接近原本大小，平板（iPad）會明顯放大，
+     不需要另外寫 media query 分開處理。
      ============================================ */
   .complete-modal{
     display:none;
@@ -213,25 +229,27 @@
   }
   .complete-modal.active{display:flex;}
   .complete-box{
-    background:#fff; border-radius:16px; padding:32px 24px 26px;
-    max-width:320px; width:100%; text-align:center; position:relative;
+    background:#fff; border-radius:16px;
+    padding:clamp(24px,4vw,40px) clamp(20px,4vw,32px) clamp(20px,3vw,28px);
+    max-width:clamp(300px, 45vw, 480px); width:100%; text-align:center; position:relative;
     box-shadow:0 20px 50px rgba(0,0,0,.3);
   }
   .complete-close-btn{
     position:absolute; top:10px; right:10px;
-    width:32px; height:32px; border-radius:50%;
+    width:clamp(30px,3.2vw,40px); height:clamp(30px,3.2vw,40px); border-radius:50%;
     border:none; background:var(--steel-pale); color:var(--steel-deep);
-    font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:clamp(14px,1.8vw,20px); cursor:pointer; display:flex; align-items:center; justify-content:center;
   }
   .complete-close-btn:hover{background:var(--line);}
   .complete-icon{
-    width:56px; height:56px; border-radius:50%;
+    width:clamp(56px,7vw,84px); height:clamp(56px,7vw,84px); border-radius:50%;
     background:var(--ok); color:#fff;
     display:flex; align-items:center; justify-content:center;
-    font-size:28px; margin:0 auto 14px;
+    font-size:clamp(26px,3.5vw,38px); margin:0 auto clamp(12px,1.5vw,18px);
   }
-  .complete-text{ font-size:16px; font-weight:700; color:var(--steel-deep); margin:0; }
-  .complete-sub{ font-size:12px; color:#8C9AAE; margin:8px 0 0; }
+  .complete-icon.is-reject{ background:var(--signal); }
+  .complete-text{ font-size:clamp(16px,2.4vw,24px); font-weight:700; color:var(--steel-deep); margin:0; }
+  .complete-sub{ font-size:clamp(12px,1.6vw,16px); color:#8C9AAE; margin:clamp(6px,1vw,10px) 0 0; }
 
 
   .fullscreen-modal{
@@ -367,13 +385,14 @@
     <button class="btn btn-next" type="button" id="submitBtn">送出紀錄表</button>
   </div>
 
-  <!-- v13 新增：送出後完成通知彈窗（前端流程示範，尚未接後端） -->
+  <!-- v15：送出結果通知彈窗（前端流程示範，尚未接後端）
+       同一個彈窗，內容由 JS 依「完成」或「退件重簽」動態切換 -->
   <div class="complete-modal" id="completeModal">
     <div class="complete-box">
       <button class="complete-close-btn" id="completeCloseBtn" type="button" title="關閉">✕</button>
-      <div class="complete-icon">✓</div>
-      <p class="complete-text">已完成，可關閉頁面</p>
-      <p class="complete-sub">（此為前端流程示範，實際將由老師後端確認後觸發）</p>
+      <div class="complete-icon" id="completeIcon">✓</div>
+      <p class="complete-text" id="completeText">已完成，可關閉頁面</p>
+      <p class="complete-sub" id="completeSub">（此為前端流程示範，實際將由老師後端確認後觸發）</p>
     </div>
   </div>
 
@@ -944,34 +963,77 @@
   });
 
   /* ============================================
-     v13 新增 Bug4/6：送出紀錄表 → 完成通知（前端流程示範）
+     v13 新增、v15 擴充 Bug4/6：送出紀錄表 → 老師審核結果通知
+     （前端流程示範，尚未接後端）
      ------------------------------------------------
      後端尚未建置，這裡先用 5 秒延遲模擬「老師在後端管理頁面
-     按下完成」的情境，方便 Ethen 先驗證前端流程是否符合預期。
+     檢查」的情境，方便 Ethen 先驗證前端流程是否符合預期。
+
+     v15 新增「兩輪示範」：
+       第 1 次送出 → 5 秒後模擬「老師檢查認為簽名不清楚」→
+         跳出「簽名不清楚或潦草，請重簽」，底部按鈕變回可點擊
+         狀態文字「重新簽名後送出」，並重新解鎖原始版小畫布
+         （學生可直接在原始版或透過放大版重新簽名）。
+       第 2 次（含）以後送出 → 5 秒後模擬「老師確認 OK」→
+         跳出「已完成，可關閉頁面」，底部按鈕文字改為
+         「已完成，可關閉視窗」並鎖定不可再點。
 
      未來接上真實後端後，這一段要改成：
        1. 送出按鈕改為呼叫後端 API，把簽名資料
           （window.__finalSignatureDataURL / window.__signatureBiometricData）
           連同學號、姓名等資料一起送出
-       2. 前端改為輪詢或 WebSocket 監聽後端狀態，
-          老師在管理頁面點「完成」時，後端狀態改變，
-          前端才觸發顯示這個通知（而不是寫死 5 秒）
+       2. 前端改為輪詢或 WebSocket 監聽後端狀態，老師在管理頁面
+          按下「完成」或「退回重簽」時，後端狀態改變，
+          前端才觸發對應的通知（而不是寫死 5 秒 / 寫死兩輪結果）
      ============================================ */
   const completeModal = document.getElementById('completeModal');
   const completeCloseBtn = document.getElementById('completeCloseBtn');
+  const completeIcon = document.getElementById('completeIcon');
+  const completeText = document.getElementById('completeText');
+  const completeSub = document.getElementById('completeSub');
   const submitBtnEl = document.getElementById('submitBtn');
+
+  let submitAttemptCount = 0;
+
+  function showResultModal(type) {
+    if (type === 'reject') {
+      completeIcon.textContent = '!';
+      completeIcon.classList.add('is-reject');
+      completeText.textContent = '簽名不清楚或潦草，請重簽';
+      completeSub.textContent = '（此為前端流程示範，實際將由老師後端檢查後觸發）';
+    } else {
+      completeIcon.textContent = '✓';
+      completeIcon.classList.remove('is-reject');
+      completeText.textContent = '已完成，可關閉頁面';
+      completeSub.textContent = '（此為前端流程示範，實際將由老師後端確認後觸發）';
+    }
+    completeModal.classList.add('active');
+  }
 
   submitBtnEl.addEventListener('click', () => {
     if (!window.__finalSignatureDataURL) {
       alert('請先完成簽名再送出');
       return;
     }
+    submitAttemptCount++;
     submitBtnEl.disabled = true;
     submitBtnEl.textContent = '已送出，等待老師確認中...';
 
-    // demo 用固定 5 秒延遲，模擬後端「老師按下完成」
+    // demo 用固定 5 秒延遲，模擬後端老師檢查
     setTimeout(() => {
-      completeModal.classList.add('active');
+      if (submitAttemptCount === 1) {
+        // 第一次送出：demo 模擬老師認為簽名不清楚，退回重簽
+        showResultModal('reject');
+        submitBtnEl.disabled = false;
+        submitBtnEl.textContent = '重新簽名後送出';
+        // 重新開放簽名功能，學生可在原始版直接手寫或透過放大版重簽
+        setSmallCanvasLocked(false);
+      } else {
+        // 第二次（含）以後送出：demo 模擬老師確認 OK
+        showResultModal('success');
+        submitBtnEl.disabled = true;
+        submitBtnEl.textContent = '已完成，可關閉視窗';
+      }
     }, 5000);
   });
 
