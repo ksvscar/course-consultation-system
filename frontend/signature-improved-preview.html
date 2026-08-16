@@ -142,6 +142,44 @@
   .warn-card .txt b{color:var(--steel-deep); display:block; margin-bottom:2px; font-size:var(--fs-body-strong);}
   .warn-card a{color:var(--steel); font-weight:700; text-decoration:none;}
 
+  /* ============================================
+     v21 新增：每份記錄表最終頁共用的「選課流程了解度」
+     互動選單元件，放在簽名區塊最上方。
+     每一列是一個是/否二選一問題，搭配補充說明文字。
+     ============================================ */
+  .quiz-card{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:18px; margin-bottom:16px;
+  }
+  .quiz-title{
+    font-size:var(--fs-body-strong); font-weight:700; color:var(--steel-deep);
+    margin:0 0 14px;
+  }
+  .quiz-row{
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px;
+    padding:12px 0; border-top:1px solid var(--line);
+  }
+  .quiz-row:first-of-type{border-top:none; padding-top:0;}
+  .quiz-label{
+    font-size:var(--fs-body); font-weight:700; color:var(--steel-deep);
+    flex:0 0 auto;
+  }
+  .quiz-toggle{display:flex; gap:8px; flex:0 0 auto;}
+  .toggle-btn{
+    padding:7px 18px; border-radius:999px; border:1.5px solid var(--line);
+    background:#fff; color:#5C6C81; font-size:var(--fs-body); font-weight:700;
+    font-family:var(--font-cjk); cursor:pointer; transition:.15s;
+  }
+  .toggle-btn:hover{background:var(--steel-pale);}
+  .toggle-btn.active{
+    background:var(--signal); border-color:var(--signal); color:#fff;
+    box-shadow:0 3px 8px rgba(255,90,31,.3);
+  }
+  .quiz-note{
+    font-size:calc(var(--fs-body) * 0.82); color:#8C9AAE; line-height:1.5;
+    flex:1 1 100%;
+  }
+
   .sig-wrap{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px;}
 
   .sig-label{
@@ -243,47 +281,6 @@
     .btn-prev{ flex:0 0 56px; }
   }
 
-  /* ============================================
-     v13 新增、v15 改為響應式 Bug2：送出結果通知彈窗
-     ------------------------------------------------
-     版幅、圖示、文字都改用 clamp()，隨裝置視窗寬度自動放大，
-     手機維持接近原本大小，平板（iPad）會明顯放大，
-     不需要另外寫 media query 分開處理。
-     ============================================ */
-  .complete-modal{
-    display:none;
-    position:fixed; inset:0;
-    background:rgba(15,37,64,.55);
-    z-index:20000;
-    align-items:center; justify-content:center;
-    padding:20px;
-  }
-  .complete-modal.active{display:flex;}
-  .complete-box{
-    background:#fff; border-radius:16px;
-    padding:clamp(24px,5vw,44px) clamp(20px,5vw,36px) clamp(20px,4vw,32px);
-    max-width:clamp(300px, 55vw, 560px); width:100%; text-align:center; position:relative;
-    box-shadow:0 20px 50px rgba(0,0,0,.3);
-  }
-  .complete-close-btn{
-    position:absolute; top:10px; right:10px;
-    width:clamp(30px,4vw,44px); height:clamp(30px,4vw,44px); border-radius:50%;
-    border:none; background:var(--steel-pale); color:var(--steel-deep);
-    font-size:clamp(14px,2.2vw,22px); cursor:pointer; display:flex; align-items:center; justify-content:center;
-  }
-  .complete-close-btn:hover{background:var(--line);}
-  .complete-icon{
-    width:clamp(56px,9vw,96px); height:clamp(56px,9vw,96px); border-radius:50%;
-    background:#2563EB; /* v16：可關閉頁面（成功）圖示改藍底，原本綠底 */
-    color:#fff;
-    display:flex; align-items:center; justify-content:center;
-    font-size:clamp(26px,4.5vw,44px); margin:0 auto clamp(12px,2vw,20px);
-  }
-  .complete-icon.is-reject{ background:#DC2626; } /* v16：簽名不清楚（退件）圖示改紅底，原本橙底 */
-  .complete-text{ font-size:clamp(16px,3vw,28px); font-weight:700; color:var(--steel-deep); margin:0; }
-  .complete-sub{ font-size:clamp(12px,2vw,18px); color:#8C9AAE; margin:clamp(6px,1.2vw,12px) 0 0; }
-
-
   .fullscreen-modal{
     display:none;
     position:fixed;
@@ -377,16 +374,40 @@
   </header>
 
   <main>
-    <div class="card">
-      <p class="name-summary">簽名人：陳怡安</p>
+    <!-- v21：每份記錄表最終頁最上方的共用選課流程了解度選單 -->
+    <div class="quiz-card">
+      <p class="quiz-title">我了解學校的選課流程</p>
+
+      <div class="quiz-row">
+        <span class="quiz-label">選課時間</span>
+        <div class="quiz-toggle" data-question="q_time">
+          <button type="button" class="toggle-btn" data-value="yes">是</button>
+          <button type="button" class="toggle-btn" data-value="no">否</button>
+        </div>
+        <span class="quiz-note">如果不了解，可以問教務處或課程諮詢教師</span>
+      </div>
+
+      <div class="quiz-row">
+        <span class="quiz-label">選課方式</span>
+        <div class="quiz-toggle" data-question="q_method">
+          <button type="button" class="toggle-btn" data-value="yes">是</button>
+          <button type="button" class="toggle-btn" data-value="no">否</button>
+        </div>
+        <span class="quiz-note">如果不了解，可以問教務處或課程諮詢教師</span>
+      </div>
+
+      <div class="quiz-row">
+        <span class="quiz-label">加退選機制</span>
+        <div class="quiz-toggle" data-question="q_dropadd">
+          <button type="button" class="toggle-btn" data-value="yes">是</button>
+          <button type="button" class="toggle-btn" data-value="no">否</button>
+        </div>
+        <span class="quiz-note">如果不了解，可以問教務處或課程諮詢教師</span>
+      </div>
     </div>
 
-    <div class="warn-card">
-      <div class="ic">!</div>
-      <div class="txt">
-        <b>課程地圖說明</b>
-        點此觀看《114課程地圖【汽車科】》說明影片 (Edcafe AI)，課程地圖影片連結尚未提供，敬請期待
-      </div>
+    <div class="card">
+      <p class="name-summary">簽名人：陳怡安</p>
     </div>
 
     <div class="sig-wrap">
@@ -413,17 +434,6 @@
   <div class="cta-bar">
     <button class="btn btn-prev" type="button">上一步</button>
     <button class="btn btn-next" type="button" id="submitBtn">送出紀錄表</button>
-  </div>
-
-  <!-- v15：送出結果通知彈窗（前端流程示範，尚未接後端）
-       同一個彈窗，內容由 JS 依「完成」或「退件重簽」動態切換 -->
-  <div class="complete-modal" id="completeModal">
-    <div class="complete-box">
-      <button class="complete-close-btn" id="completeCloseBtn" type="button" title="關閉">✕</button>
-      <div class="complete-icon" id="completeIcon">✓</div>
-      <p class="complete-text" id="completeText">已完成，可關閉頁面</p>
-      <p class="complete-sub" id="completeSub">（此為前端流程示範，實際將由老師後端確認後觸發）</p>
-    </div>
   </div>
 
   <div class="fullscreen-modal" id="fullscreenModal">
@@ -993,82 +1003,52 @@
   });
 
   /* ============================================
-     v13 新增、v15 擴充 Bug4/6：送出紀錄表 → 老師審核結果通知
-     （前端流程示範，尚未接後端）
+     v21：每份記錄表最終頁共用邏輯
      ------------------------------------------------
-     後端尚未建置，這裡先用 5 秒延遲模擬「老師在後端管理頁面
-     檢查」的情境，方便 Ethen 先驗證前端流程是否符合預期。
-
-     v15 新增「兩輪示範」：
-       第 1 次送出 → 5 秒後模擬「老師檢查認為簽名不清楚」→
-         跳出「簽名不清楚或潦草，請重簽」，底部按鈕變回可點擊
-         狀態文字「重新簽名後送出」，並重新解鎖原始版小畫布
-         （學生可直接在原始版或透過放大版重新簽名）。
-       第 2 次（含）以後送出 → 5 秒後模擬「老師確認 OK」→
-         跳出「已完成，可關閉頁面」，底部按鈕文字改為
-         「已完成，可關閉視窗」並鎖定不可再點。
-
-     未來接上真實後端後，這一段要改成：
-       1. 送出按鈕改為呼叫後端 API，把簽名資料
-          （window.__finalSignatureDataURL / window.__signatureBiometricData）
-          連同學號、姓名等資料一起送出
-       2. 前端改為輪詢或 WebSocket 監聽後端狀態，老師在管理頁面
-          按下「完成」或「退回重簽」時，後端狀態改變，
-          前端才觸發對應的通知（而不是寫死 5 秒 / 寫死兩輪結果）
+     1. 「我了解學校的選課流程」選單：單純的是/否切換按鈕，
+        點擊後記錄到 window.__quizAnswers，供未來送出時一併
+        提交給後端。
+     2. 送出紀錄表：這是最終模板版本，移除先前的 5 秒模擬
+        送出流程（等待老師確認/退件重簽的假動畫），改成
+        單純驗證必填項目 → 準備好完整資料 → 交給後端 API。
+        真正接上後端後，请在 submitBtnEl 的 click handler 內
+        改成呼叫實際的後端送出 API（例如 fetch POST），並依
+        後端回傳結果決定要不要跳出通知或允許重新簽名。
      ============================================ */
-  const completeModal = document.getElementById('completeModal');
-  const completeCloseBtn = document.getElementById('completeCloseBtn');
-  const completeIcon = document.getElementById('completeIcon');
-  const completeText = document.getElementById('completeText');
-  const completeSub = document.getElementById('completeSub');
+
+  window.__quizAnswers = {};
+  document.querySelectorAll('.quiz-toggle').forEach(group => {
+    const question = group.dataset.question;
+    group.querySelectorAll('.toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        window.__quizAnswers[question] = btn.dataset.value;
+      });
+    });
+  });
+
   const submitBtnEl = document.getElementById('submitBtn');
-
-  let submitAttemptCount = 0;
-
-  function showResultModal(type) {
-    if (type === 'reject') {
-      completeIcon.textContent = '!';
-      completeIcon.classList.add('is-reject');
-      completeText.textContent = '簽名不清楚或潦草，請重簽';
-      completeSub.textContent = '（此為前端流程示範，實際將由老師後端檢查後觸發）';
-    } else {
-      completeIcon.textContent = '✓';
-      completeIcon.classList.remove('is-reject');
-      completeText.textContent = '已完成，可關閉頁面';
-      completeSub.textContent = '（此為前端流程示範，實際將由老師後端確認後觸發）';
-    }
-    completeModal.classList.add('active');
-  }
 
   submitBtnEl.addEventListener('click', () => {
     if (!window.__finalSignatureDataURL) {
       alert('請先完成簽名再送出');
       return;
     }
-    submitAttemptCount++;
+
+    // 準備好完整送出資料，供未來接上後端 API 時直接使用
+    const submissionPayload = {
+      quizAnswers: window.__quizAnswers,
+      signatureDataURL: window.__finalSignatureDataURL,
+      signatureAspectRatio: window.__finalSignatureAspectRatio,
+      biometricData: window.__signatureBiometricData || null
+    };
+    window.__formSubmissionPayload = submissionPayload;
+
+    // TODO：接上後端後，這裡改成 fetch POST 到後端 API，
+    // 並依回傳結果（成功 / 退件重簽）決定後續畫面。
     submitBtnEl.disabled = true;
-    submitBtnEl.textContent = '已送出，等待老師確認中...';
-
-    // demo 用固定 5 秒延遲，模擬後端老師檢查
-    setTimeout(() => {
-      if (submitAttemptCount === 1) {
-        // 第一次送出：demo 模擬老師認為簽名不清楚，退回重簽
-        showResultModal('reject');
-        submitBtnEl.disabled = false;
-        submitBtnEl.textContent = '重新簽名後送出';
-        // 重新開放簽名功能，學生可在原始版直接手寫或透過放大版重簽
-        setSmallCanvasLocked(false);
-      } else {
-        // 第二次（含）以後送出：demo 模擬老師確認 OK
-        showResultModal('success');
-        submitBtnEl.disabled = true;
-        submitBtnEl.textContent = '已完成，可關閉視窗';
-      }
-    }, 5000);
-  });
-
-  completeCloseBtn.addEventListener('click', () => {
-    completeModal.classList.remove('active');
+    submitBtnEl.textContent = '已送出';
   });
 </script>
 </body>
