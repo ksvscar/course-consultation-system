@@ -113,7 +113,7 @@
   .gauge-track i.done span{width:100%;}
   .gauge-track i.active span{width:55%;}
   .step-label{
-    margin-top:8px; font-size:12px; color:#C9DCEE; letter-spacing:.02em; position:relative;
+    margin-top:8px; font-size:16px; color:#C9DCEE; letter-spacing:.02em; position:relative; /* v20：放大二級(12px->16px) */
   }
   .step-label b{color:#fff;}
 
@@ -203,8 +203,9 @@
     box-shadow:0 4px 12px rgba(255,90,31,.25);
   }
   .notice-card b{
-    color:#29B6F6; /* v19：改藍色，橘底配藍字（互補色）對比明顯強於黃色 */
-    text-decoration:underline; text-underline-offset:2px;
+    color:#fff; /* v20：藍色仍不夠明顯，改回白色，用粗體+底線加強對比 */
+    font-weight:900;
+    text-decoration:underline; text-underline-offset:3px;
   }
 
   /* ============================================
