@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>高雄高工課程地圖【汽車科】Curriculum Map V8</title>
+<title>高雄高工課程地圖【汽車科】Curriculum Map V9</title>
 <style>
 :root{
   --color-general:#90EE90;
@@ -15,6 +15,9 @@
   --color-vehicle:#FFB6C1;
   --color-elective:#D7F5D0;
   --color-elective-container:#E0DFBE;
+  --grade-1:#FFFE91;
+  --grade-2:#FAD258;
+  --grade-3:#C95821;
   --ink:#2b2b2b;
   --line:#9aa5ad;
 }
@@ -144,6 +147,13 @@ body{
 .node-header{ font-size:1.35rem; }
 .nav-item{ font-size:1.25rem; }
 
+/* ============ 課程方塊底色：依課程代碼首碼年級分類 ============ */
+.leaf.grade-1{ background:var(--grade-1); }
+.leaf.grade-2{ background:var(--grade-2); }
+.leaf.grade-3{ background:var(--grade-3); }
+.leaf.grade-3 .name{ color:#ffffff; }
+.leaf.grade-3 .code{ color:#fbe6d8; }
+
 /* 群組排列：桌機版方框寬度依課程名稱內容自適應（max 230px），文字過長自動換行置中 */
 
 /* ============ 立體凸出效果（方案甲：陰影+上浮） ============ */
@@ -270,6 +280,16 @@ body{
      文字過長時方塊內自動換行並置中，不會撐破版面或跑版
    - 修正「共同時段選修」下「他科開設」「一般科目」等長文字課程方塊
      因文字過長導致立體凸出效果跑版的問題（改用 max-width + 自動換行處理）
+
+   📍 V9 更新紀錄：
+   - 課程方塊底色改為依「課程代碼開頭數字」（年級）自動分類，取代原本依分類（群必修/
+     校訂課程等）決定顏色的方式，全部課程方塊統一套用：
+       開頭為 1（1年級）→ #FFFE91（淡黃）
+       開頭為 2（2年級）→ #FAD258（金黃）
+       開頭為 3（3年級）→ #C95821（深橘棕，文字自動改白色以維持對比）
+   - 邏輯位置：JS 內 gradeClassFromCode() 函式，抓取 code 欄位開頭第一個數字判斷
+   - 分類容器層（如「群必修課程」「校訂課程」等標頭與外框）顏色不受影響，
+     僅第三層實際課程方塊套用年級色
 ===================================================================== */
 const courseMapData = {
   year: "115", // 📍 年度編改位置 1：改這裡即可
@@ -416,6 +436,17 @@ document.querySelector(".title-bar p").textContent = courseMapData.year + "學�
 
 function colorVar(c){ return `var(--color-${c || "elective"})`; }
 
+/* 依課程代碼開頭數字（1/2/3）判斷年級分類色 */
+function gradeClassFromCode(code){
+  if (!code) return null;
+  const m = code.match(/^(\d)/);
+  if (!m) return null;
+  if (m[1] === "1") return "grade-1";
+  if (m[1] === "2") return "grade-2";
+  if (m[1] === "3") return "grade-3";
+  return null;
+}
+
 function buildNode(node, depth){
   const hasChildren = node.children && node.children.length > 0;
   const wrap = document.createElement("div");
@@ -436,7 +467,12 @@ function buildNode(node, depth){
     wrap.appendChild(childWrap);
   } else {
     wrap.className = "leaf";
-    wrap.style.background = colorVar(node.color);
+    const gClass = gradeClassFromCode(node.code);
+    if (gClass){
+      wrap.classList.add(gClass);
+    } else {
+      wrap.style.background = colorVar(node.color);
+    }
     const codeEl = document.createElement("span");
     codeEl.className = "code";
     codeEl.textContent = node.code || "";
