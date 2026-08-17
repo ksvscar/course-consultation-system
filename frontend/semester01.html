@@ -627,7 +627,7 @@
              （例如未來從科網頁選單直接點進去），就不會顯示返回按鈕，
              維持原本的樣子。同一份課程地圖檔案可以同時服務兩種情境。 -->
         <a href="https://ksvscar.github.io/course-consultation-system/frontend/Curriculum-Map.html?returnUrl=https%3A%2F%2Fksvscar.github.io%2Fcourse-consultation-system%2Ffrontend%2Fsemester01.html"
-           rel="noopener" class="course-map-link">
+           rel="noopener" class="course-map-link" id="courseMapLink">
           📺 點此開啟《汽車科 本科課程地圖》互動網頁
           <span class="arrow">›</span>
         </a>
@@ -1550,6 +1550,32 @@
     hasSubmitted = true;
     renderStep();
   });
+
+  /* ============================================
+     v7 新增：跳去課程地圖前記住目前步驟，回來時自動跳回
+     ------------------------------------------------
+     點擊課程地圖連結時，把目前步驟存進 sessionStorage
+     （同一個瀏覽器分頁內有效，不需要 Curriculum-Map.html
+     那邊配合做任何修改）。頁面重新載入時，如果發現有存過
+     的步驟紀錄，就直接跳到該步驟，而不是從第 1 步開始；
+     跳轉完畢後立刻清除紀錄，避免影響下次全新開啟表單。
+     ============================================ */
+  const RESUME_STEP_KEY = 'semester01_resumeStep';
+  const courseMapLinkEl = document.getElementById('courseMapLink');
+  if (courseMapLinkEl) {
+    courseMapLinkEl.addEventListener('click', () => {
+      sessionStorage.setItem(RESUME_STEP_KEY, String(currentStep));
+    });
+  }
+
+  const resumeStep = sessionStorage.getItem(RESUME_STEP_KEY);
+  if (resumeStep) {
+    sessionStorage.removeItem(RESUME_STEP_KEY);
+    const stepNum = parseInt(resumeStep, 10);
+    if (stepNum >= 1 && stepNum <= TOTAL_STEPS) {
+      currentStep = stepNum;
+    }
+  }
 
   renderStep();
 </script>
