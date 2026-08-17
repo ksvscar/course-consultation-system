@@ -460,6 +460,11 @@
     background:#fff;
   }
   .text-field:focus{ outline:none; border-color:var(--steel); }
+  /* v5 修正：placeholder 提示文字縮小，跟「請點選表現較佳的前三個項目」
+     同樣比例(0.72倍)，跟實際輸入的文字大小區隔開來（全域設定）*/
+  .text-field::placeholder{
+    font-size:calc(var(--fs-body) * 0.72);
+  }
   .conditional-field{ margin-top:10px; display:none; }
   .conditional-field.show{ display:block; }
 
@@ -616,7 +621,7 @@
     <section class="step-panel" data-step="4">
       <div class="q-card">
         <p class="q-title">我瞭解本科課程地圖</p>
-        <a href="Curriculum-Map.html"
+        <a href="https://ksvscar.github.io/course-consultation-system/frontend/Curriculum-Map.html"
            target="_blank" rel="noopener" class="course-map-link">
           📺 點此開啟《汽車科 本科課程地圖》互動網頁
           <span class="arrow">›</span>
