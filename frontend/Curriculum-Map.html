@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>高雄高工課程地圖【汽車科】Curriculum Map V9</title>
+<title>高雄高工課程地圖【汽車科】Curriculum Map V10</title>
 <style>
 :root{
   --color-general:#90EE90;
@@ -38,6 +38,34 @@ body{
   padding:14px 20px;
   text-align:center;
   margin:14px 14px 0;
+}
+
+/* ============ 返回紀錄表按鈕列（預設隱藏，僅帶 returnUrl 參數時顯示） ============ */
+.return-bar{
+  display:none;
+  margin:14px 14px 0;
+}
+.return-bar.visible{
+  display:block;
+}
+.return-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:#1E3A5F;
+  color:#ffffff;
+  border:none;
+  border-radius:8px;
+  padding:10px 18px;
+  font-size:1rem;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .18s ease, transform .18s ease;
+  font-family:inherit;
+}
+.return-btn:hover{
+  background:#274b78;
+  transform:translateX(-2px);
 }
 .title-bar h1{margin:0;font-size:2rem;color:#1f5f91;}
 .title-bar h1 .line1{font-size:1.8rem;display:block;}
@@ -199,6 +227,10 @@ body{
 </head>
 <body>
 
+<div class="return-bar" id="returnBar">
+  <button type="button" class="return-btn" id="returnBtn">← 返回紀錄表</button>
+</div>
+
 <div class="title-bar">
   <h1><span class="line1">高雄高工課程地圖</span><span class="line2">【汽車科】</span></h1>
   <p>115學年入學新生適用</p>
@@ -290,6 +322,13 @@ body{
    - 邏輯位置：JS 內 gradeClassFromCode() 函式，抓取 code 欄位開頭第一個數字判斷
    - 分類容器層（如「群必修課程」「校訂課程」等標頭與外框）顏色不受影響，
      僅第三層實際課程方塊套用年級色
+
+   📍 V10 更新紀錄：
+   - 新增「返回紀錄表」按鈕列，位於頁面最上方（標題正上方）
+   - 預設隱藏；僅當網址帶有 ?returnUrl=xxx 參數時才顯示
+   - 按鈕文字「← 返回紀錄表」，點擊後 decodeURIComponent 解碼並導向該網址
+   - 樣式採深藍色 #1E3A5F 主色，與網頁整體視覺風格一致
+   - 使用範例：curriculum-map.html?returnUrl=https%3A%2F%2Fexample.com%2Frecord
 ===================================================================== */
 const courseMapData = {
   year: "115", // 📍 年度編改位置 1：改這裡即可
@@ -431,6 +470,24 @@ document.getElementById("legendRight").innerHTML = "<svg xmlns=\"http://www.w3.o
 
 const mainPanel = document.getElementById("mainPanel");
 const sideNav   = document.getElementById("sideNav");
+
+/* =====================================================================
+   返回紀錄表按鈕：僅當網址帶有 ?returnUrl=xxx 參數時顯示
+===================================================================== */
+(function initReturnBar(){
+  const params = new URLSearchParams(window.location.search);
+  const returnUrl = params.get("returnUrl");
+  if (!returnUrl) return; // 無參數 → 維持隱藏，不影響原本頁面
+
+  const bar = document.getElementById("returnBar");
+  const btn = document.getElementById("returnBtn");
+  const decoded = decodeURIComponent(returnUrl);
+
+  bar.classList.add("visible");
+  btn.addEventListener("click", function(){
+    window.location.href = decoded;
+  });
+})();
 
 document.querySelector(".title-bar p").textContent = courseMapData.year + "學年入學新生適用";
 
