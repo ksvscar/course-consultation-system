@@ -261,7 +261,7 @@
     flex:1; padding:11px; border-radius:10px; border:none;
     font-size:18px; font-weight:700; font-family:var(--font-cjk); cursor:pointer; /* 固定字體，不響應式，v19放大二級(14px->18px) */
   }
-  .btn-prev{background:#fff; border:1.5px solid var(--line); color:#5C6C81; flex:0 0 78px;}
+  .btn-prev{background:#fff; border:1.5px solid var(--line); color:#5C6C81; flex:1;}
   .btn-next{
     background:var(--signal); color:#fff;
     box-shadow:0 6px 14px rgba(255,90,31,.3);
@@ -278,7 +278,7 @@
     main{ padding-bottom: 60px; }
     .cta-bar{ padding:6px 16px 6px; gap:6px; }
     .btn{ padding:6px; font-size:15px; }
-    .btn-prev{ flex:0 0 56px; }
+    .btn-prev{ flex:1; }
   }
 
   .fullscreen-modal{
@@ -390,6 +390,7 @@
     padding:8px 16px; border-radius:999px; border:1.5px solid var(--line);
     background:#fff; color:#5C6C81; font-size:var(--fs-body); font-weight:700;
     font-family:var(--font-cjk); cursor:pointer; transition:.15s;
+    text-align:left;
   }
   .chip-btn:hover{ background:var(--steel-pale); }
   .chip-btn.active{
@@ -444,6 +445,7 @@
     padding:8px 16px; border-radius:999px; border:1.5px solid var(--line);
     background:#fff; color:#5C6C81; font-size:var(--fs-body); font-weight:700;
     font-family:var(--font-cjk); cursor:pointer; transition:.15s;
+    text-align:left;
   }
   .radio-btn:hover{ background:var(--steel-pale); }
   .radio-btn.active{
@@ -475,6 +477,16 @@
     background:var(--signal-dim); color:#7A3A1E; font-weight:700;
     font-size:var(--fs-body); border:1px solid #FFCBB0; margin-bottom:14px;
   }
+  /* v1（高一上）v2 修正：課程地圖連結改成可點擊按鈕樣式 */
+  .course-map-link{
+    display:flex; align-items:center; gap:8px;
+    padding:12px 16px; border-radius:10px;
+    background:var(--signal-dim); color:var(--steel); font-weight:700;
+    font-size:var(--fs-body); border:1px solid #FFCBB0; margin-bottom:14px;
+    text-decoration:none; cursor:pointer; transition:.15s;
+  }
+  .course-map-link:hover{ background:#FFDCC7; }
+  .course-map-link .arrow{ margin-left:auto; color:var(--signal); }
 </style>
 </head>
 <body>
@@ -604,7 +616,11 @@
     <section class="step-panel" data-step="4">
       <div class="q-card">
         <p class="q-title">我瞭解本科課程地圖</p>
-        <span class="course-map-note">📺 《114課程地圖【汽車科】》說明影片 (Edcafe AI) — 連結尚未提供，敬請期待</span>
+        <a href="frontend/Curriculum-Map.html"
+           target="_blank" rel="noopener" class="course-map-link">
+          📺 點此開啟《汽車科 本科課程地圖》互動網頁
+          <span class="arrow">›</span>
+        </a>
         <div class="radio-group" data-question="course_map_understanding">
           <button type="button" class="radio-btn" data-value="非常瞭解">非常瞭解</button>
           <button type="button" class="radio-btn" data-value="瞭解">瞭解</button>
@@ -1418,7 +1434,10 @@
     for (const field of textFields) {
       const condParent = field.closest('.conditional-field');
       if (condParent && !condParent.classList.contains('show')) continue;
-      if (!field.value.trim()) return false;
+      const val = field.value.trim();
+      if (!val) return false;
+      // v1 v2 新增：部分欄位（例如社團名稱）規定不可填「無」
+      if (field.dataset.disallowNone === 'true' && val === '無') return false;
     }
 
     const aptitudeGroup = panel.querySelector('.chip-group[data-question="aptitude_type"]');
