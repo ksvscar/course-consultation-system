@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>高雄高工課程地圖【汽車科】Curriculum Map V5</title>
+<title>高雄高工課程地圖【汽車科】Curriculum Map V6</title>
 <style>
 :root{
   --color-general:#90EE90;
@@ -13,7 +13,7 @@
   --color-required:#FFFFE0;
   --color-skill:#F0E68C;
   --color-vehicle:#FFB6C1;
-  --color-elective:#FFFFFF;
+  --color-elective:#D7F5D0;
   --ink:#2b2b2b;
   --line:#9aa5ad;
 }
@@ -227,6 +227,18 @@ body{
    - 桌機版字級全面放大（標題2.6rem、課程名稱1.35rem≈16-17px、代碼1rem≈16px）
    - 課程方塊改為自動換欄（auto-fit, minmax 210px），避免方塊過寬過扁，
      一般科目課程等多項目分類會自動排成4-5欄，方塊變窄變高，可讀性提升
+
+   📍 V6 更新紀錄：
+   - 校訂課程底色：白色 → 淡綠色（#D7F5D0），與一般科目課程綠色(#90EE90)區隔，
+     解決校訂課程區塊立體凸出效果不明顯的問題
+   - 課程代碼全面重新核對原圖，還原原始括號巢狀標記（例如 1R(3,(3))2001200），
+     不再省略內層括號，共修正 18 處代碼：
+     引擎原理/引擎實習/底盤原理/底盤實習/電工電子實習/電系實習/
+     機械製圖實習/機械工作法及實習/車輛空調檢修實習/車輛底盤檢修實習/
+     車身電器系統綜合檢修實習/汽車電學/柴油引擎/柴油引擎實習/
+     噴射引擎實習/汽車電子實習/汽車機車保養實習/汽車機車檢修實習
+   ⚠️ 原圖括號巢狀標記意義不明（可能代表上下學期學分差異之標註方式），
+      已完全依照原圖逐字還原，如有正式課綱可再次核對。
 ===================================================================== */
 const courseMapData = {
   year: "115", // 📍 年度編改位置 1：改這裡即可
@@ -273,17 +285,17 @@ const courseMapData = {
         {
           id:"required", name:"群必修課程 (34)", color:"required",
           children:[
-            {id:"r1",code:"1R(3,3)2001200",name:"引擎原理"},
-            {id:"r2",code:"1RX(4,4)2001202",name:"引擎實習"},
-            {id:"r3",code:"1RX(3,3)20011200",name:"底盤原理"},
-            {id:"r4",code:"1RX(4,4)2001200",name:"底盤實習"},
+            {id:"r1",code:"1R(3,(3))2001200",name:"引擎原理"},
+            {id:"r2",code:"1RX(4,(4))2001202",name:"引擎實習"},
+            {id:"r3",code:"1R((3),3)20011200",name:"底盤原理"},
+            {id:"r4",code:"1RX((4),4)2001200",name:"底盤實習"},
             {id:"r5",code:"2R(2,0)2010000",name:"應用力學"},
             {id:"r6",code:"2R(2,0)2200001",name:"基本電學"},
-            {id:"r7",code:"2RX(3,3)0102022",name:"電工電子實習"},
-            {id:"r8",code:"2RX(3,3)1202102",name:"電系實習"},
+            {id:"r7",code:"2RX(3,(3))0102022",name:"電工電子實習"},
+            {id:"r8",code:"2RX(3,(3))1202102",name:"電系實習"},
             {id:"r9",code:"3R(2,0)2010000",name:"機件原理"},
-            {id:"r10",code:"3RX(4,4)1020201",name:"機械製圖實習"},
-            {id:"r11",code:"3RX(4,4)2020012",name:"機械工作法及實習"}
+            {id:"r10",code:"3RX((4),4)1020201",name:"機械製圖實習"},
+            {id:"r11",code:"3RX((4),4)2020012",name:"機械工作法及實習"}
           ]
         },
         {
@@ -292,9 +304,9 @@ const courseMapData = {
             {
               id:"vehicle", name:"車輛領域課程 (11)", color:"vehicle",
               children:[
-                {id:"v1",code:"2RX(3,3)0222020",name:"車輛空調檢修實習"},
-                {id:"v2",code:"3RX(4,4)2022020",name:"車輛底盤檢修實習"},
-                {id:"v3",code:"3RX(4,4)1222020",name:"車身電器系統綜合檢修實習"}
+                {id:"v1",code:"2RX((3),3)0222020",name:"車輛空調檢修實習"},
+                {id:"v2",code:"3RX(4,(4))2022020",name:"車輛底盤檢修實習"},
+                {id:"v3",code:"3RX(4,(4))1222020",name:"車身電器系統綜合檢修實習"}
               ]
             },
             {
@@ -309,15 +321,15 @@ const courseMapData = {
         {
           id:"elective", name:"校訂課程 (34)", color:"elective",
           children:[
-            {id:"e1",code:"2S(2,2)0101200",name:"汽車電學"},
-            {id:"e2",code:"2S(2,2)0001200",name:"柴油引擎"},
-            {id:"e3",code:"2SX(3,3)2001200",name:"柴油引擎實習"},
+            {id:"e1",code:"2S(2,(2))0101200",name:"汽車電學"},
+            {id:"e2",code:"2S((2),2)0001200",name:"柴油引擎"},
+            {id:"e3",code:"2SX((3),3)2001200",name:"柴油引擎實習"},
             {id:"e4",code:"2RX(0,2)2100021",name:"專題實作I"},
             {id:"e5",code:"3RX(2,0)2100021",name:"專題實作II"},
             {id:"e6",code:"3S(0,2)0200210",name:"汽車工業英文"},
             {id:"e7",code:"2R(0,2)0200010",name:"汽車電子學"},
-            {id:"e8",code:"2RX(3,3)0200211",name:"噴射引擎實習"},
-            {id:"e9",code:"2RX(3,3)0200021",name:"汽車電子實習"},
+            {id:"e8",code:"2RX(3,(3))0200211",name:"噴射引擎實習"},
+            {id:"e9",code:"2RX((3),3)0200021",name:"汽車電子實習"},
             {id:"e10",code:"3S(0,2)2010000",name:"機械力學"},
             {
               id:"cross", name:"同科跨班選修 (6)", color:"elective",
@@ -335,8 +347,8 @@ const courseMapData = {
                   id:"common-self", name:"本科開設", color:"elective",
                   children:[
                     {id:"cs1",code:"3S(2,0)2001200",name:"汽車構造"},
-                    {id:"cs2",code:"3SX(2,0)2100201",name:"汽車機車保養實習"},
-                    {id:"cs3",code:"3SX(0,2)2100202",name:"汽車機車檢修實習"}
+                    {id:"cs2",code:"3SX((2),0)2100201",name:"汽車機車保養實習"},
+                    {id:"cs3",code:"3SX(0,(2))2100202",name:"汽車機車檢修實習"}
                   ]
                 },
                 {
