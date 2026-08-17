@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>高雄高工課程地圖【汽車科】Curriculum Map V6</title>
+<title>高雄高工課程地圖【汽車科】Curriculum Map V7</title>
 <style>
 :root{
   --color-general:#90EE90;
@@ -14,6 +14,7 @@
   --color-skill:#F0E68C;
   --color-vehicle:#FFB6C1;
   --color-elective:#D7F5D0;
+  --color-elective-container:#E0DFBE;
   --ink:#2b2b2b;
   --line:#9aa5ad;
 }
@@ -35,8 +36,8 @@ body{
   text-align:center;
   margin:14px 14px 0;
 }
-.title-bar h1{margin:0;font-size:2.6rem;color:#1f5f91;}
-.title-bar p{margin:8px 0 0;font-size:1.35rem;color:#4a4a4a;}
+.title-bar h1{margin:0;font-size:2rem;color:#1f5f91;}
+.title-bar p{margin:8px 0 0;font-size:1.2rem;color:#4a4a4a;}
 
 /* ============ 圖例區（純SVG嵌入，固定不變，純白底） ============ */
 .legend-row{
@@ -128,8 +129,8 @@ body{
   font-weight:400;
   margin-bottom:4px;
 }
-.leaf .name{ font-weight:700; font-size:1.35rem; }
-.node-header{ font-size:1.4rem; }
+.leaf .name{ font-weight:700; font-size:14px; }
+.node-header{ font-size:1.35rem; }
 .nav-item{ font-size:1.25rem; }
 
 /* 群組排列：桌機用自動換欄，避免方塊過寬過扁 */
@@ -177,7 +178,7 @@ body{
 <body>
 
 <div class="title-bar">
-  <h1>高雄高工課程地圖【汽車科】</h1>
+  <h1>高雄高工課程地圖<br>【汽車科】</h1>
   <p>115學年入學新生適用</p>
 </div>
 
@@ -239,6 +240,15 @@ body{
      噴射引擎實習/汽車電子實習/汽車機車保養實習/汽車機車檢修實習
    ⚠️ 原圖括號巢狀標記意義不明（可能代表上下學期學分差異之標註方式），
       已完全依照原圖逐字還原，如有正式課綱可再次核對。
+
+   📍 V7 更新紀錄：
+   - 校訂課程容器底色：淡綠色 → #E0DFBE（含「校訂課程」大框、
+     「同科跨班選修」「共同時段選修」「本科開設」「他科開設」「一般科目」子容器）
+     第三層實際課程方塊（如汽車電學、柴油引擎等）維持淡綠色，與其他分類課程方塊一致
+   - 主標題「高雄高工課程地圖【汽車科】」改為兩行顯示，字級調整為 2rem
+   - 副標題（學年說明）字級調整為 1.2rem
+   - 分類標頭（如「專業實習課程」）維持 1.35rem
+   - 課程名稱字級調整為 14px
 ===================================================================== */
 const courseMapData = {
   year: "115", // 📍 年度編改位置 1：改這裡即可
@@ -319,7 +329,7 @@ const courseMapData = {
           ]
         },
         {
-          id:"elective", name:"校訂課程 (34)", color:"elective",
+          id:"elective", name:"校訂課程 (34)", color:"elective-container",
           children:[
             {id:"e1",code:"2S(2,(2))0101200",name:"汽車電學"},
             {id:"e2",code:"2S((2),2)0001200",name:"柴油引擎"},
@@ -332,7 +342,7 @@ const courseMapData = {
             {id:"e9",code:"2RX((3),3)0200021",name:"汽車電子實習"},
             {id:"e10",code:"3S(0,2)2010000",name:"機械力學"},
             {
-              id:"cross", name:"同科跨班選修 (6)", color:"elective",
+              id:"cross", name:"同科跨班選修 (6)", color:"elective-container",
               children:[
                 {id:"c1",code:"3SX(3,0)0220012",name:"汽車修護儀器設備實習"},
                 {id:"c2",code:"3SX(0,3)2002210",name:"機車綜合檢修實習"},
@@ -341,10 +351,10 @@ const courseMapData = {
               ]
             },
             {
-              id:"common", name:"共同時段選修 (0-4)", color:"elective",
+              id:"common", name:"共同時段選修 (0-4)", color:"elective-container",
               children:[
                 {
-                  id:"common-self", name:"本科開設", color:"elective",
+                  id:"common-self", name:"本科開設", color:"elective-container",
                   children:[
                     {id:"cs1",code:"3S(2,0)2001200",name:"汽車構造"},
                     {id:"cs2",code:"3SX((2),0)2100201",name:"汽車機車保養實習"},
@@ -352,13 +362,13 @@ const courseMapData = {
                   ]
                 },
                 {
-                  id:"common-other", name:"他科開設", color:"elective",
+                  id:"common-other", name:"他科開設", color:"elective-container",
                   children:[
                     {id:"co1",code:"3S(2,2)0000002",name:"力學解析、STEAM機器人跨域整合、生活力應用、工業型機械手臂模擬操作、協作型機械手臂操作"}
                   ]
                 },
                 {
-                  id:"common-general", name:"一般科目", color:"elective",
+                  id:"common-general", name:"一般科目", color:"elective-container",
                   children:[
                     {id:"cg1",code:"3S(2,2)0000002",name:"數學思維邏輯、英文聽力、商科數學、英文文章賞析、護生物精進、生活物理、工職數學、程式設計、數學思維方法、商業數學、工科數學、護生物探究、社會技巧、學習策略"}
                   ]
