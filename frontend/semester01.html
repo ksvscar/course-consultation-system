@@ -621,8 +621,13 @@
     <section class="step-panel" data-step="4">
       <div class="q-card">
         <p class="q-title">我瞭解本科課程地圖</p>
-        <a href="https://ksvscar.github.io/course-consultation-system/frontend/Curriculum-Map.html"
-           target="_blank" rel="noopener" class="course-map-link">
+        <!-- v6 修正：連結加上 returnUrl 參數，並移除 target="_blank"（改同頁導覽）。
+             課程地圖頁面（Curriculum-Map.html）需要另外加一小段 JS，
+             讀取這個參數後才會顯示「返回紀錄表」按鈕；若沒有帶這個參數
+             （例如未來從科網頁選單直接點進去），就不會顯示返回按鈕，
+             維持原本的樣子。同一份課程地圖檔案可以同時服務兩種情境。 -->
+        <a href="https://ksvscar.github.io/course-consultation-system/frontend/Curriculum-Map.html?returnUrl=https%3A%2F%2Fksvscar.github.io%2Fcourse-consultation-system%2Ffrontend%2Fsemester01.html"
+           rel="noopener" class="course-map-link">
           📺 點此開啟《汽車科 本科課程地圖》互動網頁
           <span class="arrow">›</span>
         </a>
