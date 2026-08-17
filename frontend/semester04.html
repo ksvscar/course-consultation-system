@@ -627,9 +627,8 @@
       <i></i>
       <i></i>
       <i></i>
-      <i></i>
     </div>
-    <p class="step-label">第 <b>1</b> / 6 步 · 學習能力評估</p>
+    <p class="step-label">第 <b>1</b> / 5 步 · 學習能力評估</p>
   </header>
 
   <main>
@@ -697,35 +696,8 @@
       </div>
     </section>
 
-    <!-- ========== 第 2 步：學習興趣評估 ========== -->
+    <!-- ========== 第 2 步：高二社團活動與表現 ========== -->
     <section class="step-panel" data-step="2">
-      <div class="q-card">
-        <p class="q-title">學習興趣評估</p>
-        <div class="q-block">
-          <p class="q-block-label">高一整學年曾經參加哪些比賽（活動）得獎？</p>
-          <div class="radio-group" data-question="g1_award_has_s4">
-            <button type="button" class="radio-btn" data-value="無">無</button>
-            <button type="button" class="radio-btn" data-value="有">有</button>
-          </div>
-          <div class="conditional-field" data-show-when="g1_award_has_s4=有">
-            <input type="text" class="text-field" data-question="g1_award_note_s4" placeholder="請簡要填寫，不得空白">
-          </div>
-        </div>
-        <div class="q-block">
-          <p class="q-block-label">高一整學年比較感興趣的事項？</p>
-          <div class="radio-group" data-question="g1_interest_has_s4">
-            <button type="button" class="radio-btn" data-value="無">無</button>
-            <button type="button" class="radio-btn" data-value="有">有</button>
-          </div>
-          <div class="conditional-field" data-show-when="g1_interest_has_s4=有">
-            <input type="text" class="text-field" data-question="g1_interest_note_s4" placeholder="請簡要填寫，不得空白">
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========== 第 3 步：高二社團活動與表現 ========== -->
-    <section class="step-panel" data-step="3">
       <div class="q-card">
         <p class="q-title">高二社團活動與表現</p>
 
@@ -788,8 +760,8 @@
       </div>
     </section>
 
-    <!-- ========== 第 4 步：技專校院多元入學管道 + 本科多元選修 ========== -->
-    <section class="step-panel" data-step="4">
+    <!-- ========== 第 3 步：技專校院多元入學管道 + 本科多元選修 ========== -->
+    <section class="step-panel" data-step="3">
       <div class="q-card">
         <p class="q-title">技專校院多元入學管道</p>
         <p class="q-desc">下表可以左右滑動查看完整內容</p>
@@ -837,7 +809,7 @@
         <p class="q-title">本科多元選修高三開設課程</p>
         <a href="https://ksvscar.github.io/course-consultation-system/frontend/Curriculum-Map.html?returnUrl=https%3A%2F%2Fksvscar.github.io%2Fcourse-consultation-system%2Ffrontend%2Fsemester04.html"
            rel="noopener" class="course-map-link" id="courseMapLink">
-          📺 點此開啟《汽車科三年級多元選修課程》互動網頁
+          📺 點此開啟《汽車科 本科課程地圖》互動網頁
           <span class="arrow">›</span>
         </a>
         <div class="radio-group" data-question="g3_elective_understood" style="margin-top:12px;">
@@ -847,8 +819,8 @@
       </div>
     </section>
 
-    <!-- ========== 第 5 步：我的選課計畫 ========== -->
-    <section class="step-panel" data-step="5">
+    <!-- ========== 第 4 步：我的選課計畫 ========== -->
+    <section class="step-panel" data-step="4">
       <div class="q-card">
         <p class="q-title">我的選課計畫</p>
         <div class="q-block">
@@ -863,44 +835,22 @@
         </div>
 
         <div class="q-block">
-          <p class="q-block-label">2. 我預計高三上學期選修哪些同科跨班課程？選這些課程的原因？</p>
-          <p class="chip-hint" style="margin:0 0 10px;">請選擇科目名稱，並勾選選這門課程的原因（可複選）</p>
+          <p class="q-block-label">2. 我預計高三上學期選修哪些同科跨班課程？選這門課程的原因？（僅能單選一門）</p>
 
           <div class="course-slot">
-            <p class="repeat-block-title">科目 1</p>
-            <select class="select-field" data-question="cross_class_course_1">
-              <option value="">請選擇科目</option>
-              <option value="汽車構造">汽車構造（3上）</option>
-              <option value="汽機車保養實習">汽機車保養實習（3上）</option>
-              <option value="汽機車檢修實習">汽機車檢修實習（3下）</option>
-            </select>
-            <div class="chip-group chip-group-sm" data-question="cross_class_reason_1">
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有興趣">有興趣</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有能力">有能力</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有助升學">有助升學</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="其它">其它</button>
+            <div class="chip-group chip-group-sm" data-question="cross_class_course" id="crossClassChipGroup">
+              <button type="button" class="chip-btn chip-btn-sm" data-value="汽車構造">汽車構造</button>
+              <button type="button" class="chip-btn chip-btn-sm" data-value="汽機車保養實習">汽機車保養實習</button>
             </div>
-            <div class="conditional-field" data-other-for="cross_class_reason_1">
-              <input type="text" class="text-field" data-question="cross_class_reason_1_other_text" placeholder="請簡要填寫，若無填寫「無」">
+            <p class="chip-hint" style="margin:8px 0 0;">選這門課程的原因（僅能單選一項）</p>
+            <div class="radio-group radio-group-sm" data-question="cross_class_reason" style="margin-top:6px;">
+              <button type="button" class="radio-btn radio-btn-sm" data-value="有興趣">有興趣</button>
+              <button type="button" class="radio-btn radio-btn-sm" data-value="有能力">有能力</button>
+              <button type="button" class="radio-btn radio-btn-sm" data-value="有助升學">有助升學</button>
+              <button type="button" class="radio-btn radio-btn-sm" data-value="其它">其它</button>
             </div>
-          </div>
-
-          <div class="course-slot">
-            <p class="repeat-block-title">科目 2</p>
-            <select class="select-field" data-question="cross_class_course_2">
-              <option value="">請選擇科目</option>
-              <option value="汽車構造">汽車構造（3上）</option>
-              <option value="汽機車保養實習">汽機車保養實習（3上）</option>
-              <option value="汽機車檢修實習">汽機車檢修實習（3下）</option>
-            </select>
-            <div class="chip-group chip-group-sm" data-question="cross_class_reason_2">
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有興趣">有興趣</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有能力">有能力</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有助升學">有助升學</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="其它">其它</button>
-            </div>
-            <div class="conditional-field" data-other-for="cross_class_reason_2">
-              <input type="text" class="text-field" data-question="cross_class_reason_2_other_text" placeholder="請簡要填寫，若無填寫「無」">
+            <div class="conditional-field" data-show-when="cross_class_reason=其它">
+              <input type="text" class="text-field" data-question="cross_class_reason_other_text" data-disallow-none="true" placeholder="請簡要填寫，不可填「無」">
             </div>
           </div>
         </div>
@@ -917,8 +867,8 @@
       </div>
     </section>
 
-    <!-- ========== 第 6 步：選課流程 + 確認並簽名（v21 模板）========== -->
-    <section class="step-panel" data-step="6">
+    <!-- ========== 第 5 步：選課流程 + 確認並簽名（v21 模板）========== -->
+    <section class="step-panel" data-step="5">
 
     <!-- v21：每份記錄表最終頁最上方的共用選課流程了解度選單 -->
     <div class="quiz-card">
@@ -1760,6 +1710,7 @@
 
   document.querySelectorAll('.chip-group[data-question]').forEach(group => {
     if (group.id === 'courseChipGroup') return; // 已用事件委派另外處理（見上方課程原因區塊邏輯）
+    if (group.id === 'crossClassChipGroup') return; // 單選，另外處理見下方
     const question = group.dataset.question;
     window.__formAnswers[question] = [];
     group.querySelectorAll('.chip-btn').forEach(btn => {
@@ -1777,6 +1728,20 @@
       });
     });
   });
+
+  // semester04 新增：同科跨班課程改為單選（原本是可複選）
+  const crossClassChipGroupEl = document.getElementById('crossClassChipGroup');
+  if (crossClassChipGroupEl) {
+    window.__formAnswers['cross_class_course'] = [];
+    crossClassChipGroupEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip-btn');
+      if (!btn) return;
+      const wasActive = btn.classList.contains('active');
+      crossClassChipGroupEl.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+      if (!wasActive) btn.classList.add('active');
+      window.__formAnswers['cross_class_course'] = Array.from(crossClassChipGroupEl.querySelectorAll('.chip-btn.active')).map(b => b.dataset.value);
+    });
+  }
 
   document.querySelectorAll('.radio-group[data-question]').forEach(group => {
     const question = group.dataset.question;
@@ -1809,18 +1774,17 @@
      第 5 步沿用 v21 的「確認並簽名」內容不變，「下一步」按鈕
      在最後一步變成「送出紀錄表」並觸發原本的送出驗證邏輯。
      ============================================ */
-  const TOTAL_STEPS = 6;
+  const TOTAL_STEPS = 5;
   let currentStep = 1;
   const stepPanels = document.querySelectorAll('.step-panel');
   const gaugeSegments = document.querySelectorAll('.gauge-track i');
   const stepLabelEl = document.querySelector('.step-label');
   const stepLabelTitles = {
     1: '學習能力評估',
-    2: '學習興趣評估',
-    3: '社團活動與表現',
-    4: '升學管道與課程地圖',
-    5: '我的選課計畫',
-    6: '確認並簽名'
+    2: '社團活動與表現',
+    3: '升學管道與課程地圖',
+    4: '我的選課計畫',
+    5: '確認並簽名'
   };
   const prevBtnEl = document.getElementById('prevBtn');
   const validationModal = document.getElementById('validationModal');

@@ -536,6 +536,12 @@
     font-family:var(--font-cjk); cursor:pointer; text-align:left; transition:.15s;
   }
   .lookup-item:hover, .lookup-item:active{ background:var(--steel-pale); border-color:var(--steel); }
+  /* semester05 新增：單欄版清單（文字較長時用，例如 C-1~C-8 完整說明、B-1動態課程）*/
+  .lookup-list-single{ grid-template-columns:1fr; }
+  .lookup-empty-note{
+    grid-column:1/-1; color:#8C9AAE; font-size:calc(var(--fs-body)*0.85);
+    line-height:1.6; padding:8px 4px;
+  }
 
   /* semester02 新增：多行文字區（社團活動經驗）*/
   .textarea-field{
@@ -628,8 +634,9 @@
       <i></i>
       <i></i>
       <i></i>
+      <i></i>
     </div>
-    <p class="step-label">第 <b>1</b> / 6 步 · 學習能力評估</p>
+    <p class="step-label">第 <b>1</b> / 7 步 · 學習能力評估</p>
   </header>
 
   <main>
@@ -758,37 +765,61 @@
         
         <div class="repeat-block">
           <p class="repeat-block-title">項目 1</p>
-          <input type="text" class="text-field" data-question="b2_course_1" data-optional="true" placeholder="課程名稱（若無可留空）">
-          <div class="chip-group chip-group-sm" data-question="b2_type_1">
-            <button type="button" class="chip-btn chip-btn-sm" data-value="B-1">B-1 實習科目學習成果</button>
-            <button type="button" class="chip-btn chip-btn-sm" data-value="B-2">B-2 其他課程學習(作品)成果</button>
+          <div class="radio-group radio-group-sm" data-question="b2_type_1">
+            <button type="button" class="radio-btn radio-btn-sm" data-value="B-1">B-1 實習科目學習成果</button>
+            <button type="button" class="radio-btn radio-btn-sm" data-value="B-2">B-2 其他課程學習(作品)成果</button>
+          </div>
+          <div class="conditional-field" data-show-when="b2_type_1=B-1">
+            <button type="button" class="lookup-btn" data-lookup="courseLookupModal" data-target-field="b2_course_1" style="margin-top:8px;">🔍 點擊選擇課程</button>
+            <input type="text" class="text-field" data-question="b2_course_1" data-optional="true" placeholder="請點擊上方按鈕，從第1步選過的科目中挑選" style="margin-top:8px;">
+          </div>
+          <div class="conditional-field" data-show-when="b2_type_1=B-2">
+            <input type="text" class="text-field" data-question="b2_course_1_other" data-optional="true" placeholder="請寫出其他課程名稱" style="margin-top:8px;">
           </div>
         </div>
         
         <div class="repeat-block">
           <p class="repeat-block-title">項目 2</p>
-          <input type="text" class="text-field" data-question="b2_course_2" data-optional="true" placeholder="課程名稱（若無可留空）">
-          <div class="chip-group chip-group-sm" data-question="b2_type_2">
-            <button type="button" class="chip-btn chip-btn-sm" data-value="B-1">B-1 實習科目學習成果</button>
-            <button type="button" class="chip-btn chip-btn-sm" data-value="B-2">B-2 其他課程學習(作品)成果</button>
+          <div class="radio-group radio-group-sm" data-question="b2_type_2">
+            <button type="button" class="radio-btn radio-btn-sm" data-value="B-1">B-1 實習科目學習成果</button>
+            <button type="button" class="radio-btn radio-btn-sm" data-value="B-2">B-2 其他課程學習(作品)成果</button>
+          </div>
+          <div class="conditional-field" data-show-when="b2_type_2=B-1">
+            <button type="button" class="lookup-btn" data-lookup="courseLookupModal" data-target-field="b2_course_2" style="margin-top:8px;">🔍 點擊選擇課程</button>
+            <input type="text" class="text-field" data-question="b2_course_2" data-optional="true" placeholder="請點擊上方按鈕，從第1步選過的科目中挑選" style="margin-top:8px;">
+          </div>
+          <div class="conditional-field" data-show-when="b2_type_2=B-2">
+            <input type="text" class="text-field" data-question="b2_course_2_other" data-optional="true" placeholder="請寫出其他課程名稱" style="margin-top:8px;">
           </div>
         </div>
         
         <div class="repeat-block">
           <p class="repeat-block-title">項目 3</p>
-          <input type="text" class="text-field" data-question="b2_course_3" data-optional="true" placeholder="課程名稱（若無可留空）">
-          <div class="chip-group chip-group-sm" data-question="b2_type_3">
-            <button type="button" class="chip-btn chip-btn-sm" data-value="B-1">B-1 實習科目學習成果</button>
-            <button type="button" class="chip-btn chip-btn-sm" data-value="B-2">B-2 其他課程學習(作品)成果</button>
+          <div class="radio-group radio-group-sm" data-question="b2_type_3">
+            <button type="button" class="radio-btn radio-btn-sm" data-value="B-1">B-1 實習科目學習成果</button>
+            <button type="button" class="radio-btn radio-btn-sm" data-value="B-2">B-2 其他課程學習(作品)成果</button>
+          </div>
+          <div class="conditional-field" data-show-when="b2_type_3=B-1">
+            <button type="button" class="lookup-btn" data-lookup="courseLookupModal" data-target-field="b2_course_3" style="margin-top:8px;">🔍 點擊選擇課程</button>
+            <input type="text" class="text-field" data-question="b2_course_3" data-optional="true" placeholder="請點擊上方按鈕，從第1步選過的科目中挑選" style="margin-top:8px;">
+          </div>
+          <div class="conditional-field" data-show-when="b2_type_3=B-2">
+            <input type="text" class="text-field" data-question="b2_course_3_other" data-optional="true" placeholder="請寫出其他課程名稱" style="margin-top:8px;">
           </div>
         </div>
         
         <div class="repeat-block">
           <p class="repeat-block-title">項目 4</p>
-          <input type="text" class="text-field" data-question="b2_course_4" data-optional="true" placeholder="課程名稱（若無可留空）">
-          <div class="chip-group chip-group-sm" data-question="b2_type_4">
-            <button type="button" class="chip-btn chip-btn-sm" data-value="B-1">B-1 實習科目學習成果</button>
-            <button type="button" class="chip-btn chip-btn-sm" data-value="B-2">B-2 其他課程學習(作品)成果</button>
+          <div class="radio-group radio-group-sm" data-question="b2_type_4">
+            <button type="button" class="radio-btn radio-btn-sm" data-value="B-1">B-1 實習科目學習成果</button>
+            <button type="button" class="radio-btn radio-btn-sm" data-value="B-2">B-2 其他課程學習(作品)成果</button>
+          </div>
+          <div class="conditional-field" data-show-when="b2_type_4=B-1">
+            <button type="button" class="lookup-btn" data-lookup="courseLookupModal" data-target-field="b2_course_4" style="margin-top:8px;">🔍 點擊選擇課程</button>
+            <input type="text" class="text-field" data-question="b2_course_4" data-optional="true" placeholder="請點擊上方按鈕，從第1步選過的科目中挑選" style="margin-top:8px;">
+          </div>
+          <div class="conditional-field" data-show-when="b2_type_4=B-2">
+            <input type="text" class="text-field" data-question="b2_course_4_other" data-optional="true" placeholder="請寫出其他課程名稱" style="margin-top:8px;">
           </div>
         </div>
       </div>
@@ -812,93 +843,48 @@
         
         <div class="repeat-block">
           <p class="repeat-block-title">項目 1</p>
-          <input type="text" class="text-field" data-question="c2_content_1" data-optional="true" placeholder="內容名稱（若無可留空）">
-          <div class="field-row">
-            <select class="select-field" data-question="c2_category_1">
-              <option value="">項目：請選擇 C-1 ~ C-8</option>
-              <option value="C-1">C-1</option>
-              <option value="C-2">C-2</option>
-              <option value="C-3">C-3</option>
-              <option value="C-4">C-4</option>
-              <option value="C-5">C-5</option>
-              <option value="C-6">C-6</option>
-              <option value="C-7">C-7</option>
-              <option value="C-8">C-8</option>
-            </select>
-            <div class="radio-group radio-group-sm" data-question="c2_proof_1">
-              <button type="button" class="radio-btn radio-btn-sm" data-value="有">有證明文件</button>
-              <button type="button" class="radio-btn radio-btn-sm" data-value="無">無證明文件</button>
-            </div>
+          <button type="button" class="lookup-btn" data-lookup="cCategoryModal" data-target-field="c2_content_1">🔍 點擊選擇項目</button>
+          <input type="text" class="text-field" data-question="c2_content_1" data-optional="true" placeholder="請點擊上方按鈕選擇 C-1~C-8 項目" style="margin-top:8px;">
+          <div class="radio-group radio-group-sm" data-question="c2_proof_1" style="margin-top:8px;">
+            <button type="button" class="radio-btn radio-btn-sm" data-value="有">有證明文件</button>
+            <button type="button" class="radio-btn radio-btn-sm" data-value="無">無證明文件</button>
           </div>
         </div>
         
         <div class="repeat-block">
           <p class="repeat-block-title">項目 2</p>
-          <input type="text" class="text-field" data-question="c2_content_2" data-optional="true" placeholder="內容名稱（若無可留空）">
-          <div class="field-row">
-            <select class="select-field" data-question="c2_category_2">
-              <option value="">項目：請選擇 C-1 ~ C-8</option>
-              <option value="C-1">C-1</option>
-              <option value="C-2">C-2</option>
-              <option value="C-3">C-3</option>
-              <option value="C-4">C-4</option>
-              <option value="C-5">C-5</option>
-              <option value="C-6">C-6</option>
-              <option value="C-7">C-7</option>
-              <option value="C-8">C-8</option>
-            </select>
-            <div class="radio-group radio-group-sm" data-question="c2_proof_2">
-              <button type="button" class="radio-btn radio-btn-sm" data-value="有">有證明文件</button>
-              <button type="button" class="radio-btn radio-btn-sm" data-value="無">無證明文件</button>
-            </div>
+          <button type="button" class="lookup-btn" data-lookup="cCategoryModal" data-target-field="c2_content_2">🔍 點擊選擇項目</button>
+          <input type="text" class="text-field" data-question="c2_content_2" data-optional="true" placeholder="請點擊上方按鈕選擇 C-1~C-8 項目" style="margin-top:8px;">
+          <div class="radio-group radio-group-sm" data-question="c2_proof_2" style="margin-top:8px;">
+            <button type="button" class="radio-btn radio-btn-sm" data-value="有">有證明文件</button>
+            <button type="button" class="radio-btn radio-btn-sm" data-value="無">無證明文件</button>
           </div>
         </div>
         
         <div class="repeat-block">
           <p class="repeat-block-title">項目 3</p>
-          <input type="text" class="text-field" data-question="c2_content_3" data-optional="true" placeholder="內容名稱（若無可留空）">
-          <div class="field-row">
-            <select class="select-field" data-question="c2_category_3">
-              <option value="">項目：請選擇 C-1 ~ C-8</option>
-              <option value="C-1">C-1</option>
-              <option value="C-2">C-2</option>
-              <option value="C-3">C-3</option>
-              <option value="C-4">C-4</option>
-              <option value="C-5">C-5</option>
-              <option value="C-6">C-6</option>
-              <option value="C-7">C-7</option>
-              <option value="C-8">C-8</option>
-            </select>
-            <div class="radio-group radio-group-sm" data-question="c2_proof_3">
-              <button type="button" class="radio-btn radio-btn-sm" data-value="有">有證明文件</button>
-              <button type="button" class="radio-btn radio-btn-sm" data-value="無">無證明文件</button>
-            </div>
+          <button type="button" class="lookup-btn" data-lookup="cCategoryModal" data-target-field="c2_content_3">🔍 點擊選擇項目</button>
+          <input type="text" class="text-field" data-question="c2_content_3" data-optional="true" placeholder="請點擊上方按鈕選擇 C-1~C-8 項目" style="margin-top:8px;">
+          <div class="radio-group radio-group-sm" data-question="c2_proof_3" style="margin-top:8px;">
+            <button type="button" class="radio-btn radio-btn-sm" data-value="有">有證明文件</button>
+            <button type="button" class="radio-btn radio-btn-sm" data-value="無">無證明文件</button>
           </div>
         </div>
         
         <div class="repeat-block">
           <p class="repeat-block-title">項目 4</p>
-          <input type="text" class="text-field" data-question="c2_content_4" data-optional="true" placeholder="內容名稱（若無可留空）">
-          <div class="field-row">
-            <select class="select-field" data-question="c2_category_4">
-              <option value="">項目：請選擇 C-1 ~ C-8</option>
-              <option value="C-1">C-1</option>
-              <option value="C-2">C-2</option>
-              <option value="C-3">C-3</option>
-              <option value="C-4">C-4</option>
-              <option value="C-5">C-5</option>
-              <option value="C-6">C-6</option>
-              <option value="C-7">C-7</option>
-              <option value="C-8">C-8</option>
-            </select>
-            <div class="radio-group radio-group-sm" data-question="c2_proof_4">
-              <button type="button" class="radio-btn radio-btn-sm" data-value="有">有證明文件</button>
-              <button type="button" class="radio-btn radio-btn-sm" data-value="無">無證明文件</button>
-            </div>
+          <button type="button" class="lookup-btn" data-lookup="cCategoryModal" data-target-field="c2_content_4">🔍 點擊選擇項目</button>
+          <input type="text" class="text-field" data-question="c2_content_4" data-optional="true" placeholder="請點擊上方按鈕選擇 C-1~C-8 項目" style="margin-top:8px;">
+          <div class="radio-group radio-group-sm" data-question="c2_proof_4" style="margin-top:8px;">
+            <button type="button" class="radio-btn radio-btn-sm" data-value="有">有證明文件</button>
+            <button type="button" class="radio-btn radio-btn-sm" data-value="無">無證明文件</button>
           </div>
         </div>
       </div>
+    </section>
 
+    <!-- ========== 第 5 步：本科多元選修三年開設課程 ========== -->
+    <section class="step-panel" data-step="5">
       <div class="q-card">
         <p class="q-title">本科多元選修三年開設課程</p>
         <a href="https://ksvscar.github.io/course-consultation-system/frontend/Curriculum-Map.html?returnUrl=https%3A%2F%2Fksvscar.github.io%2Fcourse-consultation-system%2Ffrontend%2Fsemester05.html"
@@ -909,8 +895,8 @@
       </div>
     </section>
 
-    <!-- ========== 第 5 步：我的選課計畫 ========== -->
-    <section class="step-panel" data-step="5">
+    <!-- ========== 第 6 步：我的選課計畫 ========== -->
+    <section class="step-panel" data-step="6">
       <div class="q-card">
         <p class="q-title">我的選課計畫</p>
         <div class="q-block">
@@ -925,44 +911,22 @@
         </div>
 
         <div class="q-block">
-          <p class="q-block-label">2. 我預計高三下學期選修哪些同科跨班課程？選這些課程的原因？</p>
-          <p class="chip-hint" style="margin:0 0 10px;">請選擇科目名稱，並勾選選這門課程的原因（可複選）</p>
-          
+          <p class="q-block-label">2. 我預計高三下學期選修哪些同科跨班課程？選這門課程的原因？（僅能單選一門）</p>
+
           <div class="course-slot">
-            <p class="repeat-block-title">科目 1</p>
-            <select class="select-field" data-question="cross_class_3down_course_1">
-              <option value="">請選擇科目</option>
-              <option value="汽車構造">汽車構造（3上）</option>
-              <option value="汽機車保養實習">汽機車保養實習（3上）</option>
-              <option value="汽機車檢修實習">汽機車檢修實習（3下）</option>
-            </select>
-            <div class="chip-group chip-group-sm" data-question="cross_class_3down_reason_1">
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有興趣">有興趣</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有能力">有能力</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有助升學">有助升學</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="其它">其它</button>
+            <div class="chip-group chip-group-sm" data-question="cross_class_3down_course" id="crossClassChipGroup">
+              <button type="button" class="chip-btn chip-btn-sm" data-value="汽車構造">汽車構造</button>
+              <button type="button" class="chip-btn chip-btn-sm" data-value="汽機車檢修實習">汽機車檢修實習</button>
             </div>
-            <div class="conditional-field" data-other-for="cross_class_3down_reason_1">
-              <input type="text" class="text-field" data-question="cross_class_3down_reason_1_other_text" placeholder="請簡要填寫，若無填寫「無」">
+            <p class="chip-hint" style="margin:8px 0 0;">選這門課程的原因（僅能單選一項）</p>
+            <div class="radio-group radio-group-sm" data-question="cross_class_3down_reason" style="margin-top:6px;">
+              <button type="button" class="radio-btn radio-btn-sm" data-value="有興趣">有興趣</button>
+              <button type="button" class="radio-btn radio-btn-sm" data-value="有能力">有能力</button>
+              <button type="button" class="radio-btn radio-btn-sm" data-value="有助升學">有助升學</button>
+              <button type="button" class="radio-btn radio-btn-sm" data-value="其它">其它</button>
             </div>
-          </div>
-          
-          <div class="course-slot">
-            <p class="repeat-block-title">科目 2</p>
-            <select class="select-field" data-question="cross_class_3down_course_2">
-              <option value="">請選擇科目</option>
-              <option value="汽車構造">汽車構造（3上）</option>
-              <option value="汽機車保養實習">汽機車保養實習（3上）</option>
-              <option value="汽機車檢修實習">汽機車檢修實習（3下）</option>
-            </select>
-            <div class="chip-group chip-group-sm" data-question="cross_class_3down_reason_2">
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有興趣">有興趣</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有能力">有能力</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="有助升學">有助升學</button>
-              <button type="button" class="chip-btn chip-btn-sm" data-value="其它">其它</button>
-            </div>
-            <div class="conditional-field" data-other-for="cross_class_3down_reason_2">
-              <input type="text" class="text-field" data-question="cross_class_3down_reason_2_other_text" placeholder="請簡要填寫，若無填寫「無」">
+            <div class="conditional-field" data-show-when="cross_class_3down_reason=其它">
+              <input type="text" class="text-field" data-question="cross_class_3down_reason_other_text" data-disallow-none="true" placeholder="請簡要填寫，不可填「無」">
             </div>
           </div>
         </div>
@@ -979,8 +943,8 @@
       </div>
     </section>
 
-    <!-- ========== 第 6 步：選課流程 + 確認並簽名（v21 模板）========== -->
-    <section class="step-panel" data-step="6">
+    <!-- ========== 第 7 步：選課流程 + 確認並簽名（v21 模板）========== -->
+    <section class="step-panel" data-step="7">
 
 
     <!-- v21：每份記錄表最終頁最上方的共用選課流程了解度選單 -->
@@ -1067,7 +1031,7 @@
     </div>
   </div>
 
-  <!-- semester02 新增：社團名稱查詢彈窗（全域可重用元件）-->
+  <!-- semester02 新增：社團名稱查詢彈窗（全域可重用元件，semester05未使用但保留共用CSS/JS架構）-->
   <div class="lookup-modal" id="clubListModal">
     <div class="lookup-box">
       <div class="lookup-header">
@@ -1076,6 +1040,30 @@
       </div>
       <p class="lookup-hint">點選社團名稱可直接帶入輸入框（資料來源：114年度社團一覽表）</p>
       <div class="lookup-list" id="clubListItems"></div>
+    </div>
+  </div>
+
+  <!-- semester05 新增：B-1 課程查詢彈窗（動態抓取第1步「哪些科目讓你有成就感」的答案）-->
+  <div class="lookup-modal" id="courseLookupModal">
+    <div class="lookup-box">
+      <div class="lookup-header">
+        <p class="lookup-title">選擇課程</p>
+        <button type="button" class="lookup-close-btn" id="courseLookupCloseBtn">✕</button>
+      </div>
+      <p class="lookup-hint">以下是你在第 1 步選擇「讓你有成就感」的科目，點選可直接帶入</p>
+      <div class="lookup-list lookup-list-single" id="courseLookupItems"></div>
+    </div>
+  </div>
+
+  <!-- semester05 新增：C-1~C-8 多元表現項目選擇彈窗 -->
+  <div class="lookup-modal" id="cCategoryModal">
+    <div class="lookup-box">
+      <div class="lookup-header">
+        <p class="lookup-title">選擇多元表現項目</p>
+        <button type="button" class="lookup-close-btn" id="cCategoryCloseBtn">✕</button>
+      </div>
+      <p class="lookup-hint">點選項目後會自動帶入下方欄位</p>
+      <div class="lookup-list lookup-list-single" id="cCategoryItems"></div>
     </div>
   </div>
 
@@ -1716,12 +1704,6 @@
       `<button type="button" class="lookup-item" data-club="${name}">${name}</button>`
     ).join('');
 
-    document.querySelectorAll('[data-lookup]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.getElementById(btn.dataset.lookup).classList.add('active');
-      });
-    });
-
     document.getElementById('clubListCloseBtn').addEventListener('click', () => {
       clubListModalEl.classList.remove('active');
     });
@@ -1735,6 +1717,78 @@
         window.__formAnswers['club_name'] = item.dataset.club;
       }
       clubListModalEl.classList.remove('active');
+    });
+  }
+
+  /* ============================================
+     semester05 新增：通用「目標欄位」追蹤機制
+     ------------------------------------------------
+     [data-lookup] 按鈕負責開啟對應的彈窗；若按鈕還帶有
+     [data-target-field]，就記住「這次選完要填回哪個欄位」，
+     供 C-1~C-8 項目選擇、B-1 動態課程選擇共用同一套機制。
+     B-1 的清單內容是「動態」的：每次點擊都重新讀取第 1 步
+     （高二整學年成就感）的最新答案。
+     ============================================ */
+  document.querySelectorAll('[data-lookup]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.targetField) {
+        window.__currentLookupTarget = btn.dataset.targetField;
+      }
+      if (btn.dataset.lookup === 'courseLookupModal') {
+        const subjects = window.__formAnswers['g2_confident_subjects'] || [];
+        const container = document.getElementById('courseLookupItems');
+        if (subjects.length === 0) {
+          container.innerHTML = '<p class="lookup-empty-note">你在第 1 步尚未選擇任何科目，請先返回第 1 步選擇「哪些科目讓你有成就感」後再回來這裡選擇</p>';
+        } else {
+          container.innerHTML = subjects.map(s =>
+            `<button type="button" class="lookup-item" data-fill-value="${s}">${s}</button>`
+          ).join('');
+        }
+      }
+      document.getElementById(btn.dataset.lookup).classList.add('active');
+    });
+  });
+
+  function handleDynamicLookupItemClick(e) {
+    const item = e.target.closest('.lookup-item');
+    if (!item || !window.__currentLookupTarget) return;
+    const value = item.dataset.fillValue;
+    const input = document.querySelector(`input[data-question="${window.__currentLookupTarget}"]`);
+    if (input) {
+      input.value = value;
+      window.__formAnswers[window.__currentLookupTarget] = value;
+    }
+    document.querySelectorAll('.lookup-modal.active').forEach(m => m.classList.remove('active'));
+  }
+
+  // semester05 新增：C-1~C-8 多元表現項目選擇彈窗
+  const C_CATEGORIES = [
+    'C-1 彈性學習時間學習成果',
+    'C-2 社團活動經驗',
+    'C-3 擔任幹部經驗',
+    'C-4 服務學習經驗',
+    'C-5 競賽表現',
+    'C-6 非修課紀錄之成果作品',
+    'C-7 檢定證照',
+    'C-8 特殊優良表現證明'
+  ];
+  const cCategoryItemsEl = document.getElementById('cCategoryItems');
+  if (cCategoryItemsEl) {
+    cCategoryItemsEl.innerHTML = C_CATEGORIES.map(c =>
+      `<button type="button" class="lookup-item" data-fill-value="${c}">${c}</button>`
+    ).join('');
+    cCategoryItemsEl.addEventListener('click', handleDynamicLookupItemClick);
+    document.getElementById('cCategoryCloseBtn').addEventListener('click', () => {
+      document.getElementById('cCategoryModal').classList.remove('active');
+    });
+  }
+
+  // semester05 新增：B-1 動態課程選擇彈窗（清單內容見上方點擊時動態產生）
+  const courseLookupItemsEl = document.getElementById('courseLookupItems');
+  if (courseLookupItemsEl) {
+    courseLookupItemsEl.addEventListener('click', handleDynamicLookupItemClick);
+    document.getElementById('courseLookupCloseBtn').addEventListener('click', () => {
+      document.getElementById('courseLookupModal').classList.remove('active');
     });
   }
 
@@ -1823,6 +1877,7 @@
 
   document.querySelectorAll('.chip-group[data-question]').forEach(group => {
     if (group.id === 'courseChipGroup') return; // 已用事件委派另外處理（見上方課程原因區塊邏輯）
+    if (group.id === 'crossClassChipGroup') return; // 單選，另外處理見下方
     const question = group.dataset.question;
     window.__formAnswers[question] = [];
     group.querySelectorAll('.chip-btn').forEach(btn => {
@@ -1840,6 +1895,20 @@
       });
     });
   });
+
+  // semester05 新增：同科跨班課程改為單選（原本是可複選）
+  const crossClassChipGroupEl = document.getElementById('crossClassChipGroup');
+  if (crossClassChipGroupEl) {
+    window.__formAnswers['cross_class_3down_course'] = [];
+    crossClassChipGroupEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip-btn');
+      if (!btn) return;
+      const wasActive = btn.classList.contains('active');
+      crossClassChipGroupEl.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+      if (!wasActive) btn.classList.add('active');
+      window.__formAnswers['cross_class_3down_course'] = Array.from(crossClassChipGroupEl.querySelectorAll('.chip-btn.active')).map(b => b.dataset.value);
+    });
+  }
 
   document.querySelectorAll('.radio-group[data-question]').forEach(group => {
     const question = group.dataset.question;
@@ -1872,7 +1941,7 @@
      第 5 步沿用 v21 的「確認並簽名」內容不變，「下一步」按鈕
      在最後一步變成「送出紀錄表」並觸發原本的送出驗證邏輯。
      ============================================ */
-  const TOTAL_STEPS = 6;
+  const TOTAL_STEPS = 7;
   let currentStep = 1;
   const stepPanels = document.querySelectorAll('.step-panel');
   const gaugeSegments = document.querySelectorAll('.gauge-track i');
@@ -1881,9 +1950,10 @@
     1: '學習能力評估',
     2: '興趣與未來方向',
     3: '課程學習歷程成果',
-    4: '多元表現與課程地圖',
-    5: '我的選課計畫',
-    6: '確認並簽名'
+    4: '多元表現',
+    5: '本科課程地圖',
+    6: '我的選課計畫',
+    7: '確認並簽名'
   };
   const prevBtnEl = document.getElementById('prevBtn');
   const validationModal = document.getElementById('validationModal');

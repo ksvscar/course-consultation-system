@@ -766,7 +766,7 @@
         </div>
 
         <div class="q-block">
-          <p class="q-block-label">1. 我預計高二上學期選修哪些彈性課程？選這些課程的原因？（點選課程後，請勾選原因）</p>
+          <p class="q-block-label">1. 我預計高二上學期選修哪些彈性課程？選這些課程的原因？（僅能單選一門，選課程後請勾選原因）</p>
           <div class="chip-group" data-question="planned_courses_2up" id="courseChipGroup">
             <button type="button" class="chip-btn" data-value="新興科技之電動車構造原理">新興科技之電動車構造原理</button>
             <button type="button" class="chip-btn" data-value="汽車構造與交通法規">汽車構造與交通法規</button>
@@ -1566,7 +1566,7 @@
           ${COURSE_REASON_OPTIONS.map(r => `<button type="button" class="chip-btn chip-btn-sm" data-value="${r}">${r}</button>`).join('')}
         </div>
         <div class="conditional-field">
-          <input type="text" class="text-field" data-question="reason_${course}_other_text" placeholder="請簡要填寫，若無填寫「無」">
+          <input type="text" class="text-field" data-question="reason_${course}_other_text" data-disallow-none="true" placeholder="請簡要填寫，不可填「無」">
         </div>
       </div>
     `).join('');
@@ -1576,7 +1576,10 @@
     courseChipGroupEl.addEventListener('click', (e) => {
       const btn = e.target.closest('.chip-btn');
       if (!btn) return;
-      btn.classList.toggle('active');
+      // v4 修正：課程選擇改為單選（原本是可複選）
+      const wasActive = btn.classList.contains('active');
+      courseChipGroupEl.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+      if (!wasActive) btn.classList.add('active');
       window.__formAnswers['planned_courses_2up'] = Array.from(courseChipGroupEl.querySelectorAll('.chip-btn.active')).map(b => b.dataset.value);
       renderCourseReasonBlocks();
     });
