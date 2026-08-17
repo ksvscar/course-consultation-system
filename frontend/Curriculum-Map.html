@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>高雄高工課程地圖【汽車科】Curriculum Map V7</title>
+<title>高雄高工課程地圖【汽車科】Curriculum Map V8</title>
 <style>
 :root{
   --color-general:#90EE90;
@@ -37,6 +37,8 @@ body{
   margin:14px 14px 0;
 }
 .title-bar h1{margin:0;font-size:2rem;color:#1f5f91;}
+.title-bar h1 .line1{font-size:1.8rem;display:block;}
+.title-bar h1 .line2{font-size:2rem;display:block;}
 .title-bar p{margin:8px 0 0;font-size:1.2rem;color:#4a4a4a;}
 
 /* ============ 圖例區（純SVG嵌入，固定不變，純白底） ============ */
@@ -102,25 +104,33 @@ body{
   align-items:center;
 }
 .node-children{
-  display:grid;
+  display:flex;
+  flex-wrap:wrap;
+  align-content:flex-start;
   gap:10px;
   padding:12px;
-  grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));
 }
 .leaf{
   border:2px solid var(--line);
   border-radius:6px;
-  padding:18px 16px;
-  min-height:64px;
+  padding:12px 14px;
+  min-height:56px;
+  flex:0 0 auto;
+  width:auto;
+  max-width:230px;
+  min-width:120px;
   display:flex;
   flex-direction:column;
   justify-content:center;
+  align-items:center;
   font-size:1.2rem;
   cursor:pointer;
   text-align:center;
   transition:transform .18s ease, box-shadow .18s ease;
   user-select:none;
-  line-height:1.5;
+  line-height:1.45;
+  overflow-wrap:anywhere;
+  word-break:break-word;
 }
 .leaf .code{
   display:block;
@@ -128,12 +138,13 @@ body{
   color:#555;
   font-weight:400;
   margin-bottom:4px;
+  overflow-wrap:anywhere;
 }
-.leaf .name{ font-weight:700; font-size:14px; }
+.leaf .name{ font-weight:700; font-size:1.35rem; }
 .node-header{ font-size:1.35rem; }
 .nav-item{ font-size:1.25rem; }
 
-/* 群組排列：桌機用自動換欄，避免方塊過寬過扁 */
+/* 群組排列：桌機版方框寬度依課程名稱內容自適應（max 230px），文字過長自動換行置中 */
 
 /* ============ 立體凸出效果（方案甲：陰影+上浮） ============ */
 .layer-1{
@@ -167,8 +178,9 @@ body{
     flex-wrap:wrap;
   }
   .nav-item{flex:1 1 30%;padding:10px 6px;font-size:1rem;}
-  .node-children{grid-template-columns:1fr;display:none;}
-  .node.expanded > .node-children{display:grid;}
+  .node-children{display:none;flex-direction:column;}
+  .leaf{max-width:100%;width:100%;}
+  .node.expanded > .node-children{display:flex;}
   .node-header::after{content:"▾";transition:transform .2s;}
   .node.expanded > .node-header::after{transform:rotate(180deg);}
   .legend-wrap svg{min-width:900px;}
@@ -178,7 +190,7 @@ body{
 <body>
 
 <div class="title-bar">
-  <h1>高雄高工課程地圖<br>【汽車科】</h1>
+  <h1><span class="line1">高雄高工課程地圖</span><span class="line2">【汽車科】</span></h1>
   <p>115學年入學新生適用</p>
 </div>
 
@@ -249,6 +261,15 @@ body{
    - 副標題（學年說明）字級調整為 1.2rem
    - 分類標頭（如「專業實習課程」）維持 1.35rem
    - 課程名稱字級調整為 14px
+
+   📍 V8 更新紀錄：
+   - 主標題兩行分別設定字級：「高雄高工課程地圖」1.8rem／「【汽車科】」2rem
+   - 課程名稱字級：14px → 1.35rem（約21-22px），大幅提升可讀性
+   - 課程方塊版面改為 Flexbox 自適應寬度（原本 Grid 等寬欄位改為依內容寬度），
+     方塊寬度依課程名稱文字量自動調整（120-230px 區間），不再有大片空白，
+     文字過長時方塊內自動換行並置中，不會撐破版面或跑版
+   - 修正「共同時段選修」下「他科開設」「一般科目」等長文字課程方塊
+     因文字過長導致立體凸出效果跑版的問題（改用 max-width + 自動換行處理）
 ===================================================================== */
 const courseMapData = {
   year: "115", // 📍 年度編改位置 1：改這裡即可
