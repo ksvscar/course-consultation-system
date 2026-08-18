@@ -592,6 +592,10 @@
   .select-field:disabled{
     background:var(--steel-pale); color:#B9C2CE; cursor:not-allowed; opacity:.7;
   }
+  /* v修正 新增：甄選總成績採計方式的「佔比」標籤，對應下拉選單啟用時變深黑粗體 */
+  .pct-label.active{
+    color:var(--steel-deep); font-weight:700;
+  }
 
   /* C-1~C-8 類別參考清單（純文字，兩欄排列，供學生對照）*/
   .c-category-list{
@@ -922,7 +926,7 @@
             <input type="text" class="text-field" data-question="stage2_items_other_text" data-optional="true" placeholder="請簡要填寫其他項目名稱" style="margin-top:8px;">
           </div>
           <div class="field-row">
-            <span class="chip-hint" style="min-width:120px;">專題製作/實習科目學習成果 佔比</span>
+            <span class="chip-hint pct-label" style="min-width:120px;">專題製作/實習科目學習成果 佔比</span>
             <select class="select-field" data-question="stage2_pct_project" data-item-value="專題製作/實習科目學習成果" disabled>
               <option value="">--</option>
               <option value="0%">0%</option>
@@ -934,7 +938,7 @@
             </select>
           </div>
           <div class="field-row">
-            <span class="chip-hint" style="min-width:120px;">學習歷程備審資料審查 佔比</span>
+            <span class="chip-hint pct-label" style="min-width:120px;">學習歷程備審資料審查 佔比</span>
             <select class="select-field" data-question="stage2_pct_portfolio" data-item-value="學習歷程備審資料審查" disabled>
               <option value="">--</option>
               <option value="0%">0%</option>
@@ -946,7 +950,7 @@
             </select>
           </div>
           <div class="field-row">
-            <span class="chip-hint" style="min-width:120px;">面試 佔比</span>
+            <span class="chip-hint pct-label" style="min-width:120px;">面試 佔比</span>
             <select class="select-field" data-question="stage2_pct_interview" data-item-value="面試" disabled>
               <option value="">--</option>
               <option value="0%">0%</option>
@@ -958,7 +962,7 @@
             </select>
           </div>
           <div class="field-row">
-            <span class="chip-hint" style="min-width:120px;">實作 佔比</span>
+            <span class="chip-hint pct-label" style="min-width:120px;">實作 佔比</span>
             <select class="select-field" data-question="stage2_pct_practical" data-item-value="實作" disabled>
               <option value="">--</option>
               <option value="0%">0%</option>
@@ -970,7 +974,7 @@
             </select>
           </div>
           <div class="field-row">
-            <span class="chip-hint" style="min-width:120px;">其他 佔比</span>
+            <span class="chip-hint pct-label" style="min-width:120px;">其他 佔比</span>
             <select class="select-field" data-question="stage2_pct_other" data-item-value="其他" disabled>
               <option value="">--</option>
               <option value="0%">0%</option>
@@ -1801,7 +1805,7 @@
       const activeValues = Array.from(stage2ItemsChipGroupEl.querySelectorAll('.chip-btn.active')).map(b => b.dataset.value);
       window.__formAnswers['stage2_items'] = activeValues;
 
-      // 連動下方對應的佔比下拉選單 enable/disable
+      // 連動下方對應的佔比下拉選單 enable/disable，及標籤深黑粗體切換
       document.querySelectorAll('select[data-question^="stage2_pct_"]').forEach(sel => {
         const itemValue = sel.dataset.itemValue;
         const isActive = activeValues.includes(itemValue);
@@ -1810,6 +1814,8 @@
           sel.value = '';
           window.__formAnswers[sel.dataset.question] = '';
         }
+        const labelEl = sel.closest('.field-row').querySelector('.pct-label');
+        if (labelEl) labelEl.classList.toggle('active', isActive);
       });
 
       // 「其他」展開文字欄位
