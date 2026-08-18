@@ -61,7 +61,7 @@
   }
   .device{
     width:100%;
-    max-width: clamp(360px, 92vw, 820px);
+    max-width: clamp(360px, 92vw, 1100px);
     min-height:100vh;
     background:var(--paper);
     position:relative;
@@ -460,11 +460,6 @@
     background:#fff;
   }
   .text-field:focus{ outline:none; border-color:var(--steel); }
-  /* v5 修正：placeholder 提示文字縮小，跟「請點選表現較佳的前三個項目」
-     同樣比例(0.72倍)，跟實際輸入的文字大小區隔開來（全域設定）*/
-  .text-field::placeholder{
-    font-size:calc(var(--fs-body) * 0.72);
-  }
   .conditional-field{ margin-top:10px; display:none; }
   .conditional-field.show{ display:block; }
 
@@ -745,8 +740,8 @@
     <section class="step-panel" data-step="4">
       <div class="q-card">
         <p class="q-title">我瞭解本科課程地圖</p>
-        <a href="https://ksvscar.github.io/course-consultation-system/frontend/Curriculum-Map.html?returnUrl=https%3A%2F%2Fksvscar.github.io%2Fcourse-consultation-system%2Ffrontend%2Fsemester02.html"
-           rel="noopener" class="course-map-link" id="courseMapLink">
+        <a href="https://ksvscar.github.io/course-consultation-system/course-map/auto.html"
+           target="_blank" rel="noopener" class="course-map-link">
           📺 點此開啟《汽車科 本科課程地圖》互動網頁
           <span class="arrow">›</span>
         </a>
@@ -766,7 +761,7 @@
         </div>
 
         <div class="q-block">
-          <p class="q-block-label">1. 我預計高二上學期選修哪些彈性課程？選這些課程的原因？（僅能單選一門，選課程後請勾選原因）</p>
+          <p class="q-block-label">1. 我預計高二上學期選修哪些彈性課程？選這些課程的原因？（點選課程後，請勾選原因）</p>
           <div class="chip-group" data-question="planned_courses_2up" id="courseChipGroup">
             <button type="button" class="chip-btn" data-value="新興科技之電動車構造原理">新興科技之電動車構造原理</button>
             <button type="button" class="chip-btn" data-value="汽車構造與交通法規">汽車構造與交通法規</button>
@@ -1566,7 +1561,7 @@
           ${COURSE_REASON_OPTIONS.map(r => `<button type="button" class="chip-btn chip-btn-sm" data-value="${r}">${r}</button>`).join('')}
         </div>
         <div class="conditional-field">
-          <input type="text" class="text-field" data-question="reason_${course}_other_text" data-disallow-none="true" placeholder="請簡要填寫，不可填「無」">
+          <input type="text" class="text-field" data-question="reason_${course}_other_text" placeholder="請簡要填寫，若無填寫「無」">
         </div>
       </div>
     `).join('');
@@ -1576,10 +1571,7 @@
     courseChipGroupEl.addEventListener('click', (e) => {
       const btn = e.target.closest('.chip-btn');
       if (!btn) return;
-      // v4 修正：課程選擇改為單選（原本是可複選）
-      const wasActive = btn.classList.contains('active');
-      courseChipGroupEl.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
-      if (!wasActive) btn.classList.add('active');
+      btn.classList.toggle('active');
       window.__formAnswers['planned_courses_2up'] = Array.from(courseChipGroupEl.querySelectorAll('.chip-btn.active')).map(b => b.dataset.value);
       renderCourseReasonBlocks();
     });
@@ -1811,28 +1803,6 @@
     hasSubmitted = true;
     renderStep();
   });
-
-  /* ============================================
-     v_courseMapFix 新增：跳去課程地圖前記住目前步驟，回來時自動跳回
-     ------------------------------------------------
-     （同 semester01-v7 的機制，不需要 Curriculum-Map.html 配合修改）
-     ============================================ */
-  const RESUME_STEP_KEY = 'semester02_resumeStep';
-  const courseMapLinkEl = document.getElementById('courseMapLink');
-  if (courseMapLinkEl) {
-    courseMapLinkEl.addEventListener('click', () => {
-      sessionStorage.setItem(RESUME_STEP_KEY, String(currentStep));
-    });
-  }
-
-  const resumeStep = sessionStorage.getItem(RESUME_STEP_KEY);
-  if (resumeStep) {
-    sessionStorage.removeItem(RESUME_STEP_KEY);
-    const stepNum = parseInt(resumeStep, 10);
-    if (stepNum >= 1 && stepNum <= TOTAL_STEPS) {
-      currentStep = stepNum;
-    }
-  }
 
   renderStep();
 </script>
