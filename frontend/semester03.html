@@ -1689,11 +1689,11 @@
         let hintText = '以下是你在第 1 步選擇「讓你有成就感」的科目，點選可直接帶入';
 
         if (filterType === 'practical') {
-          subjects = allSubjects.filter(s => PRACTICAL_SUBJECTS.includes(s));
+          subjects = PRACTICAL_SUBJECTS.filter(s => allSubjects.includes(s));
           hintText = '以下是你在第 1 步選擇「讓你有成就感」的科目中，屬於實習/專業科目的部分，點選可直接帶入';
           emptyNote = '你在第 1 步選擇的成就感科目中，沒有屬於實習/專業科目的項目，請先返回第 1 步確認後再回來這裡選擇';
         } else if (filterType === 'general') {
-          subjects = allSubjects.filter(s => GENERAL_SUBJECTS.includes(s));
+          subjects = GENERAL_SUBJECTS.filter(s => allSubjects.includes(s));
           hintText = '以下是你在第 1 步選擇「讓你有成就感」的科目中，屬於一般科目的部分，點選可直接帶入';
           emptyNote = '你在第 1 步選擇的成就感科目中，沒有屬於一般科目的項目，請先返回第 1 步確認後再回來這裡選擇';
         }
