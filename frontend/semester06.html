@@ -584,6 +584,14 @@
     background:#fff; flex:1 1 auto; min-width:180px;
   }
   .select-field:focus{ outline:none; border-color:var(--steel); }
+  /* v修正 新增：科目名稱標籤(全黑粗體)，用於篩選倍率/加權等每科目一列的欄位左側 */
+  .subject-label-strong{
+    font-weight:700; color:var(--steel-deep); font-size:var(--fs-body);
+    min-width:56px; flex-shrink:0;
+  }
+  .select-field:disabled{
+    background:var(--steel-pale); color:#B9C2CE; cursor:not-allowed; opacity:.7;
+  }
 
   /* C-1~C-8 類別參考清單（純文字，兩欄排列，供學生對照）*/
   .c-category-list{
@@ -731,8 +739,11 @@
           <input type="text" class="text-field" data-question="stage1_quota" data-optional="true" placeholder="請填寫招生名額">
         </div>
         <div class="q-block">
-          <p class="q-block-label">篩選倍率</p>
-            <select class="select-field" data-question="stage1_ratio">
+          <p class="q-block-label">第一階段各科目篩選倍率（請依簡章填寫，若無可留空）</p>
+          <div class="field-row">
+            <span class="subject-label-strong">國文</span>
+            <span class="chip-hint">篩選倍率</span>
+            <select class="select-field" data-question="stage1_ratio_chinese">
               <option value="">--</option>
               <option value="1.00">1.00</option>
               <option value="2.00">2.00</option>
@@ -742,14 +753,63 @@
               <option value="6.00">6.00</option>
               <option value="7.00">7.00</option>
             </select>
-        </div>
-        <div class="q-block">
-          <p class="q-block-label">第一階段各科目採計（請依簡章填寫，若無可留空）</p>
-          <input type="text" class="text-field" data-question="stage1_chinese" data-optional="true" placeholder="國文" style="margin-top:8px;">
-          <input type="text" class="text-field" data-question="stage1_english" data-optional="true" placeholder="英文" style="margin-top:8px;">
-          <input type="text" class="text-field" data-question="stage1_math" data-optional="true" placeholder="數文" style="margin-top:8px;">
-          <input type="text" class="text-field" data-question="stage1_pro1" data-optional="true" placeholder="專業一" style="margin-top:8px;">
-          <input type="text" class="text-field" data-question="stage1_pro2" data-optional="true" placeholder="專業二" style="margin-top:8px;">
+          </div>
+          <div class="field-row">
+            <span class="subject-label-strong">英文</span>
+            <span class="chip-hint">篩選倍率</span>
+            <select class="select-field" data-question="stage1_ratio_english">
+              <option value="">--</option>
+              <option value="1.00">1.00</option>
+              <option value="2.00">2.00</option>
+              <option value="3.00">3.00</option>
+              <option value="4.00">4.00</option>
+              <option value="5.00">5.00</option>
+              <option value="6.00">6.00</option>
+              <option value="7.00">7.00</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="subject-label-strong">數文</span>
+            <span class="chip-hint">篩選倍率</span>
+            <select class="select-field" data-question="stage1_ratio_math">
+              <option value="">--</option>
+              <option value="1.00">1.00</option>
+              <option value="2.00">2.00</option>
+              <option value="3.00">3.00</option>
+              <option value="4.00">4.00</option>
+              <option value="5.00">5.00</option>
+              <option value="6.00">6.00</option>
+              <option value="7.00">7.00</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="subject-label-strong">專業一</span>
+            <span class="chip-hint">篩選倍率</span>
+            <select class="select-field" data-question="stage1_ratio_pro1">
+              <option value="">--</option>
+              <option value="1.00">1.00</option>
+              <option value="2.00">2.00</option>
+              <option value="3.00">3.00</option>
+              <option value="4.00">4.00</option>
+              <option value="5.00">5.00</option>
+              <option value="6.00">6.00</option>
+              <option value="7.00">7.00</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="subject-label-strong">專業二</span>
+            <span class="chip-hint">篩選倍率</span>
+            <select class="select-field" data-question="stage1_ratio_pro2">
+              <option value="">--</option>
+              <option value="1.00">1.00</option>
+              <option value="2.00">2.00</option>
+              <option value="3.00">3.00</option>
+              <option value="4.00">4.00</option>
+              <option value="5.00">5.00</option>
+              <option value="6.00">6.00</option>
+              <option value="7.00">7.00</option>
+            </select>
+          </div>
         </div>
 
         <p class="q-desc">第二階段指定項目甄試 — 統一入學測驗成績加權</p>
@@ -850,19 +910,20 @@
 
         <p class="q-desc">第二階段指定項目甄試 — 甄選總成績採計方式</p>
         <div class="q-block">
-          <div class="radio-group" data-question="stage2_items">
-            <button type="button" class="radio-btn" data-value="專題製作/實習科目學習成果">專題製作/實習科目學習成果</button>
-            <button type="button" class="radio-btn" data-value="學習歷程備審資料審查">學習歷程備審資料審查</button>
-            <button type="button" class="radio-btn" data-value="面試">面試</button>
-            <button type="button" class="radio-btn" data-value="實作">實作</button>
-            <button type="button" class="radio-btn" data-value="其他">其他</button>
+          <p class="chip-hint" style="margin:0 0 8px;">點選可複選，勾選後下方對應佔比欄位才能選取</p>
+          <div class="chip-group" id="stage2ItemsChipGroup" data-question="stage2_items">
+            <button type="button" class="chip-btn" data-value="專題製作/實習科目學習成果">專題製作/實習科目學習成果</button>
+            <button type="button" class="chip-btn" data-value="學習歷程備審資料審查">學習歷程備審資料審查</button>
+            <button type="button" class="chip-btn" data-value="面試">面試</button>
+            <button type="button" class="chip-btn" data-value="實作">實作</button>
+            <button type="button" class="chip-btn" data-value="其他">其他</button>
           </div>
-          <div class="conditional-field" data-show-when="stage2_items=其他">
+          <div class="conditional-field" data-show-when="stage2_items_other=show">
             <input type="text" class="text-field" data-question="stage2_items_other_text" data-optional="true" placeholder="請簡要填寫其他項目名稱" style="margin-top:8px;">
           </div>
           <div class="field-row">
             <span class="chip-hint" style="min-width:120px;">專題製作/實習科目學習成果 佔比</span>
-            <select class="select-field" data-question="stage2_pct_project">
+            <select class="select-field" data-question="stage2_pct_project" data-item-value="專題製作/實習科目學習成果" disabled>
               <option value="">--</option>
               <option value="0%">0%</option>
               <option value="10%">10%</option>
@@ -874,7 +935,7 @@
           </div>
           <div class="field-row">
             <span class="chip-hint" style="min-width:120px;">學習歷程備審資料審查 佔比</span>
-            <select class="select-field" data-question="stage2_pct_portfolio">
+            <select class="select-field" data-question="stage2_pct_portfolio" data-item-value="學習歷程備審資料審查" disabled>
               <option value="">--</option>
               <option value="0%">0%</option>
               <option value="10%">10%</option>
@@ -886,7 +947,7 @@
           </div>
           <div class="field-row">
             <span class="chip-hint" style="min-width:120px;">面試 佔比</span>
-            <select class="select-field" data-question="stage2_pct_interview">
+            <select class="select-field" data-question="stage2_pct_interview" data-item-value="面試" disabled>
               <option value="">--</option>
               <option value="0%">0%</option>
               <option value="10%">10%</option>
@@ -898,7 +959,7 @@
           </div>
           <div class="field-row">
             <span class="chip-hint" style="min-width:120px;">實作 佔比</span>
-            <select class="select-field" data-question="stage2_pct_practical">
+            <select class="select-field" data-question="stage2_pct_practical" data-item-value="實作" disabled>
               <option value="">--</option>
               <option value="0%">0%</option>
               <option value="10%">10%</option>
@@ -910,7 +971,7 @@
           </div>
           <div class="field-row">
             <span class="chip-hint" style="min-width:120px;">其他 佔比</span>
-            <select class="select-field" data-question="stage2_pct_other">
+            <select class="select-field" data-question="stage2_pct_other" data-item-value="其他" disabled>
               <option value="">--</option>
               <option value="0%">0%</option>
               <option value="10%">10%</option>
@@ -1701,6 +1762,7 @@
   }
 
   document.querySelectorAll('.chip-group[data-question]').forEach(group => {
+    if (group.id === 'stage2ItemsChipGroup') return; // 專屬邏輯：需連動下方佔比下拉選單enable/disable，見下方
     const question = group.dataset.question;
     window.__formAnswers[question] = [];
     group.querySelectorAll('.chip-btn').forEach(btn => {
@@ -1718,6 +1780,44 @@
       });
     });
   });
+
+  /* ============================================
+     v修正 新增：第二階段指定項目甄試「甄選總成績採計方式」
+     ------------------------------------------------
+     改為多選chip（可複選多個項目），每個項目對應下方一個
+     「佔比」下拉選單。只有勾選的項目，其佔比下拉選單才能點選；
+     未勾選的項目維持灰底disabled，不可點選。取消勾選時，
+     連同已選的佔比值一併清空，避免送出未勾選項目卻殘留佔比值。
+     ============================================ */
+  const stage2ItemsChipGroupEl = document.getElementById('stage2ItemsChipGroup');
+  if (stage2ItemsChipGroupEl) {
+    window.__formAnswers['stage2_items'] = [];
+    const stage2OtherField = document.querySelector('.conditional-field[data-show-when="stage2_items_other=show"]');
+
+    stage2ItemsChipGroupEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip-btn');
+      if (!btn) return;
+      btn.classList.toggle('active');
+      const activeValues = Array.from(stage2ItemsChipGroupEl.querySelectorAll('.chip-btn.active')).map(b => b.dataset.value);
+      window.__formAnswers['stage2_items'] = activeValues;
+
+      // 連動下方對應的佔比下拉選單 enable/disable
+      document.querySelectorAll('select[data-question^="stage2_pct_"]').forEach(sel => {
+        const itemValue = sel.dataset.itemValue;
+        const isActive = activeValues.includes(itemValue);
+        sel.disabled = !isActive;
+        if (!isActive) {
+          sel.value = '';
+          window.__formAnswers[sel.dataset.question] = '';
+        }
+      });
+
+      // 「其他」展開文字欄位
+      if (btn.dataset.value === '其他' && stage2OtherField) {
+        stage2OtherField.classList.toggle('show', btn.classList.contains('active'));
+      }
+    });
+  }
 
   document.querySelectorAll('.radio-group[data-question]').forEach(group => {
     const question = group.dataset.question;
