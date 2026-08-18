@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>課程諮詢紀錄表 - 簽名測試</title>
+<style>
+  :root{
+    --ink:#152238;
+    --steel:#1E3A5F;
+    --steel-deep:#0F2540;
+    --steel-pale:#E8EEF5;
+    --line:#D7E0EA;
+    --signal:#FF5A1F;
+    --signal-dim:#FFE7DB;
+    --paper:#FBFAF7;
+    --ok:#1E7A4C;
+    --font-cjk: "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+
+    /* ============================================
+       v15 新增、v17 調整：全域響應式字體標準
+       ------------------------------------------------
+       手機和平板共用同一套 clamp() 公式，隨裝置視窗寬度
+       自動放大字體，不需要為每個裝置額外寫 media query。
+       這是「之後頁面表單設計都要用響應式設計」的基礎規格，
+       未來新頁面的內文文字應優先沿用這幾個變數，
+       確保全站字體大小一致。
+
+       v17：手機基準固定在 21px（Ethen 確認這個大小最好讀），
+       純 vw 係數公式讓中大型平板（例如 iPad Air 13 吋，CSS
+       邏輯寬度約 1024px 直式 / 1366px 橫式）能繼續平滑放大，
+       不會卡在手機大小不動，也不會需要等轉橫式才有感覺。
+       ============================================ */
+    --fs-body: clamp(21px, 2.8vw, 32px);         /* 一般說明文字（警示卡、通知卡內文）*/
+    --fs-body-strong: clamp(22px, 3vw, 34px);    /* 同一區塊內的粗體/標題行，比內文大一階 */
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--steel-deep);font-family:var(--font-cjk);color:var(--ink);}
+  /* ============================================
+     v18 修正 Bug3：停用長按觸發的瀏覽器選取文字選單
+     ------------------------------------------------
+     iOS/Android 瀏覽器長按畫面會跳出「拷貝/搜尋/翻譯」選單
+     （原生文字選取功能），簽名時手指在畫布上稍微停留或拖曳
+     容易誤觸發，跳出的黑色工具列還會暫時擋住簽名區。
+     這裡全站停用文字選取與長按選單（-webkit-touch-callout
+     專門對付 iOS Safari 的長按放大鏡/選單），簽名操作不再
+     受影響，且此為整份表單皆適用的操作型網頁，不需要文字選取。
+     ============================================ */
+  *{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 20% -10%, #2A4C74 0%, transparent 45%),
+      var(--steel-deep);
+  }
+  .device{
+    width:100%;
+    max-width: clamp(360px, 92vw, 820px);
+    min-height:100vh;
+    background:var(--paper);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 0 60px rgba(0,0,0,.4);
+  }
+
+  header{
+    background:linear-gradient(135deg, var(--steel-deep), var(--steel) 70%);
+    color:#fff;
+    padding:20px 20px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute; right:-30px; top:-30px;
+    width:160px; height:160px; border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.08);
+  }
+  header::before{
+    content:"";
+    position:absolute; right:10px; top:40px;
+    width:100px; height:100px; border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.06);
+  }
+  .eyebrow{
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:#9FC1E0; font-weight:600; margin:0 0 4px; position:relative;
+  }
+  h1{
+    font-size:19px; margin:0 0 14px; font-weight:700; line-height:1.4;
+    position:relative;
+  }
+  .gauge-track{
+    display:flex; gap:5px; position:relative;
+  }
+  .gauge-track i{
+    flex:1; height:4px; border-radius:2px;
+    background:rgba(255,255,255,.18);
+    overflow:hidden;
+  }
+  .gauge-track i span{
+    display:block; height:100%; width:0%;
+    background:var(--signal);
+    transition:width .4s ease;
+  }
+  .gauge-track i.done span{width:100%;}
+  .gauge-track i.active span{width:55%;}
+  .step-label{
+    margin-top:8px; font-size:16px; color:#C9DCEE; letter-spacing:.02em; position:relative; /* v20：放大二級(12px->16px) */
+  }
+  .step-label b{color:#fff;}
+
+  main{flex:1; padding:22px 20px 110px; overflow-y:auto;}
+
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:20px 18px; margin-bottom:16px;
+  }
+
+  .name-summary{
+    font-size:var(--fs-body-strong); font-weight:700; color:var(--steel-deep); margin:0;
+  }
+
+  .warn-card{
+    display:flex; gap:10px;
+    background:var(--signal-dim); border:1px solid #FFCBB0; border-radius:12px;
+    padding:14px 14px; margin-bottom:16px;
+  }
+  .warn-card .ic{
+    width:26px; height:26px; border-radius:50%; background:var(--signal);
+    color:#fff; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700;
+  }
+  .warn-card .txt{font-size:var(--fs-body); color:#7A3A1E; line-height:1.6;}
+  .warn-card .txt b{color:var(--steel-deep); display:block; margin-bottom:2px; font-size:var(--fs-body-strong);}
+  .warn-card a{color:var(--steel); font-weight:700; text-decoration:none;}
+
+  /* ============================================
+     v21 新增：每份記錄表最終頁共用的「選課流程了解度」
+     互動選單元件，放在簽名區塊最上方。
+     每一列是一個是/否二選一問題，搭配補充說明文字。
+     ============================================ */
+  .quiz-card{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:18px; margin-bottom:16px;
+  }
+  .quiz-title{
+    font-size:var(--fs-body-strong); font-weight:700; color:var(--steel-deep);
+    margin:0 0 14px;
+  }
+  .quiz-row{
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px;
+    padding:12px 0; border-top:1px solid var(--line);
+  }
+  .quiz-row:first-of-type{border-top:none; padding-top:0;}
+  .quiz-label{
+    font-size:var(--fs-body); font-weight:700; color:var(--steel-deep);
+    flex:0 0 auto;
+  }
+  .quiz-toggle{display:flex; gap:8px; flex:0 0 auto;}
+  .toggle-btn{
+    padding:7px 18px; border-radius:999px; border:1.5px solid var(--line);
+    background:#fff; color:#5C6C81; font-size:var(--fs-body); font-weight:700;
+    font-family:var(--font-cjk); cursor:pointer; transition:.15s;
+  }
+  .toggle-btn:hover{background:var(--steel-pale);}
+  .toggle-btn.active{
+    background:var(--signal); border-color:var(--signal); color:#fff;
+    box-shadow:0 3px 8px rgba(255,90,31,.3);
+  }
+  .quiz-note{
+    font-size:calc(var(--fs-body) * 0.82); color:#8C9AAE; line-height:1.5;
+    flex:1 1 100%;
+  }
+
+  .sig-wrap{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px;}
+
+  .sig-label{
+    font-size:var(--fs-body-strong); font-weight:700; color:var(--steel-deep);
+    margin:0 0 4px; display:flex; justify-content:space-between; align-items:center;
+  }
+  .sig-hint{
+    font-size:var(--fs-body); color:var(--signal); margin:0 0 12px; font-weight:700;
+    display:none; /* 只在鎖定時顯示，由 JS 控制 */
+  }
+  .expand-btn{
+    display:flex; align-items:center; gap:5px;
+    background:#fff; border:1.5px solid var(--signal); color:var(--signal);
+    border-radius:999px; padding:6px 12px; font-size:var(--fs-body); font-weight:700;
+    cursor:pointer; transition:.15s;
+    flex-shrink:0;
+  }
+  .expand-btn:hover{background:var(--signal-dim);}
+
+  .sig-canvas-container{
+    position:relative;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:var(--steel-pale);
+    overflow:hidden;
+    margin-bottom:12px;
+    aspect-ratio: 16 / 9;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ============================================
+     v11：小畫布狀態由 JS 動態切換
+     - 解鎖（可手寫）：touch-action:none（避免手寫時觸發頁面捲動）
+     - 鎖定（純預覽）：pointer-events:none（觸控直接穿透給頁面捲動）
+     預設先給解鎖狀態的樣式，實際狀態由 setSmallCanvasLocked() 控制
+     ============================================ */
+  #signatureCanvas{
+    width:100%; height:100%; display:block;
+    touch-action:none;
+    cursor:crosshair;
+  }
+
+  .btn-clear{
+    width:100%;
+    padding:11px; border-radius:10px; border:1.5px solid var(--line);
+    background:#fff; color:#5C6C81; font-size:var(--fs-body); font-weight:700;
+    font-family:var(--font-cjk); cursor:pointer; transition:.15s;
+  }
+  .btn-clear:hover{background:var(--steel-pale);}
+
+  /* ============================================
+     v13 修正 Bug3、v18 加強對比：通知文字高亮樣式
+     「先不要關閉視窗」改用高對比亮黃色凸顯，不再只靠底線
+     ============================================ */
+  .notice-card{
+    background:var(--signal); border:none; border-radius:12px;
+    padding:14px 16px; margin-top:16px; font-size:var(--fs-body); color:#fff;
+    line-height:1.7; font-weight:700;
+    box-shadow:0 4px 12px rgba(255,90,31,.25);
+  }
+  .notice-card b{
+    color:#fff; /* v20：藍色仍不夠明顯，改回白色，用粗體+底線加強對比 */
+    font-weight:900;
+    text-decoration:underline; text-underline-offset:3px;
+  }
+
+  /* ============================================
+     v18 全域規則：底部主要操作列（上一步／下一步 /
+     送出紀錄表 等固定式導覽按鈕）字體固定不隨裝置放大，
+     跟表單內文（會用 --fs-body 響應式放大）區隔開來。
+     這是往後所有頁面的統一設定：導覽列固定、內容區動態。
+     ============================================ */
+  .cta-bar{
+    position:sticky; left:0; right:0; bottom:0;
+    background:linear-gradient(0deg, var(--paper) 60%, rgba(251,250,247,0));
+    padding:16px 20px 16px; display:flex; gap:8px;
+  }
+  .btn{
+    flex:1; padding:11px; border-radius:10px; border:none;
+    font-size:18px; font-weight:700; font-family:var(--font-cjk); cursor:pointer; /* 固定字體，不響應式，v19放大二級(14px->18px) */
+  }
+  .btn-prev{background:#fff; border:1.5px solid var(--line); color:#5C6C81; flex:1;}
+  .btn-next{
+    background:var(--signal); color:#fff;
+    box-shadow:0 6px 14px rgba(255,90,31,.3);
+  }
+  .btn-next:active{transform:translateY(1px);}
+  .btn-next:disabled{opacity:.6; cursor:not-allowed;}
+
+  /* ============================================
+     v13 修正 Bug2：手機橫式時底部按鈕列太高，
+     壓縮簽名版可視空間。僅在「橫式 + 螢幕高度較矮」
+     （手機特徵）時縮小，iPad/平板螢幕高度較高不受影響。
+     ============================================ */
+  @media (orientation: landscape) and (max-height: 500px) {
+    main{ padding-bottom: 60px; }
+    .cta-bar{ padding:6px 16px 6px; gap:6px; }
+    .btn{ padding:6px; font-size:15px; }
+    .btn-prev{ flex:1; }
+  }
+
+  .fullscreen-modal{
+    display:none;
+    position:fixed;
+    top:0; left:0; right:0; bottom:0;
+    background:#0A0A0A;
+    z-index:10000;
+    padding:0;
+    overflow:hidden;
+  }
+  .fullscreen-modal.active{display:block;}
+
+  .fullscreen-canvas-container{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:calc(100% - 64px);
+    box-sizing:border-box;
+    border:2px solid #FFFFFF;
+    background:#000;
+    overflow:hidden;
+  }
+
+  #fullscreenPad{
+    position:absolute;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    display:block;
+    background:transparent;
+    cursor:crosshair;
+    touch-action:none;
+    z-index:1;
+  }
+
+  .signature-watermark{
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%, -50%);
+    font-size:80px;
+    font-weight:bold;
+    color:rgba(200,200,200,0.35);
+    pointer-events:none;
+    z-index:0;
+    font-family:Arial,"Noto Sans TC",sans-serif;
+    white-space:nowrap;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+
+  .fs-button-group{
+    position:absolute;
+    bottom:8px; left:50%;
+    transform:translateX(-50%);
+    display:flex; gap:10px; z-index:10001;
+  }
+  .btn-clear-fs, .btn-confirm-fs{
+    padding:9px 16px; font-size:13px; border:none; border-radius:8px;
+    cursor:pointer; font-weight:700; font-family:var(--font-cjk); transition:.15s;
+  }
+  .btn-clear-fs{background:#fff; color:var(--steel-deep);}
+  .btn-clear-fs:hover{background:#eee;}
+  .btn-confirm-fs{background:var(--signal); color:#fff;}
+  .btn-confirm-fs:hover{background:#e64f18;}
+
+  .close-btn{
+    position:absolute;
+    top:8px; right:8px;
+    background:rgba(255,255,255,.15); color:#fff;
+    border:2px solid rgba(255,255,255,.7); border-radius:50%;
+    width:36px; height:36px; font-size:18px; cursor:pointer;
+    z-index:10002; transition:.15s; display:flex; align-items:center; justify-content:center;
+  }
+  .close-btn:hover{background:rgba(255,255,255,.3);}
+
+  ::selection{background:var(--signal-dim);}
+
+  /* ============================================
+     v1（高一上）新增：多步驟題組共用元件
+     ------------------------------------------------
+     這是六學期記錄表的第一份 pilot 版本，用來驗證多步驟
+     題組（chip 多選、radio 單選、文字輸入、條件式顯示）
+     的互動模式與視覺風格，確認 OK 後套用到其餘五學期。
+     ============================================ */
+  .step-panel{ display:none; }
+  .step-panel.active{ display:block; }
+
+  .q-card{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:18px; margin-bottom:16px;
+  }
+  .q-title{
+    font-size:var(--fs-body-strong); font-weight:700; color:var(--steel-deep);
+    margin:0 0 4px;
+  }
+  .q-desc{
+    font-size:var(--fs-body); color:#5C6C81; margin:0 0 14px; line-height:1.6;
+  }
+  .q-block{ margin-bottom:22px; }
+  .q-block:last-child{ margin-bottom:0; }
+  .q-block-label{
+    font-size:var(--fs-body); font-weight:700; color:var(--steel-deep);
+    margin:0 0 10px; line-height:1.5;
+  }
+
+  /* 多選 chip 群組 */
+  .chip-group{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip-btn{
+    padding:8px 16px; border-radius:999px; border:1.5px solid var(--line);
+    background:#fff; color:#5C6C81; font-size:var(--fs-body); font-weight:700;
+    font-family:var(--font-cjk); cursor:pointer; transition:.15s;
+    text-align:left; /* v2 修正 Bug2：多行文字時左對齊較整齊，全域設定 */
+  }
+  .chip-btn:hover{ background:var(--steel-pale); }
+  .chip-btn.active{
+    background:var(--steel); border-color:var(--steel); color:#fff;
+    box-shadow:0 3px 8px rgba(30,58,95,.3);
+  }
+  /* v1（高一上）新增：互斥鎖定狀態（例如成就感/困擾科目互斥）*/
+  .chip-btn.locked{
+    background:var(--steel-pale); border-color:var(--line); color:#B9C2CE;
+    cursor:not-allowed; opacity:.7;
+  }
+  .chip-btn:disabled{ pointer-events:none; }
+
+  /* ============================================
+     v1（高一上）新增：欄位驗證失敗提示彈窗
+     ------------------------------------------------
+     跟簽名確認彈窗一樣走響應式 clamp() 設計，手機/平板都適用。
+     ============================================ */
+  .validation-modal{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(15,37,64,.55);
+    z-index:20000;
+    align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .validation-modal.active{ display:flex; }
+  .validation-box{
+    background:#fff; border-radius:16px;
+    padding:clamp(24px,5vw,44px) clamp(20px,5vw,36px) clamp(20px,4vw,32px);
+    max-width:clamp(300px, 55vw, 560px); width:100%; text-align:center; position:relative;
+    box-shadow:0 20px 50px rgba(0,0,0,.3);
+  }
+  .validation-close-btn{
+    position:absolute; top:10px; right:10px;
+    width:clamp(30px,4vw,44px); height:clamp(30px,4vw,44px); border-radius:50%;
+    border:none; background:var(--steel-pale); color:var(--steel-deep);
+    font-size:clamp(14px,2.2vw,22px); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .validation-close-btn:hover{ background:var(--line); }
+  .validation-icon{
+    width:clamp(56px,9vw,96px); height:clamp(56px,9vw,96px); border-radius:50%;
+    background:#DC2626; color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(26px,4.5vw,44px); margin:0 auto clamp(12px,2vw,20px);
+  }
+  .validation-text{ font-size:clamp(16px,3vw,28px); font-weight:700; color:var(--steel-deep); margin:0; }
+
+  /* 單選 radio 群組（樣式跟 chip 類似，但同群組互斥單選）*/
+  .radio-group{ display:flex; flex-wrap:wrap; gap:8px; }
+  .radio-btn{
+    padding:8px 16px; border-radius:999px; border:1.5px solid var(--line);
+    background:#fff; color:#5C6C81; font-size:var(--fs-body); font-weight:700;
+    font-family:var(--font-cjk); cursor:pointer; transition:.15s;
+    text-align:left;
+  }
+  .radio-btn:hover{ background:var(--steel-pale); }
+  .radio-btn.active{
+    background:var(--signal); border-color:var(--signal); color:#fff;
+    box-shadow:0 3px 8px rgba(255,90,31,.3);
+  }
+
+  /* 文字輸入 */
+  .text-field{
+    width:100%; padding:11px 14px; border-radius:10px; border:1.5px solid var(--line);
+    font-size:var(--fs-body); font-family:var(--font-cjk); color:var(--ink);
+    background:#fff;
+  }
+  .text-field:focus{ outline:none; border-color:var(--steel); }
+  /* v5 修正：placeholder 提示文字縮小，跟「請點選表現較佳的前三個項目」
+     同樣比例(0.72倍)，跟實際輸入的文字大小區隔開來（全域設定）*/
+  .text-field::placeholder{
+    font-size:calc(var(--fs-body) * 0.72);
+  }
+  .conditional-field{ margin-top:10px; display:none; }
+  .conditional-field.show{ display:block; }
+
+  .chip-hint{
+    font-size:calc(var(--fs-body) * 0.8); color:#8C9AAE; margin:6px 0 0;
+  }
+  /* v1（高一上）v2 修正 Bug3：標題後方的補充提示，高對比橘色（非黑非紅）*/
+  .q-title-hint{
+    font-size:calc(var(--fs-body) * 0.72); color:var(--signal); font-weight:700;
+    margin-left:6px;
+  }
+
+  .course-map-note{
+    display:block; padding:10px 16px; border-radius:10px;
+    background:var(--signal-dim); color:#7A3A1E; font-weight:700;
+    font-size:var(--fs-body); border:1px solid #FFCBB0; margin-bottom:14px;
+  }
+  /* v1（高一上）v2 修正：課程地圖連結改成可點擊按鈕樣式 */
+  .course-map-link{
+    display:flex; align-items:center; gap:8px;
+    padding:12px 16px; border-radius:10px;
+    background:var(--signal-dim); color:var(--steel); font-weight:700;
+    font-size:var(--fs-body); border:1px solid #FFCBB0; margin-bottom:14px;
+    text-decoration:none; cursor:pointer; transition:.15s;
+  }
+  .course-map-link:hover{ background:#FFDCC7; }
+  .course-map-link .arrow{ margin-left:auto; color:var(--signal); }
+
+  /* ============================================
+     semester02（高一下）新增：社團名稱查詢彈窗元件
+     ------------------------------------------------
+     全域可重用元件，資料來源：114年度社團一覽表.pdf
+     ============================================ */
+  .field-label-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+  .lookup-btn{
+    display:flex; align-items:center; gap:5px;
+    background:#fff; border:1.5px solid var(--signal); color:var(--signal);
+    border-radius:999px; padding:6px 12px; font-size:var(--fs-body); font-weight:700;
+    font-family:var(--font-cjk); cursor:pointer; transition:.15s; flex-shrink:0;
+  }
+  .lookup-btn:hover{ background:var(--signal-dim); }
+  .lookup-modal{
+    display:none; position:fixed; inset:0; background:rgba(15,37,64,.55);
+    z-index:20000; align-items:center; justify-content:center; padding:20px;
+  }
+  .lookup-modal.active{ display:flex; }
+  .lookup-box{
+    background:#fff; border-radius:16px; max-width:clamp(320px,60vw,560px); width:100%;
+    max-height:80vh; display:flex; flex-direction:column; overflow:hidden;
+    box-shadow:0 20px 50px rgba(0,0,0,.3);
+  }
+  .lookup-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 20px 10px; flex-shrink:0;
+  }
+  .lookup-title{ font-size:var(--fs-body-strong); font-weight:700; color:var(--steel-deep); margin:0; }
+  .lookup-close-btn{
+    width:clamp(30px,4vw,40px); height:clamp(30px,4vw,40px); border-radius:50%;
+    border:none; background:var(--steel-pale); color:var(--steel-deep);
+    font-size:clamp(14px,2vw,20px); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .lookup-hint{ font-size:calc(var(--fs-body)*0.75); color:#8C9AAE; margin:0 20px 10px; }
+  .lookup-list{
+    overflow-y:auto; padding:0 16px 16px; display:grid; grid-template-columns:1fr 1fr; gap:8px;
+  }
+  .lookup-item{
+    padding:10px 12px; border-radius:10px; border:1.5px solid var(--line);
+    background:#fff; color:var(--ink); font-size:calc(var(--fs-body)*0.85); font-weight:700;
+    font-family:var(--font-cjk); cursor:pointer; text-align:left; transition:.15s;
+  }
+  .lookup-item:hover, .lookup-item:active{ background:var(--steel-pale); border-color:var(--steel); }
+  /* semester05 新增：單欄版清單（文字較長時用，例如 C-1~C-8 完整說明、B-1動態課程）*/
+  .lookup-list-single{ grid-template-columns:1fr; }
+  .lookup-empty-note{
+    grid-column:1/-1; color:#8C9AAE; font-size:calc(var(--fs-body)*0.85);
+    line-height:1.6; padding:8px 4px;
+  }
+
+  /* semester02 新增：多行文字區（社團活動經驗）*/
+  .textarea-field{
+    resize:vertical; min-height:64px; font-family:var(--font-cjk); line-height:1.5;
+    margin-bottom:10px;
+  }
+  .textarea-field:last-child{ margin-bottom:0; }
+
+  /* semester02 新增：動態課程選修原因區塊 */
+  .course-reason-block{
+    margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
+  }
+  .course-reason-title{
+    font-size:calc(var(--fs-body)*0.88); font-weight:700; color:var(--steel);
+    margin:0 0 8px;
+  }
+  .chip-btn-sm{ padding:6px 12px; font-size:calc(var(--fs-body)*0.85); }
+
+  /* ============================================
+     semester03（高二上）新增：可重複填寫區塊
+     （B-1/B-2 課程學習歷程成果、C-1~C-8 多元表現皆用此樣式）
+     ============================================ */
+  .repeat-block{
+    margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
+  }
+  .repeat-block:first-of-type{ margin-top:16px; }
+  .repeat-block-title{
+    font-size:calc(var(--fs-body)*0.85); font-weight:700; color:#8C9AAE;
+    margin:0 0 8px;
+  }
+  .chip-group-sm{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .radio-group-sm{ display:flex; flex-wrap:wrap; gap:8px; }
+  .radio-btn-sm{ padding:6px 12px; font-size:calc(var(--fs-body)*0.85); }
+  .field-row{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:8px;
+  }
+  .select-field{
+    padding:11px 14px; border-radius:10px; border:1.5px solid var(--line);
+    font-size:calc(var(--fs-body)*0.9); font-family:var(--font-cjk); color:var(--ink);
+    background:#fff; flex:1 1 auto; min-width:180px;
+  }
+  .select-field:focus{ outline:none; border-color:var(--steel); }
+
+  /* C-1~C-8 類別參考清單（純文字，兩欄排列，供學生對照）*/
+  .c-category-list{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px 14px;
+    background:var(--steel-pale); border-radius:10px; padding:14px 16px;
+    margin-bottom:12px;
+  }
+  .c-category-row{
+    font-size:calc(var(--fs-body)*0.82); color:var(--steel-deep); line-height:1.4;
+  }
+  .c-category-row b{ color:var(--steel); margin-right:4px; }
+
+  /* ============================================
+     semester04（高二下）新增：橫向捲動參考表格（技專校院多元入學管道）
+     ============================================ */
+  .ref-table-wrap{
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border:1px solid var(--line); border-radius:10px;
+  }
+  .ref-table{
+    border-collapse:collapse; width:100%; min-width:760px;
+    font-size:calc(var(--fs-body)*0.78);
+  }
+  .ref-table th, .ref-table td{
+    border:1px solid var(--line); padding:8px 10px; text-align:center;
+    color:var(--steel-deep); line-height:1.4;
+  }
+  .ref-table th{ background:var(--steel-pale); font-weight:700; }
+  .ref-table td b{ color:var(--steel); }
+
+  /* semester04 新增：固定式課程選擇區塊（同科跨班課程，共2組固定欄位）*/
+  .course-slot{
+    margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
+  }
+  .course-slot:first-of-type{ margin-top:16px; }
+</style>
+</head>
+<body>
+<div class="device">
+
+  <header>
+    <p class="eyebrow" id="eyebrowText">115 學年度 · 高三下學期</p>
+    <h1>團體課程諮詢紀錄表</h1>
+    <div class="gauge-track">
+      <i></i>
+      <i></i>
+      <i></i>
+      <i></i>
+    </div>
+    <p class="step-label">第 <b>1</b> / 4 步 · 學習能力評估</p>
+  </header>
+
+  <main>
+    <!-- ========== 第 1 步：學習能力評估（高三上學期課程回顧） ========== -->
+    <section class="step-panel active" data-step="1">
+      <div class="q-card">
+        <p class="q-title">學習能力評估</p>
+        <p class="q-desc">回想你高三上學期的學習經驗</p>
+
+        <div class="q-block">
+          <p class="q-block-label">高三上學期，哪些科目比較讓你有成就感？（可複選）</p>
+          <div class="chip-group" data-question="g3up_confident_subjects" data-exclusive-with="g3up_struggle_subjects">
+            <button type="button" class="chip-btn" data-value="國語文">國語文</button>
+            <button type="button" class="chip-btn" data-value="英語文">英語文</button>
+            <button type="button" class="chip-btn" data-value="英樂">英樂</button>
+            <button type="button" class="chip-btn" data-value="體育">體育</button>
+            <button type="button" class="chip-btn" data-value="全民國防教育">全民國防教育</button>
+            <button type="button" class="chip-btn" data-value="基礎英文寫作">基礎英文寫作</button>
+            <button type="button" class="chip-btn" data-value="國文閱讀與理解">國文閱讀與理解</button>
+            <button type="button" class="chip-btn" data-value="數學統合">數學統合</button>
+            <button type="button" class="chip-btn" data-value="機件原理">機件原理</button>
+            <button type="button" class="chip-btn" data-value="機電製圖實習">機電製圖實習</button>
+            <button type="button" class="chip-btn" data-value="車身電器系統綜合檢修實習">車身電器系統綜合檢修實習</button>
+            <button type="button" class="chip-btn" data-value="機械工作法實習">機械工作法實習</button>
+            <button type="button" class="chip-btn" data-value="車輛底盤檢修實習">車輛底盤檢修實習</button>
+            <button type="button" class="chip-btn" data-value="專題製作">專題製作</button>
+            <button type="button" class="chip-btn" data-value="汽車構造">汽車構造</button>
+            <button type="button" class="chip-btn" data-value="汽車工業英文">汽車工業英文</button>
+            <button type="button" class="chip-btn" data-value="汽車綜合實習">汽車綜合實習</button>
+            <button type="button" class="chip-btn" data-value="汽車修護儀器設備實習">汽車修護儀器設備實習</button>
+            <button type="button" class="chip-btn" data-value="汽機車保養實習">汽機車保養實習</button>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-block-label">高三上學期，哪些科目比較讓你感到困擾？（可複選）</p>
+          <div class="chip-group" data-question="g3up_struggle_subjects" data-exclusive-with="g3up_confident_subjects">
+            <button type="button" class="chip-btn" data-value="國語文">國語文</button>
+            <button type="button" class="chip-btn" data-value="英語文">英語文</button>
+            <button type="button" class="chip-btn" data-value="英樂">英樂</button>
+            <button type="button" class="chip-btn" data-value="體育">體育</button>
+            <button type="button" class="chip-btn" data-value="全民國防教育">全民國防教育</button>
+            <button type="button" class="chip-btn" data-value="基礎英文寫作">基礎英文寫作</button>
+            <button type="button" class="chip-btn" data-value="國文閱讀與理解">國文閱讀與理解</button>
+            <button type="button" class="chip-btn" data-value="數學統合">數學統合</button>
+            <button type="button" class="chip-btn" data-value="機件原理">機件原理</button>
+            <button type="button" class="chip-btn" data-value="機電製圖實習">機電製圖實習</button>
+            <button type="button" class="chip-btn" data-value="車身電器系統綜合檢修實習">車身電器系統綜合檢修實習</button>
+            <button type="button" class="chip-btn" data-value="機械工作法實習">機械工作法實習</button>
+            <button type="button" class="chip-btn" data-value="車輛底盤檢修實習">車輛底盤檢修實習</button>
+            <button type="button" class="chip-btn" data-value="專題製作">專題製作</button>
+            <button type="button" class="chip-btn" data-value="汽車構造">汽車構造</button>
+            <button type="button" class="chip-btn" data-value="汽車工業英文">汽車工業英文</button>
+            <button type="button" class="chip-btn" data-value="汽車綜合實習">汽車綜合實習</button>
+            <button type="button" class="chip-btn" data-value="汽車修護儀器設備實習">汽車修護儀器設備實習</button>
+            <button type="button" class="chip-btn" data-value="汽機車保養實習">汽機車保養實習</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 第 2 步：甄選資訊（審查資料檢核 + 甄選校系名稱 + 簡章規定要求） ========== -->
+    <section class="step-panel" data-step="2">
+      <div class="q-card">
+        <p class="q-title">科技校院甄選入學審查資料檢核</p>
+        <a href="https://www.jctv.ntut.edu.tw/downloads/115/apply/ugcdrom/index.html#"
+           target="_blank" rel="noopener" class="course-map-link">
+          📺 點此開啟《科技校院甄選入學審查資料檢核》網頁
+          <span class="arrow">›</span>
+        </a>
+      </div>
+
+      <div class="q-card">
+        <p class="q-title">甄選校系名稱</p>
+        <div class="q-block">
+          <p class="q-block-label">群（類）</p>
+          <input type="text" class="text-field" data-question="admission_group" data-disallow-none="true" placeholder="請填寫群（類）名稱">
+        </div>
+        <div class="q-block">
+          <p class="q-block-label">校名</p>
+          <input type="text" class="text-field" data-question="admission_school" data-disallow-none="true" placeholder="請填寫校名">
+        </div>
+        <div class="q-block">
+          <p class="q-block-label">系別</p>
+          <input type="text" class="text-field" data-question="admission_department" data-disallow-none="true" placeholder="請填寫系別">
+        </div>
+      </div>
+
+      <div class="q-card">
+        <p class="q-title">簡章規定要求</p>
+
+        <p class="q-desc" style="margin-top:0;">第一階段</p>
+        <div class="q-block">
+          <p class="q-block-label">招生名額</p>
+          <input type="text" class="text-field" data-question="stage1_quota" data-optional="true" placeholder="請填寫招生名額">
+        </div>
+        <div class="q-block">
+          <p class="q-block-label">篩選倍率</p>
+            <select class="select-field" data-question="stage1_ratio">
+              <option value="">--</option>
+              <option value="1.00">1.00</option>
+              <option value="2.00">2.00</option>
+              <option value="3.00">3.00</option>
+              <option value="4.00">4.00</option>
+              <option value="5.00">5.00</option>
+              <option value="6.00">6.00</option>
+              <option value="7.00">7.00</option>
+            </select>
+        </div>
+        <div class="q-block">
+          <p class="q-block-label">第一階段各科目採計（請依簡章填寫，若無可留空）</p>
+          <input type="text" class="text-field" data-question="stage1_chinese" data-optional="true" placeholder="國文" style="margin-top:8px;">
+          <input type="text" class="text-field" data-question="stage1_english" data-optional="true" placeholder="英文" style="margin-top:8px;">
+          <input type="text" class="text-field" data-question="stage1_math" data-optional="true" placeholder="數文" style="margin-top:8px;">
+          <input type="text" class="text-field" data-question="stage1_pro1" data-optional="true" placeholder="專業一" style="margin-top:8px;">
+          <input type="text" class="text-field" data-question="stage1_pro2" data-optional="true" placeholder="專業二" style="margin-top:8px;">
+        </div>
+
+        <p class="q-desc">第二階段指定項目甄試 — 統一入學測驗成績加權</p>
+        <div class="q-block">
+          <div class="field-row">
+            <span class="chip-hint" style="min-width:80px;">國文</span>
+            <select class="select-field" data-question="stage2_weight_chinese">
+              <option value="">--</option>
+              <option value="x0.00">x0.00</option>
+              <option value="x1.00">x1.00</option>
+              <option value="x1.25">x1.25</option>
+              <option value="x1.50">x1.50</option>
+              <option value="x1.75">x1.75</option>
+              <option value="x2.00">x2.00</option>
+              <option value="x2.25">x2.25</option>
+              <option value="x2.50">x2.50</option>
+              <option value="x2.75">x2.75</option>
+              <option value="x3.00">x3.00</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="chip-hint" style="min-width:80px;">英文</span>
+            <select class="select-field" data-question="stage2_weight_english">
+              <option value="">--</option>
+              <option value="x0.00">x0.00</option>
+              <option value="x1.00">x1.00</option>
+              <option value="x1.25">x1.25</option>
+              <option value="x1.50">x1.50</option>
+              <option value="x1.75">x1.75</option>
+              <option value="x2.00">x2.00</option>
+              <option value="x2.25">x2.25</option>
+              <option value="x2.50">x2.50</option>
+              <option value="x2.75">x2.75</option>
+              <option value="x3.00">x3.00</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="chip-hint" style="min-width:80px;">數文</span>
+            <select class="select-field" data-question="stage2_weight_math">
+              <option value="">--</option>
+              <option value="x0.00">x0.00</option>
+              <option value="x1.00">x1.00</option>
+              <option value="x1.25">x1.25</option>
+              <option value="x1.50">x1.50</option>
+              <option value="x1.75">x1.75</option>
+              <option value="x2.00">x2.00</option>
+              <option value="x2.25">x2.25</option>
+              <option value="x2.50">x2.50</option>
+              <option value="x2.75">x2.75</option>
+              <option value="x3.00">x3.00</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="chip-hint" style="min-width:80px;">專業一</span>
+            <select class="select-field" data-question="stage2_weight_pro1">
+              <option value="">--</option>
+              <option value="x0.00">x0.00</option>
+              <option value="x1.00">x1.00</option>
+              <option value="x1.25">x1.25</option>
+              <option value="x1.50">x1.50</option>
+              <option value="x1.75">x1.75</option>
+              <option value="x2.00">x2.00</option>
+              <option value="x2.25">x2.25</option>
+              <option value="x2.50">x2.50</option>
+              <option value="x2.75">x2.75</option>
+              <option value="x3.00">x3.00</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="chip-hint" style="min-width:80px;">專業二</span>
+            <select class="select-field" data-question="stage2_weight_pro2">
+              <option value="">--</option>
+              <option value="x0.00">x0.00</option>
+              <option value="x1.00">x1.00</option>
+              <option value="x1.25">x1.25</option>
+              <option value="x1.50">x1.50</option>
+              <option value="x1.75">x1.75</option>
+              <option value="x2.00">x2.00</option>
+              <option value="x2.25">x2.25</option>
+              <option value="x2.50">x2.50</option>
+              <option value="x2.75">x2.75</option>
+              <option value="x3.00">x3.00</option>
+            </select>
+          </div>
+        </div>
+        <div class="q-block">
+          <p class="q-block-label">統一入學測驗成績占總成績比率</p>
+            <select class="select-field" data-question="stage2_score_ratio">
+              <option value="">--</option>
+              <option value="0%">0%</option>
+              <option value="10%">10%</option>
+              <option value="20%">20%</option>
+              <option value="30%">30%</option>
+              <option value="40%">40%</option>
+              <option value="50%">50%</option>
+            </select>
+        </div>
+
+        <p class="q-desc">第二階段指定項目甄試 — 甄選總成績採計方式</p>
+        <div class="q-block">
+          <div class="radio-group" data-question="stage2_items">
+            <button type="button" class="radio-btn" data-value="專題製作/實習科目學習成果">專題製作/實習科目學習成果</button>
+            <button type="button" class="radio-btn" data-value="學習歷程備審資料審查">學習歷程備審資料審查</button>
+            <button type="button" class="radio-btn" data-value="面試">面試</button>
+            <button type="button" class="radio-btn" data-value="實作">實作</button>
+            <button type="button" class="radio-btn" data-value="其他">其他</button>
+          </div>
+          <div class="conditional-field" data-show-when="stage2_items=其他">
+            <input type="text" class="text-field" data-question="stage2_items_other_text" data-optional="true" placeholder="請簡要填寫其他項目名稱" style="margin-top:8px;">
+          </div>
+          <div class="field-row">
+            <span class="chip-hint" style="min-width:120px;">專題製作/實習科目學習成果 佔比</span>
+            <select class="select-field" data-question="stage2_pct_project">
+              <option value="">--</option>
+              <option value="0%">0%</option>
+              <option value="10%">10%</option>
+              <option value="20%">20%</option>
+              <option value="30%">30%</option>
+              <option value="40%">40%</option>
+              <option value="50%">50%</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="chip-hint" style="min-width:120px;">學習歷程備審資料審查 佔比</span>
+            <select class="select-field" data-question="stage2_pct_portfolio">
+              <option value="">--</option>
+              <option value="0%">0%</option>
+              <option value="10%">10%</option>
+              <option value="20%">20%</option>
+              <option value="30%">30%</option>
+              <option value="40%">40%</option>
+              <option value="50%">50%</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="chip-hint" style="min-width:120px;">面試 佔比</span>
+            <select class="select-field" data-question="stage2_pct_interview">
+              <option value="">--</option>
+              <option value="0%">0%</option>
+              <option value="10%">10%</option>
+              <option value="20%">20%</option>
+              <option value="30%">30%</option>
+              <option value="40%">40%</option>
+              <option value="50%">50%</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="chip-hint" style="min-width:120px;">實作 佔比</span>
+            <select class="select-field" data-question="stage2_pct_practical">
+              <option value="">--</option>
+              <option value="0%">0%</option>
+              <option value="10%">10%</option>
+              <option value="20%">20%</option>
+              <option value="30%">30%</option>
+              <option value="40%">40%</option>
+              <option value="50%">50%</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="chip-hint" style="min-width:120px;">其他 佔比</span>
+            <select class="select-field" data-question="stage2_pct_other">
+              <option value="">--</option>
+              <option value="0%">0%</option>
+              <option value="10%">10%</option>
+              <option value="20%">20%</option>
+              <option value="30%">30%</option>
+              <option value="40%">40%</option>
+              <option value="50%">50%</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 第 3 步：備審協助 + 畢業學分條件 ========== -->
+    <section class="step-panel" data-step="3">
+      <div class="q-card">
+        <p class="q-title">技專校院招生策略委員會</p>
+        <a href="https://www.techadmi.edu.tw" target="_blank" rel="noopener" class="course-map-link">
+          📺 點此開啟《技專校院招生策略委員會》網頁
+          <span class="arrow">›</span>
+        </a>
+      </div>
+
+      <div class="q-card">
+        <div class="q-block">
+          <p class="q-block-label">多元表現綜合心得：有關多元表現綜整心得撰寫，是否需要協助？哪方面？</p>
+          <div class="radio-group" data-question="portfolio_summary_help">
+            <button type="button" class="radio-btn" data-value="否，目前無須協助">否，目前無須協助</button>
+            <button type="button" class="radio-btn" data-value="是">是</button>
+          </div>
+          <div class="conditional-field" data-show-when="portfolio_summary_help=是">
+            <input type="text" class="text-field" data-question="portfolio_summary_help_note" placeholder="請簡要敘述，不得空白">
+          </div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-block-label">學習歷程自述：有關學習歷程自述撰寫，是否需要協助？</p>
+          <div class="radio-group" data-question="portfolio_statement_help">
+            <button type="button" class="radio-btn" data-value="否，目前無須協助">否，目前無須協助</button>
+            <button type="button" class="radio-btn" data-value="是">是</button>
+          </div>
+          <div class="conditional-field" data-show-when="portfolio_statement_help=是">
+            <input type="text" class="text-field" data-question="portfolio_statement_help_note" placeholder="請簡要敘述，不得空白">
+          </div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-block-label">對於如何製作備審資料需要的協助為何？</p>
+          <div class="radio-group" data-question="portfolio_prep_help">
+            <button type="button" class="radio-btn" data-value="否，目前無須協助">否，目前無須協助</button>
+            <button type="button" class="radio-btn" data-value="是">是</button>
+          </div>
+          <div class="conditional-field" data-show-when="portfolio_prep_help=是">
+            <input type="text" class="text-field" data-question="portfolio_prep_help_note" placeholder="請簡要敘述，不得空白">
+          </div>
+        </div>
+
+        <div class="q-block">
+          <p class="q-block-label">畢業學分條件：有關高三課程及畢業學分門檻方面，是否需要協助？</p>
+          <div class="radio-group" data-question="graduation_credit_help">
+            <button type="button" class="radio-btn" data-value="否，目前無須協助">否，目前無須協助</button>
+            <button type="button" class="radio-btn" data-value="是">是</button>
+          </div>
+          <div class="conditional-field" data-show-when="graduation_credit_help=是">
+            <input type="text" class="text-field" data-question="graduation_credit_help_note" placeholder="請簡要敘述，不得空白">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 第 4 步：選課流程 + 確認並簽名（v21 模板）========== -->
+    <section class="step-panel" data-step="4">
+
+
+    <!-- v21：每份記錄表最終頁最上方的共用選課流程了解度選單 -->
+    <div class="quiz-card">
+      <p class="quiz-title">我了解學校的選課流程</p>
+
+      <div class="quiz-row">
+        <span class="quiz-label">選課時間</span>
+        <div class="quiz-toggle" data-question="q_time">
+          <button type="button" class="toggle-btn" data-value="yes">是</button>
+          <button type="button" class="toggle-btn" data-value="no">否</button>
+        </div>
+        <span class="quiz-note">如果不了解，可以問教務處或課程諮詢教師</span>
+      </div>
+
+      <div class="quiz-row">
+        <span class="quiz-label">選課方式</span>
+        <div class="quiz-toggle" data-question="q_method">
+          <button type="button" class="toggle-btn" data-value="yes">是</button>
+          <button type="button" class="toggle-btn" data-value="no">否</button>
+        </div>
+        <span class="quiz-note">如果不了解，可以問教務處或課程諮詢教師</span>
+      </div>
+
+      <div class="quiz-row">
+        <span class="quiz-label">加退選機制</span>
+        <div class="quiz-toggle" data-question="q_dropadd">
+          <button type="button" class="toggle-btn" data-value="yes">是</button>
+          <button type="button" class="toggle-btn" data-value="no">否</button>
+        </div>
+        <span class="quiz-note">如果不了解，可以問教務處或課程諮詢教師</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="name-summary">簽名人：陳怡安</p>
+    </div>
+
+    <div class="sig-wrap">
+      <div class="sig-label">
+        <span>本人簽名</span>
+        <button class="expand-btn" id="expandHintBtn" type="button">
+          🔍 點擊放大簽名
+        </button>
+      </div>
+      <p class="sig-hint" id="sigHint">簽名已確認並鎖定，如需修改請按「清空重簽」或「點擊放大簽名」</p>
+
+      <div class="sig-canvas-container">
+        <canvas id="signatureCanvas" width="300" height="120"></canvas>
+      </div>
+
+      <button class="btn-clear" type="button" id="clearBtn">清空重簽</button>
+    </div>
+
+    <div class="notice-card">
+      送出後<b>先不要關閉視窗</b>，待老師確認並跳出通知訊息「已完成，可關閉頁面」再關閉。
+    </div>
+    </section>
+  </main>
+
+  <div class="cta-bar">
+    <button class="btn btn-prev" type="button" id="prevBtn">上一步</button>
+    <button class="btn btn-next" type="button" id="submitBtn">下一步</button>
+  </div>
+
+  <div class="fullscreen-modal" id="fullscreenModal">
+    <div class="fullscreen-canvas-container">
+      <canvas id="fullscreenPad"></canvas>
+      <div class="signature-watermark" id="fullscreenWatermark">簽名</div>
+    </div>
+    <div class="fs-button-group">
+      <button class="btn-clear-fs" id="clearFsBtn" type="button">清空重簽</button>
+      <button class="btn-confirm-fs" id="confirmFsBtn" type="button">✓ 確認簽名(橫式)</button>
+    </div>
+    <button class="close-btn" id="closeBtn" type="button" title="關閉（ESC）">✕</button>
+  </div>
+
+  <!-- v1（高一上）新增：欄位驗證失敗提示彈窗 -->
+  <div class="validation-modal" id="validationModal">
+    <div class="validation-box">
+      <button class="validation-close-btn" id="validationCloseBtn" type="button" title="關閉">✕</button>
+      <div class="validation-icon">!</div>
+      <p class="validation-text">紀錄表尚有未填寫或點選錯誤部分，請檢查後再點下一頁</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ============================================
+     v1（高一上）新增：頁面基本設定
+     ------------------------------------------------
+     ACADEMIC_YEAR 是「後端可設定變數」的前身——目前先寫死在
+     這裡當作單一設定點，未來接上管理後台後，這裡改成從後端
+     API 讀取即可，其餘程式碼不需要改動。
+     ============================================ */
+  const ACADEMIC_YEAR = '115';       // 學年度，之後由後端管理頁面設定
+  const SEMESTER_LABEL = '高三下學期'; // 學期名稱，每份記錄表各自設定
+  document.getElementById('eyebrowText').textContent = `${ACADEMIC_YEAR} 學年度 · ${SEMESTER_LABEL}`;
+
+  const PEN_VISUAL_WIDTH_PX = 3.2; /* v16：筆跡寬度加粗一級（原 2.5），如太粗可再調回 2.5-2.8 之間 */
+  const STUDENT_NAME = '陳怡安';
+
+  const SIGNER_ROLE = 'student'; // 'student' | 'parent' | 'teacher'
+  const ENABLE_BIOMETRIC_CAPTURE = (SIGNER_ROLE === 'student' || SIGNER_ROLE === 'parent');
+
+  function nowTs() {
+    return (window.performance && performance.now) ? performance.now() : Date.now();
+  }
+
+  function liveToCanonical(liveX, liveY, liveW, liveH, canonW, canonH) {
+    const scale = Math.min(liveW / canonW, liveH / canonH);
+    const offsetX = (liveW - canonW * scale) / 2;
+    const offsetY = (liveH - canonH * scale) / 2;
+    return { x: (liveX - offsetX) / scale, y: (liveY - offsetY) / scale };
+  }
+
+  function redrawStrokesCanonical(strokes, ctxRef, color, liveW, liveH, canonW, canonH) {
+    if (!strokes || !strokes.length || !canonW || !canonH) return;
+    const scale = Math.min(liveW / canonW, liveH / canonH);
+    const offsetX = (liveW - canonW * scale) / 2;
+    const offsetY = (liveH - canonH * scale) / 2;
+    ctxRef.strokeStyle = color;
+    ctxRef.lineWidth = PEN_VISUAL_WIDTH_PX;
+    ctxRef.lineCap = 'round';
+    ctxRef.lineJoin = 'round';
+    strokes.forEach(stroke => {
+      if (!stroke || stroke.length < 2) return;
+      ctxRef.beginPath();
+      ctxRef.moveTo(stroke[0].x * scale + offsetX, stroke[0].y * scale + offsetY);
+      for (let i = 1; i < stroke.length; i++) {
+        ctxRef.lineTo(stroke[i].x * scale + offsetX, stroke[i].y * scale + offsetY);
+      }
+      ctxRef.stroke();
+    });
+  }
+
+  /* ============================================
+     v13 修正 Bug1：最終簽名圖改用「向量筆跡」重新繪製，
+     不再從當下畫面截圖裁切。
+     ------------------------------------------------
+     舊做法：直接讀取確認當下畫布的像素（getImageData）裁切成
+     最終圖檔。若確認當下剛好是旋轉後、簽名被縮小顯示的狀態，
+     截出來的圖檔解析度就會偏低（因為簽名本身在畫面上顯示得較小）。
+
+     新做法：直接用「向量筆跡」資料（每個點的座標）在一張獨立、
+     固定倍率（3倍）的高解析度畫布上重新畫一次，完全不受確認當下
+     裝置是什麼旋轉角度、畫面顯示多大影響，簽名檔畫質永遠一致。
+
+     這也直接回答了「畫質是否影響筆跡真偽辨識」的疑慮：
+     真偽辨識用的是這份向量筆跡本身（座標+時間），並非這張圖檔，
+     所以圖檔畫質完全不影響辨識準確度。
+     ============================================ */
+  function renderSignatureFromStrokes(strokes, color) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    strokes.forEach(stroke => {
+      stroke.forEach(p => {
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      });
+    });
+    if (!isFinite(minX) || !isFinite(minY)) return null;
+
+    const pad = PEN_VISUAL_WIDTH_PX * 2;
+    minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+    const w = Math.max(1, maxX - minX);
+    const h = Math.max(1, maxY - minY);
+
+    const RENDER_SCALE = 3; // 固定 3 倍取樣率，畫質不受即時顯示尺寸影響
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = Math.round(w * RENDER_SCALE);
+    outCanvas.height = Math.round(h * RENDER_SCALE);
+    const outCtx = outCanvas.getContext('2d');
+    outCtx.scale(RENDER_SCALE, RENDER_SCALE);
+    outCtx.strokeStyle = color;
+    outCtx.lineWidth = PEN_VISUAL_WIDTH_PX;
+    outCtx.lineCap = 'round';
+    outCtx.lineJoin = 'round';
+    strokes.forEach(stroke => {
+      if (!stroke || stroke.length < 2) return;
+      outCtx.beginPath();
+      outCtx.moveTo(stroke[0].x - minX, stroke[0].y - minY);
+      for (let i = 1; i < stroke.length; i++) {
+        outCtx.lineTo(stroke[i].x - minX, stroke[i].y - minY);
+      }
+      outCtx.stroke();
+    });
+
+    return { canvas: outCanvas, w, h };
+  }
+
+  // ========== 正常（原始版）簽名畫布 ==========
+  const canvas = document.getElementById('signatureCanvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const expandBtn = document.getElementById('expandHintBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const sigHint = document.getElementById('sigHint');
+
+  let drawing = false;
+  let hasSignature = false;
+  let last = { x: 0, y: 0 };
+  let normalStrokes = [];
+  let currentNormalStroke = null;
+  let normalCanonicalW = 0, normalCanonicalH = 0;
+
+  let finalSignatureSourceCanvas = null;
+  let finalSignatureCssW = 0;
+  let finalSignatureCssH = 0;
+
+  /* ============================================
+     v11：小畫布鎖定機制
+     ------------------------------------------------
+     - 解鎖（smallCanvasLocked = false）：
+         保留原始版「直接手寫」能力（平板大螢幕適用），
+         touch-action:none 避免手寫時觸發頁面捲動。
+     - 鎖定（smallCanvasLocked = true）：
+         僅在「放大版簽名確認返回」之後才會觸發，
+         畫布變成純預覽，pointer-events:none 讓觸控直接
+         穿透給頁面捲動，滑動瀏覽簽名時不會誤觸畫出筆跡。
+     - 解鎖的兩種方式：
+         1. 按「清空重簽」→ 清除舊簽名 → 恢復可直接手寫
+         2. 按「點擊放大簽名」→ 全螢幕重簽 → 確認後 → 再次鎖定
+     ============================================ */
+  let smallCanvasLocked = false;
+
+  function setSmallCanvasLocked(locked) {
+    smallCanvasLocked = locked;
+    if (locked) {
+      canvas.style.pointerEvents = 'none';
+      canvas.style.touchAction = 'auto';
+      canvas.onpointerdown = null;
+      canvas.onpointermove = null;
+      canvas.onpointerup = null;
+      canvas.onpointercancel = null;
+      canvas.onpointerleave = null;
+      sigHint.style.display = 'block';
+    } else {
+      canvas.style.pointerEvents = 'auto';
+      canvas.style.touchAction = 'none';
+      bindSmallCanvasDrawing();
+      sigHint.style.display = 'none';
+    }
+  }
+
+  function drawGhostText() {
+    const width = canvas.width / (window.devicePixelRatio || 1);
+    const height = canvas.height / (window.devicePixelRatio || 1);
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#B9C7D8';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const targetWidth = width * 0.85;
+    let fontSize = Math.min(height * 0.7, 100);
+    ctx.font = `bold ${fontSize}px "Noto Sans TC","Microsoft JhengHei",sans-serif`;
+    let measured = ctx.measureText(STUDENT_NAME).width;
+    if (measured > 0) {
+      fontSize = fontSize * (targetWidth / measured);
+      fontSize = Math.min(fontSize, height * 0.75);
+      ctx.font = `bold ${fontSize}px "Noto Sans TC","Microsoft JhengHei",sans-serif`;
+    }
+
+    ctx.fillText(STUDENT_NAME, width / 2, height / 2);
+  }
+
+  function paintFinalSignatureOntoSmallCanvas() {
+    if (!finalSignatureSourceCanvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const displayWidth = canvas.width / dpr;
+    const displayHeight = canvas.height / dpr;
+    const w = finalSignatureCssW, h = finalSignatureCssH;
+    if (!w || !h) return;
+    const scale = Math.min(displayWidth / w, displayHeight / h);
+    ctx.clearRect(0, 0, displayWidth, displayHeight);
+    ctx.drawImage(
+      finalSignatureSourceCanvas,
+      0, 0, finalSignatureSourceCanvas.width, finalSignatureSourceCanvas.height,
+      (displayWidth - w * scale) / 2, (displayHeight - h * scale) / 2,
+      w * scale, h * scale
+    );
+  }
+
+  /**
+   * 依目前狀態（鎖定/直接手寫中/空白）在畫布尺寸改變時正確重繪。
+   */
+  function renderSmallCanvasOnResize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+    const liveW = rect.width, liveH = rect.height;
+
+    if (smallCanvasLocked && finalSignatureSourceCanvas) {
+      paintFinalSignatureOntoSmallCanvas();
+    } else if (!smallCanvasLocked && normalStrokes.length && normalCanonicalW && normalCanonicalH) {
+      ctx.clearRect(0, 0, liveW, liveH);
+      redrawStrokesCanonical(normalStrokes, ctx, '#152238', liveW, liveH, normalCanonicalW, normalCanonicalH);
+      hasSignature = true;
+    } else {
+      drawGhostText();
+      hasSignature = false;
+    }
+  }
+
+  /**
+   * 綁定「直接手寫」的指標事件（僅在解鎖狀態下使用）
+   */
+  function bindSmallCanvasDrawing() {
+    canvas.onpointerdown = e => {
+      drawing = true;
+      const liveRect = canvas.getBoundingClientRect();
+      const liveX = e.clientX - liveRect.left;
+      const liveY = e.clientY - liveRect.top;
+      last = { x: liveX, y: liveY };
+      canvas.setPointerCapture(e.pointerId);
+      hasSignature = true;
+
+      if (!normalStrokes.length) {
+        normalCanonicalW = liveRect.width;
+        normalCanonicalH = liveRect.height;
+      }
+      const canon = liveToCanonical(liveX, liveY, liveRect.width, liveRect.height, normalCanonicalW, normalCanonicalH);
+      const pt = { x: canon.x, y: canon.y };
+      if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
+      currentNormalStroke = [pt];
+      normalStrokes.push(currentNormalStroke);
+    };
+
+    canvas.onpointermove = e => {
+      if (!drawing) return;
+      const liveRect = canvas.getBoundingClientRect();
+      const liveX = e.clientX - liveRect.left;
+      const liveY = e.clientY - liveRect.top;
+      ctx.strokeStyle = '#152238';
+      ctx.lineWidth = PEN_VISUAL_WIDTH_PX;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(liveX, liveY);
+      ctx.stroke();
+      last = { x: liveX, y: liveY };
+      const canon = liveToCanonical(liveX, liveY, liveRect.width, liveRect.height, normalCanonicalW, normalCanonicalH);
+      const pt = { x: canon.x, y: canon.y };
+      if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
+      currentNormalStroke.push(pt);
+    };
+
+    const stopDrawing = () => {
+      if (!drawing) return;
+      drawing = false;
+      captureDirectSignature();
+    };
+
+    canvas.onpointerup = stopDrawing;
+    canvas.onpointercancel = stopDrawing;
+    canvas.onpointerleave = stopDrawing;
+  }
+
+  /**
+   * 直接在原始版小畫布上簽名時，每一筆結束都更新一次目前的簽名圖，
+   * 但「不」自動鎖定 —— 讓使用者可以繼續寫下一筆（例如姓名的下一個字）。
+   * 只有透過放大版確認流程才會觸發鎖定。
+   */
+  function captureDirectSignature() {
+    if (!normalStrokes.length) return;
+    const result = renderSignatureFromStrokes(normalStrokes, '#152238');
+    if (!result) return;
+
+    window.__finalSignatureDataURL = result.canvas.toDataURL();
+    window.__finalSignatureAspectRatio = result.w / result.h;
+    window.__finalSignatureSource = 'normal';
+
+    if (ENABLE_BIOMETRIC_CAPTURE) {
+      window.__signatureBiometricData = {
+        role: SIGNER_ROLE,
+        source: 'normal',
+        capturedAt: Date.now(),
+        strokes: normalStrokes
+      };
+    }
+  }
+
+  clearBtn.addEventListener('click', () => {
+    drawing = false;
+    hasSignature = false;
+    normalStrokes = [];
+    currentNormalStroke = null;
+    normalCanonicalW = 0; normalCanonicalH = 0;
+    finalSignatureSourceCanvas = null;
+    window.__finalSignatureDataURL = null;
+    window.__signatureBiometricData = null;
+    setSmallCanvasLocked(false); // 清空後恢復可直接手寫
+    drawGhostText();
+  });
+
+  expandBtn.addEventListener('click', enterFullscreenSignature);
+
+  // 初始狀態：解鎖，可直接手寫
+  bindSmallCanvasDrawing();
+
+  // ========== 全螢幕簽名（放大版）==========
+  const fsModal = document.getElementById('fullscreenModal');
+  const fsPad = document.getElementById('fullscreenPad');
+  const fsCtx = fsPad.getContext('2d', { willReadFrequently: true });
+  const closeBtn = document.getElementById('closeBtn');
+  const clearFsBtn = document.getElementById('clearFsBtn');
+  const confirmFsBtn = document.getElementById('confirmFsBtn');
+
+  let fsDrawing = false;
+  let fsHasSignature = false;
+  let fsLast = { x: 0, y: 0 };
+  let fsResizeHandlerBound = false;
+  let fsStrokes = [];
+  let currentFsStroke = null;
+  let fsCanonicalW = 0, fsCanonicalH = 0;
+
+  function getDynamicBorderWidth() {
+    const shorterSide = Math.min(window.innerWidth, window.innerHeight);
+    const dpr = window.devicePixelRatio;
+    let borderWidth;
+    if (shorterSide < 600) borderWidth = 2.0;
+    else if (shorterSide < 900) borderWidth = 2.5;
+    else if (shorterSide < 1200) borderWidth = 2.8;
+    else if (shorterSide < 1500) borderWidth = 3.0;
+    else if (shorterSide < 2000) borderWidth = 3.2;
+    else borderWidth = 3.5;
+    if (dpr > 2) borderWidth = borderWidth * 0.9;
+    return Math.max(1.5, Math.min(borderWidth, 4.0));
+  }
+
+  function computeWatermarkFontSize(containerW, containerH, text) {
+    const targetWidth = containerW * 0.72;
+    const measureCanvas = computeWatermarkFontSize._c || (computeWatermarkFontSize._c = document.createElement('canvas'));
+    const mctx = measureCanvas.getContext('2d');
+    let fontSize = Math.min(containerH * 0.55, 400);
+    mctx.font = `bold ${fontSize}px "Noto Sans TC","Microsoft JhengHei",sans-serif`;
+    let measured = mctx.measureText(text).width;
+    if (measured > 0) {
+      fontSize = fontSize * (targetWidth / measured);
+      fontSize = Math.min(fontSize, containerH * 0.6);
+    }
+    return Math.max(32, Math.round(fontSize));
+  }
+
+  function applyDynamicStyles() {
+    const borderWidth = getDynamicBorderWidth();
+    const container = document.querySelector('.fullscreen-canvas-container');
+    if (container) container.style.borderWidth = borderWidth + 'px';
+
+    const watermark = document.querySelector('.signature-watermark');
+    if (container && watermark) {
+      const cW = container.clientWidth;
+      const cH = container.clientHeight;
+      const fontSize = computeWatermarkFontSize(cW, cH, STUDENT_NAME);
+      watermark.style.fontSize = fontSize + 'px';
+    }
+  }
+
+  function sizeFullscreenCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = fsPad.getBoundingClientRect();
+    fsPad.width = Math.max(1, Math.round(rect.width * dpr));
+    fsPad.height = Math.max(1, Math.round(rect.height * dpr));
+    fsCtx.setTransform(1, 0, 0, 1, 0, 0);
+    fsCtx.scale(dpr, dpr);
+    return { cssWidth: rect.width, cssHeight: rect.height };
+  }
+
+  function initFullscreenSignature(preserve) {
+    const { cssWidth: liveW, cssHeight: liveH } = sizeFullscreenCanvas();
+
+    fsCtx.clearRect(0, 0, liveW, liveH);
+
+    if (preserve && fsStrokes.length && fsCanonicalW && fsCanonicalH) {
+      redrawStrokesCanonical(fsStrokes, fsCtx, '#FFFFFF', liveW, liveH, fsCanonicalW, fsCanonicalH);
+      fsHasSignature = true;
+    } else {
+      fsHasSignature = false;
+    }
+
+    fsPad.onpointerdown = e => {
+      fsDrawing = true;
+      const rect = fsPad.getBoundingClientRect();
+      fsLast = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      fsPad.setPointerCapture(e.pointerId);
+      fsHasSignature = true;
+
+      if (!fsStrokes.length) {
+        fsCanonicalW = rect.width;
+        fsCanonicalH = rect.height;
+      }
+      const canon = liveToCanonical(fsLast.x, fsLast.y, rect.width, rect.height, fsCanonicalW, fsCanonicalH);
+      const pt = { x: canon.x, y: canon.y };
+      if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
+      currentFsStroke = [pt];
+      fsStrokes.push(currentFsStroke);
+    };
+
+    fsPad.onpointermove = e => {
+      if (!fsDrawing) return;
+      const rect = fsPad.getBoundingClientRect();
+      const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      fsCtx.strokeStyle = '#FFFFFF';
+      fsCtx.lineWidth = PEN_VISUAL_WIDTH_PX;
+      fsCtx.lineCap = 'round';
+      fsCtx.lineJoin = 'round';
+      fsCtx.beginPath();
+      fsCtx.moveTo(fsLast.x, fsLast.y);
+      fsCtx.lineTo(p.x, p.y);
+      fsCtx.stroke();
+      fsLast = p;
+      const canon = liveToCanonical(p.x, p.y, rect.width, rect.height, fsCanonicalW, fsCanonicalH);
+      const pt = { x: canon.x, y: canon.y };
+      if (ENABLE_BIOMETRIC_CAPTURE) pt.t = nowTs();
+      currentFsStroke.push(pt);
+    };
+
+    const stopFsDrawing = () => { fsDrawing = false; };
+    fsPad.onpointerup = stopFsDrawing;
+    fsPad.onpointercancel = stopFsDrawing;
+    fsPad.onpointerleave = stopFsDrawing;
+  }
+
+  function enterFullscreenSignature() {
+    fsModal.classList.add('active');
+
+    if (!fsResizeHandlerBound) {
+      window.addEventListener('orientationchange', () => {
+        if (!fsModal.classList.contains('active')) return;
+        setTimeout(() => {
+          applyDynamicStyles();
+          initFullscreenSignature(true);
+        }, 350);
+      });
+      window.addEventListener('resize', () => {
+        if (!fsModal.classList.contains('active')) return;
+        setTimeout(() => {
+          applyDynamicStyles();
+          initFullscreenSignature(true);
+        }, 150);
+      });
+      fsResizeHandlerBound = true;
+    }
+
+    fsStrokes = [];
+    currentFsStroke = null;
+    fsCanonicalW = 0; fsCanonicalH = 0;
+
+    setTimeout(() => {
+      applyDynamicStyles();
+      initFullscreenSignature(false);
+    }, 50);
+
+    const watermarkEl = document.getElementById('fullscreenWatermark');
+    if (watermarkEl) watermarkEl.textContent = STUDENT_NAME;
+  }
+
+  function exitFullscreenSignature() {
+    fsModal.classList.remove('active');
+    fsStrokes = [];
+    currentFsStroke = null;
+    fsCanonicalW = 0; fsCanonicalH = 0;
+  }
+
+  function clearFullscreenPad() {
+    const dpr = window.devicePixelRatio || 1;
+    fsCtx.clearRect(0, 0, fsPad.width / dpr, fsPad.height / dpr);
+    fsHasSignature = false;
+    fsDrawing = false;
+    fsStrokes = [];
+    currentFsStroke = null;
+    fsCanonicalW = 0; fsCanonicalH = 0;
+  }
+
+  /**
+   * 放大版確認簽名 → 依比例疊回原始版 → 立即鎖定原始版小畫布
+   */
+  function captureFinalSignatureFromFullscreen() {
+    if (!fsStrokes.length) return;
+    const result = renderSignatureFromStrokes(fsStrokes, '#152238');
+    if (!result) return;
+
+    window.__finalSignatureDataURL = result.canvas.toDataURL();
+    window.__finalSignatureAspectRatio = result.w / result.h;
+    window.__finalSignatureSource = 'fullscreen';
+
+    // 依字體正確比例（contain-fit，等比例不變形）疊回原始版畫布
+    finalSignatureSourceCanvas = result.canvas;
+    finalSignatureCssW = result.w;
+    finalSignatureCssH = result.h;
+    paintFinalSignatureOntoSmallCanvas();
+
+    // 清掉舊的直接手寫向量資料（已被放大版簽名取代）
+    normalStrokes = [];
+    currentNormalStroke = null;
+    normalCanonicalW = 0; normalCanonicalH = 0;
+    hasSignature = true;
+
+    // 關鍵：立即鎖定原始版小畫布，避免捲動時誤觸
+    setSmallCanvasLocked(true);
+
+    if (ENABLE_BIOMETRIC_CAPTURE) {
+      window.__signatureBiometricData = {
+        role: SIGNER_ROLE,
+        source: 'fullscreen',
+        capturedAt: Date.now(),
+        strokes: fsStrokes
+      };
+    }
+  }
+
+  closeBtn.addEventListener('click', exitFullscreenSignature);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && fsModal.classList.contains('active')) exitFullscreenSignature();
+  });
+
+  clearFsBtn.addEventListener('click', clearFullscreenPad);
+  confirmFsBtn.addEventListener('click', () => {
+    if (fsHasSignature) captureFinalSignatureFromFullscreen();
+    fsStrokes = [];
+    currentFsStroke = null;
+    fsCanonicalW = 0; fsCanonicalH = 0;
+    exitFullscreenSignature();
+  });
+
+  /* ============================================
+     v12 修正：原始版小畫布的 resize 重繪加上延遲防抖
+     ------------------------------------------------
+     手機捲動時，瀏覽器網址列會有「隱藏/顯示」的過渡動畫，
+     這段期間畫面尺寸是暫時性、不穩定的數值（甚至短暫為 0）。
+     放大版的重繪本來就有加延遲（150-350ms）等畫面穩定再量測，
+     但原始版小畫布漏了這個保護，導致捲動時量到過渡中的錯誤
+     尺寸，算出的縮放比例失真，重繪後簽名變得不可見（如同消失）。
+     這裡補上相同的延遲保護，並用 clearTimeout 避免捲動過程中
+     連續觸發的多次 resize 事件疊加執行。
+     ============================================ */
+  let smallCanvasResizeTimer = null;
+  window.addEventListener('load', renderSmallCanvasOnResize);
+  window.addEventListener('resize', () => {
+    if (fsModal.classList.contains('active')) return;
+    clearTimeout(smallCanvasResizeTimer);
+    smallCanvasResizeTimer = setTimeout(() => {
+      renderSmallCanvasOnResize();
+    }, 150);
+  });
+
+  /* ============================================
+     v21：每份記錄表最終頁共用邏輯
+     ------------------------------------------------
+     1. 「我了解學校的選課流程」選單：單純的是/否切換按鈕，
+        點擊後記錄到 window.__quizAnswers，供未來送出時一併
+        提交給後端。
+     2. 送出紀錄表：這是最終模板版本，移除先前的 5 秒模擬
+        送出流程（等待老師確認/退件重簽的假動畫），改成
+        單純驗證必填項目 → 準備好完整資料 → 交給後端 API。
+        真正接上後端後，请在 submitBtnEl 的 click handler 內
+        改成呼叫實際的後端送出 API（例如 fetch POST），並依
+        後端回傳結果決定要不要跳出通知或允許重新簽名。
+     ============================================ */
+
+  window.__quizAnswers = {};
+  document.querySelectorAll('.quiz-toggle').forEach(group => {
+    const question = group.dataset.question;
+    group.querySelectorAll('.toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        window.__quizAnswers[question] = btn.dataset.value;
+      });
+    });
+  });
+
+  /* ============================================
+     v1（高一上）新增：多步驟題組互動邏輯
+     ------------------------------------------------
+     - chip-group：多選，各選項獨立切換
+     - radio-group：同群組互斥單選
+     - text-field：文字輸入直接記錄
+     - conditional-field：依某個 radio 的目前答案決定顯示/隱藏
+       （data-show-when="question=value" 格式）
+     所有答案彙整到 window.__formAnswers，最終送出時一併打包。
+     ============================================ */
+  window.__formAnswers = {};
+
+  function updateConditionalFields() {
+    document.querySelectorAll('.conditional-field[data-show-when]').forEach(field => {
+      const [q, v] = field.dataset.showWhen.split('=');
+      field.classList.toggle('show', window.__formAnswers[q] === v);
+    });
+  }
+
+  /* ============================================
+     v1（高一上）新增 Bug1：多選 chip 群組互斥鎖定
+     ------------------------------------------------
+     兩個題目透過 data-exclusive-with 互相參照對方的
+     data-question，某一邊選了的選項，會鎖住另一邊「同名稱」
+     的選項不能再選，避免同一科目同時被選成就感又選困擾。
+     ============================================ */
+  function syncExclusiveChipGroups() {
+    document.querySelectorAll('.chip-group[data-exclusive-with]').forEach(group => {
+      const partnerQuestion = group.dataset.exclusiveWith;
+      const partnerGroup = document.querySelector(`.chip-group[data-question="${partnerQuestion}"]`);
+      if (!partnerGroup) return;
+      const activeValues = Array.from(group.querySelectorAll('.chip-btn.active')).map(b => b.dataset.value);
+      partnerGroup.querySelectorAll('.chip-btn').forEach(btn => {
+        const locked = activeValues.includes(btn.dataset.value) && !btn.classList.contains('active');
+        btn.disabled = locked;
+        btn.classList.toggle('locked', locked);
+      });
+    });
+  }
+
+  document.querySelectorAll('.chip-group[data-question]').forEach(group => {
+    const question = group.dataset.question;
+    window.__formAnswers[question] = [];
+    group.querySelectorAll('.chip-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        window.__formAnswers[question] = Array.from(group.querySelectorAll('.chip-btn.active')).map(b => b.dataset.value);
+        syncExclusiveChipGroups();
+        // semester04 新增：通用「其它」→ 展開文字欄位邏輯（適用任何固定式 chip-group，
+        // 不只是動態產生的課程原因區塊）。HTML 端在 chip-group 後面放一個
+        // data-other-for="同樣的question名稱" 的 conditional-field 即可自動生效。
+        if (btn.dataset.value === '其它') {
+          const otherField = document.querySelector(`.conditional-field[data-other-for="${question}"]`);
+          if (otherField) otherField.classList.toggle('show', btn.classList.contains('active'));
+        }
+      });
+    });
+  });
+
+  document.querySelectorAll('.radio-group[data-question]').forEach(group => {
+    const question = group.dataset.question;
+    group.querySelectorAll('.radio-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.radio-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        window.__formAnswers[question] = btn.dataset.value;
+        updateConditionalFields();
+      });
+    });
+  });
+
+  document.querySelectorAll('.text-field[data-question]').forEach(input => {
+    input.addEventListener('input', () => {
+      window.__formAnswers[input.dataset.question] = input.value;
+    });
+  });
+
+  // semester03 新增：下拉選單（例如 C-1~C-8 項目選擇）
+  document.querySelectorAll('.select-field[data-question]').forEach(sel => {
+    sel.addEventListener('change', () => {
+      window.__formAnswers[sel.dataset.question] = sel.value;
+    });
+  });
+
+  /* ============================================
+     v1（高一上）新增：五步驟導覽（進度儀表 + 上一步/下一步）
+     ------------------------------------------------
+     第 5 步沿用 v21 的「確認並簽名」內容不變，「下一步」按鈕
+     在最後一步變成「送出紀錄表」並觸發原本的送出驗證邏輯。
+     ============================================ */
+  const TOTAL_STEPS = 4;
+  let currentStep = 1;
+  const stepPanels = document.querySelectorAll('.step-panel');
+  const gaugeSegments = document.querySelectorAll('.gauge-track i');
+  const stepLabelEl = document.querySelector('.step-label');
+  const stepLabelTitles = {
+    1: '學習能力評估',
+    2: '甄選資訊',
+    3: '備審協助／畢業學分條件',
+    4: '確認並簽名'
+  };
+  const prevBtnEl = document.getElementById('prevBtn');
+  const validationModal = document.getElementById('validationModal');
+  const validationCloseBtn = document.getElementById('validationCloseBtn');
+
+  validationCloseBtn.addEventListener('click', () => {
+    validationModal.classList.remove('active');
+  });
+
+  /* ============================================
+     v1（高一上）新增 Bug2/Bug3：切換步驟前的欄位驗證
+     ------------------------------------------------
+     - 文字欄位（.text-field）不可空白（若欄位在目前隱藏的
+       conditional-field 內則不檢查，因為不適用）
+     - 性向能力評估（aptitude_type）必須「剛好」勾選 3 項，
+       多於或少於 3 項都視為錯誤
+     驗證失敗時彈出提示視窗，不允許前進到下一步。
+     ============================================ */
+  function validateStep(stepNum) {
+    const panel = document.querySelector(`.step-panel[data-step="${stepNum}"]`);
+    if (!panel) return true;
+
+    const textFields = panel.querySelectorAll('.text-field');
+    for (const field of textFields) {
+      if (field.dataset.optional === 'true') continue; // semester03 新增：選填欄位（如B-1/B-2、C-1~C-8 內容名稱）不強制驗證
+      const condParent = field.closest('.conditional-field');
+      if (condParent && !condParent.classList.contains('show')) continue;
+      const val = field.value.trim();
+      if (!val) return false;
+      // v1 v2 新增：部分欄位（例如社團名稱）規定不可填「無」
+      if (field.dataset.disallowNone === 'true' && val === '無') return false;
+    }
+
+    const aptitudeGroup = panel.querySelector('.chip-group[data-question="aptitude_type"]');
+    if (aptitudeGroup) {
+      const count = aptitudeGroup.querySelectorAll('.chip-btn.active').length;
+      if (count !== 3) return false;
+    }
+
+    return true;
+  }
+
+  /* ============================================
+     v1（高一上）新增 Bug5：修正簽名元件在第 5 步初始化延遲
+     ------------------------------------------------
+     多步驟版面下，第 5 步（簽名頁）預設是隱藏的
+     （display:none），若簽名畫布在頁面剛載入、還被隱藏時就
+     量測尺寸，會量到 0×0，導致浮水印沒畫出來、原始版無法
+     正常手寫。改成每次「切換到第 5 步」時，主動重新量測、
+     重新初始化一次，確保簽名功能正常。
+     ============================================ */
+  let hasSubmitted = false;
+
+  function renderStep() {
+    stepPanels.forEach(panel => {
+      panel.classList.toggle('active', Number(panel.dataset.step) === currentStep);
+    });
+    gaugeSegments.forEach((seg, idx) => {
+      const stepNum = idx + 1;
+      seg.classList.remove('done', 'active');
+      if (stepNum < currentStep) seg.classList.add('done');
+      else if (stepNum === currentStep) seg.classList.add('active');
+    });
+    stepLabelEl.innerHTML = `第 <b>${currentStep}</b> / ${TOTAL_STEPS} 步 · ${stepLabelTitles[currentStep]}`;
+    prevBtnEl.disabled = (currentStep === 1);
+
+    /* v1（高一上）v2 修正 Bug5：送出後允許自由檢閱前面步驟
+       ------------------------------------------------
+       送出成功後，學生若點「上一步」回頭檢查填寫內容，
+       「下一步」按鈕要恢復可點擊（亮橘色），讓他可以正常翻頁
+       檢閱；只有再次回到「最後一步」時才鎖定顯示灰底「已送出」，
+       避免重複送出。此為六學期記錄表的全域設計。 */
+    if (hasSubmitted && currentStep === TOTAL_STEPS) {
+      submitBtnEl.disabled = true;
+      submitBtnEl.textContent = '已送出';
+    } else {
+      submitBtnEl.disabled = false;
+      submitBtnEl.textContent = (currentStep === TOTAL_STEPS) ? '送出紀錄表' : '下一步';
+    }
+
+    if (currentStep === TOTAL_STEPS) {
+      // 面板剛從 display:none 變成可見，等瀏覽器完成排版後再量測尺寸
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          renderSmallCanvasOnResize();
+        });
+      });
+    }
+  }
+
+  prevBtnEl.addEventListener('click', () => {
+    if (currentStep > 1) {
+      currentStep--;
+      renderStep();
+      window.scrollTo(0, 0);
+    }
+  });
+
+  const submitBtnEl = document.getElementById('submitBtn');
+
+  submitBtnEl.addEventListener('click', () => {
+    if (currentStep < TOTAL_STEPS) {
+      if (!validateStep(currentStep)) {
+        validationModal.classList.add('active');
+        return;
+      }
+      currentStep++;
+      renderStep();
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    // 最後一步：實際送出邏輯（與 v21 相同）
+    if (!window.__finalSignatureDataURL) {
+      alert('請先完成簽名再送出');
+      return;
+    }
+
+    // 準備好完整送出資料，供未來接上後端 API 時直接使用
+    const submissionPayload = {
+      formAnswers: window.__formAnswers,
+      quizAnswers: window.__quizAnswers,
+      signatureDataURL: window.__finalSignatureDataURL,
+      signatureAspectRatio: window.__finalSignatureAspectRatio,
+      biometricData: window.__signatureBiometricData || null
+    };
+    window.__formSubmissionPayload = submissionPayload;
+
+    // TODO：接上後端後，這裡改成 fetch POST 到後端 API，
+    // 並依回傳結果（成功 / 退件重簽）決定後續畫面。
+    hasSubmitted = true;
+    renderStep();
+  });
+
+  /* ============================================
+     v_courseMapFix 新增：跳去課程地圖前記住目前步驟，回來時自動跳回
+     ------------------------------------------------
+     （同 semester01-v7 的機制，不需要 Curriculum-Map.html 配合修改）
+     ============================================ */
+  const RESUME_STEP_KEY = 'semester06_resumeStep';
+  const courseMapLinkEl = document.getElementById('courseMapLink');
+  if (courseMapLinkEl) {
+    courseMapLinkEl.addEventListener('click', () => {
+      sessionStorage.setItem(RESUME_STEP_KEY, String(currentStep));
+    });
+  }
+
+  const resumeStep = sessionStorage.getItem(RESUME_STEP_KEY);
+  if (resumeStep) {
+    sessionStorage.removeItem(RESUME_STEP_KEY);
+    const stepNum = parseInt(resumeStep, 10);
+    if (stepNum >= 1 && stepNum <= TOTAL_STEPS) {
+      currentStep = stepNum;
+    }
+  }
+
+  renderStep();
+</script>
+</body>
+</html>
